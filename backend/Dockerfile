@@ -62,7 +62,8 @@ COPY . .
 
 RUN composer dump-autoload --optimize --classmap-authoritative \
     && mkdir -p var/cache var/log var/sessions \
-    && chmod -R 777 var
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 var
 
 # Copier l'entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
