@@ -19,3 +19,12 @@ frontend/.env.*.local
 # Docker
 .env.docker
 .env.docker.local
+
+# Fichiers d'environnement sensibles
+.env.local
+.env.*.local
+.env.prod
+.env.production
+
+# Clés JWT (générées localement)
+/backend/config/jwt/*.pem
