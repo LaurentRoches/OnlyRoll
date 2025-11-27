@@ -1,9 +1,19 @@
 version: '3.9'
 
 services:
+  # ===========================================
+  # MYSQL - PRODUCTION
+  # ===========================================
   mysql:
     image: mysql:9.0
     container_name: onlyroll-mysql-prod
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=200
+      - --innodb_buffer_pool_size=512M
+      - --innodb_log_file_size=96M
+      - --innodb_flush_log_at_trx_commit=2
+      - --innodb_flush_method=O_DIRECT
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -11,27 +21,45 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
     networks:
       - onlyroll-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
 
+  # ===========================================
+  # REDIS - PRODUCTION
+  # ===========================================
   redis:
     image: redis:7.2-alpine
     container_name: onlyroll-redis-prod
-    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --appendonly yes
     volumes:
       - redis-data:/data
-      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
+  # ===========================================
+  # BACKEND PHP-FPM - PRODUCTION
+  # ===========================================
   php-fpm:
     build:
       context: ./backend
@@ -45,20 +73,32 @@ services:
       APP_DEBUG: 0
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      REDIS_URL: redis://redis:6379
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
       MERCURE_URL: http://mercure:3000/.well-known/mercure
       MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
     volumes:
       - backend-var:/var/www/html/var
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  # ===========================================
+  # FRONTEND - PRODUCTION
+  # ===========================================
   frontend:
     build:
       context: ./frontend
@@ -70,7 +110,15 @@ services:
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # ===========================================
+  # NGINX - PRODUCTION (Reverse Proxy)
+  # ===========================================
   nginx:
     image: nginx:1.25-alpine
     container_name: onlyroll-nginx-prod
@@ -85,7 +133,15 @@ services:
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # ===========================================
+  # MERCURE - PRODUCTION (WebSocket Hub)
+  # ===========================================
   mercure:
     image: dunglas/mercure:v0.15
     container_name: onlyroll-mercure-prod
@@ -95,14 +151,28 @@ services:
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins ${CORS_ALLOW_ORIGIN}
+        log_level info
+    volumes:
+      - mercure-data:/data
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "-O", "/dev/null", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   mysql-data:
+    driver: local
   redis-data:
+    driver: local
   backend-var:
+    driver: local
+  mercure-data:
+    driver: local
 
 networks:
   onlyroll-network:
