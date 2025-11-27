@@ -28,58 +28,96 @@ jobs:
       
       - name: Create deployment package
         run: |
+          # Créer le package sans les dossiers inutiles
           tar -czf deployment.tar.gz \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='vendor' \
-            --exclude='var/cache' \
-            --exclude='var/log' \
+            --exclude='backend/var/cache' \
+            --exclude='backend/var/log' \
+            --exclude='frontend/node_modules' \
+            --exclude='frontend/dist' \
+            --exclude='.github' \
+            --exclude='*.tar.gz' \
             .
+          
+          # Vérifier que le package a été créé
+          ls -lh deployment.tar.gz
+          echo "Deployment package created successfully"
       
       - name: Backup current deployment
         run: |
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
-            cd ${{ env.DEPLOY_PATH }}
+            set -e
             
+            # Variables locales
+            DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
             BACKUP_DIR="/home/onlyroll/backups/$(date +%Y%m%d_%H%M%S)"
-            mkdir -p $BACKUP_DIR
             
-            echo "Creating backup at $BACKUP_DIR..."
-            tar -czf $BACKUP_DIR/deployment.tar.gz \
-              --exclude='var/cache' \
-              --exclude='var/log' \
-              --exclude='node_modules' \
-              --exclude='vendor' \
-              . || echo "Backup failed (non-critical)"
-            
-            echo "Backup completed"
+            # Vérifier si le répertoire de déploiement existe
+            if [ -d "$DEPLOY_PATH" ]; then
+              mkdir -p "$BACKUP_DIR"
+              
+              echo "Creating backup at $BACKUP_DIR..."
+              cd "$DEPLOY_PATH"
+              
+              tar -czf "$BACKUP_DIR/deployment.tar.gz" \
+                --exclude='backend/var/cache' \
+                --exclude='backend/var/log' \
+                --exclude='node_modules' \
+                --exclude='vendor' \
+                . 2>/dev/null || echo "Backup failed (non-critical for first deployment)"
+              
+              echo "Backup completed"
+            else
+              echo "No existing deployment found - first deployment"
+              mkdir -p "$DEPLOY_PATH"
+            fi
           ENDSSH
       
       - name: Upload to VPS
         run: |
+          echo "Uploading deployment package to VPS..."
           scp -i ~/.ssh/deploy_key deployment.tar.gz ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.DEPLOY_PATH }}/
+          echo "Upload completed"
       
       - name: Deploy on VPS
         id: deploy
         run: |
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             set -e
-            cd ${{ env.DEPLOY_PATH }}
+            
+            # Variables locales
+            DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
+            
+            cd "$DEPLOY_PATH"
             
             echo "Extracting deployment package..."
             tar -xzf deployment.tar.gz
             rm deployment.tar.gz
             
+            # Vérifier si docker-compose existe
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "docker-compose.yml not found!"
+              exit 1
+            fi
+            
+            # Vérifier si .env.prod existe, sinon créer à partir de .env.example
+            if [ ! -f "backend/.env.prod" ] && [ ! -f "backend/.env" ]; then
+              echo "No .env file found - you need to configure environment variables"
+              # Ne pas quitter, continuer avec les variables par défaut
+            fi
+            
             echo "Building Docker images..."
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
             
             echo "Running database migrations..."
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm backend php bin/console doctrine:migrations:migrate --no-interaction || echo "Migrations completed or skipped"
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm backend php bin/console doctrine:migrations:migrate --no-interaction || echo "⚠️ Migrations completed or skipped"
             
             echo "Restarting services with zero-downtime..."
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
             
-            echo "Cleaning up..."
+            echo "Cleaning up old images..."
             docker image prune -f
             
             echo "Deployment completed successfully!"
@@ -88,36 +126,56 @@ jobs:
       - name: Health Check
         run: |
           echo "Waiting for services to start..."
-          sleep 20
+          sleep 30
           
           echo "Checking API health..."
-          if curl -f http://${{ env.VPS_HOST }}/api/health; then
-            echo "Health check PASSED!"
-          else
-            echo "Health check FAILED!"
-            exit 1
-          fi
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -f -s http://${{ env.VPS_HOST }}/health > /dev/null 2>&1; then
+              echo "Health check PASSED!"
+              exit 0
+            else
+              RETRY_COUNT=$((RETRY_COUNT+1))
+              echo "Attempt $RETRY_COUNT/$MAX_RETRIES failed, retrying in 10s..."
+              sleep 10
+            fi
+          done
+          
+          echo "Health check FAILED after $MAX_RETRIES attempts!"
+          exit 1
       
       - name: Rollback on failure
-        if: failure()
+        if: failure() && steps.deploy.outcome == 'failure'
         run: |
           echo "Deployment failed! Starting rollback..."
           
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
-            cd ${{ env.DEPLOY_PATH }}
+            set -e
             
-            LATEST_BACKUP=$(ls -t /home/onlyroll/backups/ | head -n1)
+            DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
+            cd "$DEPLOY_PATH"
             
-            if [ -n "$LATEST_BACKUP" ]; then
+            # Trouver le dernier backup
+            LATEST_BACKUP=$(ls -t /home/onlyroll/backups/ 2>/dev/null | head -n1)
+            
+            if [ -n "$LATEST_BACKUP" ] && [ -f "/home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz" ]; then
               echo "Restoring from backup: $LATEST_BACKUP"
+              
+              # Nettoyer le déploiement raté
+              rm -rf ./* 2>/dev/null || true
+              
+              # Restaurer le backup
               tar -xzf /home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz
               
               echo "Restarting services..."
-              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --force-recreate
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
               
               echo "Rollback completed"
             else
-              echo "No backup found - manual intervention required"
+              echo "No backup found - manual intervention required!"
+              echo "Please check the server at: ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
             fi
           ENDSSH
       
@@ -126,3 +184,12 @@ jobs:
         run: |
           echo "Deployment successful!"
           echo "Application is now live at http://${{ env.VPS_HOST }}"
+          echo "Check logs: docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f"
+      
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deployment FAILED!"
+          echo "Check the logs above for details"
+          echo "Manual intervention may be required"
+          echo "Connect to server: ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
