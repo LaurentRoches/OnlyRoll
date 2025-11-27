@@ -1,0 +1,17 @@
+parameters:
+    level: 8
+    paths:
+        - bin/
+        - config/
+        - public/
+        - src/
+        - tests/
+
+    ignoreErrors:
+        # Doctrine génère automatiquement les IDs
+        - '#Property App\\Entity\\User::\$id \(int\|null\) is never assigned int#'
+        - '#Property App\\Entity\\Game::\$id \(int\|null\) is never assigned int#'
+        - '#Property App\\Entity\\GamePlayer::\$id \(int\|null\) is never assigned int#'
+        - '#Property App\\Entity\\GameMap::\$id \(int\|null\) is never assigned int#'
+        - '#Property App\\Entity\\GameMessage::\$id \(int\|null\) is never assigned int#'
+        - '#Property App\\Entity\\GameToken::\$id \(int\|null\) is never assigned int#'
