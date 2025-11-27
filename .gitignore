@@ -1,0 +1,30 @@
+# Symfony
+/backend/vendor/
+/backend/var/cache/
+/backend/var/log/
+/backend/.env.local
+/backend/.env.local.php
+/backend/.env.*.local
+/backend/coverage.xml
+# Uploads (ne pas versionner les fichiers uploadés)
+/backend/public/uploads/*
+!/backend/public/uploads/.gitkeep
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# Docker
+.env.docker
+.env.docker.local
+
+# Fichiers d'environnement sensibles
+.env.local
+.env.*.local
+.env.prod
+.env.production
+
+# Clés JWT (générées localement)
+/backend/config/jwt/*.pem
