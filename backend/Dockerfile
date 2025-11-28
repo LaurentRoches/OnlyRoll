@@ -45,12 +45,15 @@ COPY docker/php-fpm/php.ini /usr/local/etc/php/php.ini
 # ===========================================
 FROM php_base AS php_dependencies
 
+ARG APP_ENV=prod
+
 COPY composer.json composer.lock symfony.lock ./
 
+# Installation avec scripts pour générer les bundles
 RUN if [ "$APP_ENV" = "prod" ]; then \
-        composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction; \
+        composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader; \
     else \
-        composer install --no-scripts --no-autoloader --prefer-dist --no-interaction; \
+        composer install --prefer-dist --no-interaction; \
     fi
 
 # ===========================================
@@ -58,12 +61,18 @@ RUN if [ "$APP_ENV" = "prod" ]; then \
 # ===========================================
 FROM php_dependencies AS php_app
 
+ARG APP_ENV=prod
+
+# Copier tout le code source
 COPY . .
 
-RUN composer dump-autoload --optimize --classmap-authoritative \
-    && mkdir -p var/cache var/log var/sessions \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 var
+# Générer l'autoloader optimisé
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# Créer les répertoires nécessaires avec les bonnes permissions
+RUN mkdir -p var/cache var/log var/sessions \
+    && chown -R www-data:www-data var \
+    && chmod -R 775 var
 
 # Copier l'entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
@@ -80,6 +89,9 @@ FROM php_app AS php_dev
 ENV APP_ENV=dev \
     APP_DEBUG=1 \
     XDEBUG_MODE=develop,debug
+
+# Réinstaller les dépendances dev
+RUN composer install --prefer-dist --no-interaction
 
 # Installer Xdebug
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
@@ -104,11 +116,13 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.
     && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-# Warmup cache
-RUN php bin/console cache:warmup --env=prod --no-debug || true
-
-# Permissions strictes
+# S'assurer que les permissions sont correctes avant warmup
 RUN chown -R www-data:www-data var \
-    && chmod -R 755 var
+    && chmod -R 775 var
 
+# Warmup cache en tant que www-data
 USER www-data
+
+# Générer le cache Symfony (avec gestion d'erreur plus explicite)
+RUN php bin/console cache:clear --env=prod --no-debug \
+    && php bin/console cache:warmup --env=prod --no-debug
