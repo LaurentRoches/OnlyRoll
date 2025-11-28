@@ -103,13 +103,13 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
-          
+
           # Database
-          MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER=${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
-          DATABASE_URL=mysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@mysql:3306/${{ secrets.MYSQL_DATABASE }}?serverVersion=8.0
+          MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
+          MYSQL_DATABASE=${{ secrets.DB_NAME }}
+          MYSQL_USER=${{ secrets.DB_USER }}
+          MYSQL_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@mysql:3306/${{ secrets.DB_NAME }}?serverVersion=8.0
           
           # JWT
           JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
@@ -134,7 +134,7 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
-          DATABASE_URL=mysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@mysql:3306/${{ secrets.MYSQL_DATABASE }}?serverVersion=8.0
+          DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@mysql:3306/${{ secrets.DB_NAME }}?serverVersion=8.0
           REDIS_URL=redis://redis:6379
           JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
           JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
