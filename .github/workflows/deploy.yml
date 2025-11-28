@@ -28,10 +28,10 @@ jobs:
       
       - name: Create deployment package
         run: |
-          echo "📋 Files to be packaged:"
+          echo "Files to be packaged:"
           ls -la
           
-          echo "📦 Creating deployment package..."
+          echo "Creating deployment package..."
           tar -czf deployment.tar.gz \
             --exclude='.git' \
             --exclude='node_modules' \
@@ -45,12 +45,12 @@ jobs:
             . 2>/dev/null || true
           
           if [ ! -f deployment.tar.gz ]; then
-            echo "❌ Failed to create deployment package!"
+            echo "Failed to create deployment package!"
             exit 1
           fi
           
           ls -lh deployment.tar.gz
-          echo "✅ Deployment package created successfully"
+          echo "Deployment package created successfully"
       
       - name: Backup current deployment
         run: |
@@ -63,25 +63,25 @@ jobs:
             if [ -d "$DEPLOY_PATH" ] && [ "$(ls -A $DEPLOY_PATH 2>/dev/null)" ]; then
               mkdir -p "$BACKUP_DIR"
               
-              echo "📦 Creating backup at $BACKUP_DIR..."
+              echo "Creating backup at $BACKUP_DIR..."
               cd "$DEPLOY_PATH"
               
               tar -czf "$BACKUP_DIR/deployment.tar.gz" . 2>/dev/null || {
-                echo "⚠️ Backup failed (non-critical for first deployment)"
+                echo "Backup failed (non-critical for first deployment)"
               }
               
-              echo "✅ Backup completed"
+              echo "Backup completed"
             else
-              echo "ℹ️ No existing deployment found - first deployment"
+              echo "ℹNo existing deployment found - first deployment"
               mkdir -p "$DEPLOY_PATH"
             fi
           ENDSSH
       
       - name: Upload to VPS
         run: |
-          echo "📤 Uploading deployment package to VPS..."
+          echo "Uploading deployment package to VPS..."
           scp -i ~/.ssh/deploy_key deployment.tar.gz ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/home/onlyroll/production/
-          echo "✅ Upload completed"
+          echo "Upload completed"
       
       - name: Extract and create .env file on VPS
         run: |
@@ -92,11 +92,11 @@ jobs:
             
             cd "$DEPLOY_PATH"
             
-            echo "📦 Extracting deployment package..."
+            echo "Extracting deployment package..."
             tar -xzf deployment.tar.gz
             rm deployment.tar.gz
             
-            echo "📝 Creating .env files..."
+            echo "Creating .env files..."
             
             # Créer le .env principal
             cat > .env << 'ENVEOF'
@@ -145,7 +145,7 @@ jobs:
           CORS_ALLOW_ORIGIN=http://72.61.195.28
           BACKENDENVEOF
             
-            echo "✅ .env files created"
+            echo ".env files created"
           ENDSSH
       
       - name: Deploy on VPS
@@ -158,134 +158,142 @@ jobs:
             
             cd "$DEPLOY_PATH"
             
-            echo "📋 Files in directory:"
+            echo "Files in directory:"
             ls -la
             
             # Vérifier docker-compose.prod.yml
             if [ ! -f "docker-compose.prod.yml" ]; then
-              echo "❌ docker-compose.prod.yml not found!"
+              echo "docker-compose.prod.yml not found!"
               exit 1
             fi
             
-            echo "✅ docker-compose.prod.yml found"
+            echo "docker-compose.prod.yml found"
             
             # Vérifier que le .env backend existe
             if [ ! -f "backend/.env" ]; then
-              echo "❌ backend/.env not found!"
+              echo "backend/.env not found!"
               exit 1
             fi
             
-            echo "✅ backend/.env found"
+            echo "backend/.env found"
             
             # IMPORTANT: Utiliser UNIQUEMENT docker-compose.prod.yml en production
             COMPOSE_FILE="docker-compose.prod.yml"
             
-            echo "🛑 Stopping existing containers..."
+            echo "Stopping existing containers..."
             docker compose -f $COMPOSE_FILE down --remove-orphans 2>/dev/null || echo "No compose containers to stop"
             
             # Forcer l'arrêt des conteneurs par nom (au cas où)
-            echo "🧹 Removing any existing OnlyRoll containers..."
+            echo "Removing any existing OnlyRoll containers..."
             docker rm -f onlyroll-php-prod onlyroll-nginx-prod onlyroll-frontend-prod \
                         onlyroll-mysql-prod onlyroll-redis-prod onlyroll-mercure-prod 2>/dev/null || echo "No individual containers to remove"
             
             # Supprimer le réseau s'il existe
-            echo "🧹 Removing old network..."
+            echo "Removing old network..."
             docker network rm onlyroll-network-prod 2>/dev/null || echo "No network to remove"
             
-            echo "🧹 Cleaning up old images..."
+            # Si variable RESET_MYSQL_DATA est définie, supprimer le volume MySQL
+            # ATTENTION: Cela supprime toutes les données de la BDD !
+            # Pour activer: Ajouter RESET_MYSQL_DATA=true dans les secrets GitHub
+            if [ "${RESET_MYSQL_DATA:-false}" = "true" ]; then
+              echo " RESET_MYSQL_DATA enabled - Removing MySQL volume..."
+              docker volume rm production_mysql-data 2>/dev/null || echo "No MySQL volume to remove"
+            fi
+            
+            echo "Cleaning up old images..."
             docker system prune -f
             
-            echo "🔨 Building Docker images with --no-cache (this may take a while)..."
+            echo "Building Docker images with --no-cache (this may take a while)..."
             docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
             
-            echo "🚀 Starting all services..."
+            echo "Starting all services..."
             docker compose -f $COMPOSE_FILE up -d
             
-            echo "⏳ Waiting for services to be ready (30s)..."
+            echo "Waiting for services to be ready (30s)..."
             sleep 30
             
             # Afficher les logs MySQL pour debug
-            echo "📋 MySQL logs (for debugging):"
+            echo "MySQL logs (for debugging):"
             docker compose -f $COMPOSE_FILE logs mysql --tail=50
             
             # Vérifier que MySQL est prêt
-            echo "🔍 Checking MySQL status..."
+            echo "Checking MySQL status..."
             for i in {1..10}; do
               if docker compose -f $COMPOSE_FILE exec -T mysql mysqladmin ping -h localhost --silent; then
-                echo "✅ MySQL is ready"
+                echo "MySQL is ready"
                 break
               fi
               if [ $i -eq 10 ]; then
-                echo "⚠️ MySQL not responding after 10 attempts"
+                echo "MySQL not responding after 10 attempts"
                 docker compose -f $COMPOSE_FILE logs mysql
               fi
               sleep 3
             done
             
             # Vérifier que Redis est prêt
-            echo "🔍 Checking Redis status..."
+            echo "Checking Redis status..."
             if docker compose -f $COMPOSE_FILE exec -T redis redis-cli ping | grep -q PONG; then
-              echo "✅ Redis is ready"
+              echo "Redis is ready"
             else
-              echo "⚠️ Redis not responding"
+              echo "Redis not responding"
               docker compose -f $COMPOSE_FILE logs redis
             fi
             
-            echo "🗄️ Running database migrations..."
+            echo "Running database migrations..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm php bin/console doctrine:migrations:migrate --no-interaction || {
-              echo "⚠️ Migrations failed or already applied"
+              echo "Migrations failed or already applied"
             }
             
-            echo "📊 Container status:"
+            echo "Container status:"
             docker compose -f $COMPOSE_FILE ps
             
-            echo "📋 Recent logs from php-fpm:"
+            echo "Recent logs from php-fpm:"
             docker compose -f $COMPOSE_FILE logs --tail=30 php-fpm
             
-            echo "🧹 Final cleanup..."
+            echo "Final cleanup..."
             docker image prune -f
             
-            echo "✅ Deployment completed!"
+            echo "Deployment completed!"
           ENDSSH
       
       - name: Health Check
         run: |
-          echo "⏳ Waiting for application to fully start..."
+          echo "Waiting for application to fully start..."
           sleep 20
           
-          echo "🏥 Running health checks..."
+          echo "Running health checks..."
           MAX_RETRIES=10
           RETRY_COUNT=0
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             # Test de l'API
             if curl -f -s -m 10 http://${{ env.VPS_HOST }}/api > /dev/null 2>&1; then
-              echo "✅ API endpoint is responding!"
+              echo "API endpoint is responding!"
               
               # Test du frontend
               if curl -f -s -m 10 http://${{ env.VPS_HOST }}/ > /dev/null 2>&1; then
-                echo "✅ Frontend is responding!"
-                echo "✅ All health checks passed!"
+                echo "Frontend is responding!"
+                echo "All health checks passed!"
                 exit 0
               fi
             fi
             
             RETRY_COUNT=$((RETRY_COUNT+1))
-            echo "⏳ Attempt $RETRY_COUNT/$MAX_RETRIES - Waiting 15s..."
+            echo "Attempt $RETRY_COUNT/$MAX_RETRIES - Waiting 15s..."
             sleep 15
           done
           
-          echo "⚠️ Health checks didn't fully pass, checking deployment status..."
+          echo "Health checks didn't fully pass, checking deployment status..."
           
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             cd /home/onlyroll/production
-            echo "📋 Container status:"
+            echo "Container status:"
             docker compose -f docker-compose.prod.yml ps
             echo ""
-            echo "📋 Recent logs from php-fpm:"
+            echo "Recent logs from php-fpm:"
             docker compose -f docker-compose.prod.yml logs --tail=50 php-fpm
             echo ""
-            echo "📋 Recent logs from nginx:"
+            echo "Recent logs from nginx:"
             docker compose -f docker-compose.prod.yml logs --tail=30 nginx
           ENDSSH
           
@@ -296,27 +304,27 @@ jobs:
         run: |
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📊 DEPLOYMENT INFORMATION"
+          echo "DEPLOYMENT INFORMATION"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          echo "🌐 VPS Host: ${{ env.VPS_HOST }}"
-          echo "📁 Deploy Path: ${{ env.DEPLOY_PATH }}"
-          echo "🔗 Application URL: http://${{ env.VPS_HOST }}"
-          echo "🔗 API URL: http://${{ env.VPS_HOST }}/api"
+          echo "VPS Host: ${{ env.VPS_HOST }}"
+          echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
+          echo "Application URL: http://${{ env.VPS_HOST }}"
+          echo "API URL: http://${{ env.VPS_HOST }}/api"
           echo ""
-          echo "🔧 To check logs on VPS:"
+          echo "To check logs on VPS:"
           echo "   ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
           echo "   cd ${{ env.DEPLOY_PATH }}"
           echo "   docker compose -f docker-compose.prod.yml logs -f"
           echo ""
-          echo "📋 To check container status:"
+          echo "To check container status:"
           echo "   docker compose -f docker-compose.prod.yml ps"
           echo ""
       
       - name: Rollback on failure
         if: failure() && steps.deploy.outcome == 'failure'
         run: |
-          echo "❌ Deployment failed! Starting rollback..."
+          echo "Deployment failed! Starting rollback..."
           
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             DEPLOY_PATH="/home/onlyroll/production"
@@ -325,19 +333,19 @@ jobs:
             LATEST_BACKUP=$(ls -t /home/onlyroll/backups/ 2>/dev/null | head -n1)
             
             if [ -n "$LATEST_BACKUP" ] && [ -f "/home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz" ]; then
-              echo "📦 Restoring from backup: $LATEST_BACKUP"
+              echo "Restoring from backup: $LATEST_BACKUP"
               
               find . -mindepth 1 -delete 2>/dev/null || true
               
               tar -xzf /home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz
               
-              echo "🚀 Restarting services..."
+              echo "Restarting services..."
               docker compose -f docker-compose.prod.yml down
               docker compose -f docker-compose.prod.yml up -d
               
-              echo "✅ Rollback completed"
+              echo "Rollback completed"
             else
-              echo "⚠️ No backup found - this might be the first deployment"
+              echo "No backup found - this might be the first deployment"
               echo "Manual intervention may be required"
             fi
           ENDSSH
@@ -347,10 +355,10 @@ jobs:
         run: |
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🎉 DEPLOYMENT SUCCESSFUL!"
+          echo "DEPLOYMENT SUCCESSFUL!"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          echo "🌐 Your application is now live at:"
+          echo "Your application is now live at:"
           echo "   http://${{ env.VPS_HOST }}"
           echo ""
       
@@ -359,10 +367,10 @@ jobs:
         run: |
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "❌ DEPLOYMENT FAILED"
+          echo "DEPLOYMENT FAILED"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          echo "🔍 Check the logs above for details"
-          echo "🔧 Connect to server:"
+          echo "Check the logs above for details"
+          echo "Connect to server:"
           echo "   ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
           echo ""
