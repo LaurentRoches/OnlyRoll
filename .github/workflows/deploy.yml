@@ -158,11 +158,7 @@ jobs:
             
             cd "$DEPLOY_PATH"
             
-            echo "📦 Extracting deployment package..."
-            tar -xzf deployment.tar.gz
-            rm deployment.tar.gz
-            
-            echo "📋 Files extracted:"
+            echo "📋 Files in directory:"
             ls -la
             
             # Vérifier docker-compose.prod.yml
@@ -172,6 +168,14 @@ jobs:
             fi
             
             echo "✅ docker-compose.prod.yml found"
+            
+            # Vérifier que le .env backend existe
+            if [ ! -f "backend/.env" ]; then
+              echo "❌ backend/.env not found!"
+              exit 1
+            fi
+            
+            echo "✅ backend/.env found"
             
             # IMPORTANT: Utiliser UNIQUEMENT docker-compose.prod.yml en production
             COMPOSE_FILE="docker-compose.prod.yml"
