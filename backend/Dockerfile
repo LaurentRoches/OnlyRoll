@@ -66,9 +66,8 @@ ARG APP_ENV=prod
 # Copier tout le code source
 COPY . .
 
-# Maintenant qu'on a bin/console, on peut exécuter les scripts Composer
-RUN composer dump-autoload --optimize --classmap-authoritative && \
-    composer run-script --no-interaction post-install-cmd || true
+# Générer uniquement l'autoloader optimisé (pas de scripts Symfony)
+RUN composer dump-autoload --optimize --classmap-authoritative
 
 # Créer les répertoires nécessaires avec les bonnes permissions
 RUN mkdir -p var/cache var/log var/sessions \
@@ -91,8 +90,9 @@ ENV APP_ENV=dev \
     APP_DEBUG=1 \
     XDEBUG_MODE=develop,debug
 
-# Réinstaller les dépendances dev
-RUN composer install --prefer-dist --no-interaction
+# Réinstaller les dépendances dev (sans exécuter les scripts)
+RUN composer install --prefer-dist --no-interaction --no-scripts && \
+    composer dump-autoload
 
 # Installer Xdebug
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
@@ -117,13 +117,9 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.
     && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-# S'assurer que les permissions sont correctes avant warmup
+# S'assurer que les permissions sont correctes
 RUN chown -R www-data:www-data var \
     && chmod -R 775 var
 
-# Warmup cache en tant que www-data
+# Passer en www-data pour la sécurité
 USER www-data
-
-# Générer le cache Symfony (avec gestion d'erreur plus explicite)
-RUN php bin/console cache:clear --env=prod --no-debug \
-    && php bin/console cache:warmup --env=prod --no-debug
