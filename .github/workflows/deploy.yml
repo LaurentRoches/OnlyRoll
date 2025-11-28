@@ -83,6 +83,45 @@ jobs:
           scp -i ~/.ssh/deploy_key deployment.tar.gz ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/home/onlyroll/production/
           echo "✅ Upload completed"
       
+      - name: Create .env file on VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
+            cd /home/onlyroll/production
+            
+            echo "📝 Creating .env file..."
+            cat > .env << 'ENVEOF'
+          APP_ENV=prod
+          APP_DEBUG=0
+          APP_SECRET=${{ secrets.APP_SECRET }}
+          
+          # Database
+          MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER=${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+          DATABASE_URL=mysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@mysql:3306/${{ secrets.MYSQL_DATABASE }}?serverVersion=8.0
+          
+          # JWT
+          JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+          JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+          JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}
+          
+          # Mercure
+          MERCURE_URL=http://mercure:3000/.well-known/mercure
+          MERCURE_PUBLIC_URL=http://72.61.195.28:3000/.well-known/mercure
+          MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
+          
+          # CORS
+          CORS_ALLOW_ORIGIN=http://72.61.195.28
+          
+          # Frontend
+          VITE_API_URL=http://72.61.195.28/api
+          VITE_WS_URL=ws://72.61.195.28:3000
+          ENVEOF
+            
+            echo "✅ .env file created"
+          ENDSSH
+      
       - name: Deploy on VPS
         id: deploy
         run: |
@@ -97,95 +136,68 @@ jobs:
             tar -xzf deployment.tar.gz
             rm deployment.tar.gz
             
-            echo "📝 Files extracted:"
+            echo "📋 Files extracted:"
             ls -la
             
-            # Vérifier docker-compose
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "❌ docker-compose.yml not found!"
+            # Vérifier docker-compose.prod.yml
+            if [ ! -f "docker-compose.prod.yml" ]; then
+              echo "❌ docker-compose.prod.yml not found!"
               exit 1
             fi
             
-            echo "✅ docker-compose.yml found"
+            echo "✅ docker-compose.prod.yml found"
             
-            # Déterminer les fichiers compose à utiliser
-            if [ -f "docker-compose.prod.yml" ]; then
-              echo "✅ docker-compose.prod.yml found"
-              COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
-            else
-              echo "⚠️ docker-compose.prod.yml not found, using docker-compose.yml only"
-              COMPOSE_FILES="-f docker-compose.yml"
-            fi
-            
-            # Vérifier/créer les fichiers .env nécessaires
-            if [ ! -f ".env" ] && [ ! -f "backend/.env" ]; then
-              echo "⚠️ No .env file found - creating minimal config..."
-              
-              # Créer le répertoire backend si nécessaire
-              mkdir -p backend
-              
-              # Créer le fichier .env avec des echo (évite les problèmes de heredoc imbriqués)
-              {
-                echo "APP_ENV=prod"
-                echo "APP_DEBUG=false"
-                echo "DATABASE_URL=mysql://onlyroll_db:password@mysql:3306/onlyroll_db?serverVersion=9.0"
-                echo "JWT_PASSPHRASE=changeme"
-                echo "MERCURE_URL=http://mercure:3000/.well-known/mercure"
-                echo "MERCURE_PUBLIC_URL=http://mercure:3000/.well-known/mercure"
-                echo "MERCURE_JWT_SECRET=changeme"
-                echo "REDIS_URL=redis://redis:6379"
-                echo "CORS_ALLOW_ORIGIN=*"
-              } > backend/.env
-              
-              echo "✅ Minimal .env file created"
-            else
-              echo "✅ .env file found"
-            fi
+            # IMPORTANT: Utiliser UNIQUEMENT docker-compose.prod.yml en production
+            COMPOSE_FILE="docker-compose.prod.yml"
             
             echo "🛑 Stopping existing containers..."
-            docker compose $COMPOSE_FILES down --remove-orphans || echo "No containers to stop"
+            docker compose -f $COMPOSE_FILE down --remove-orphans || echo "No containers to stop"
             
-            echo "🧹 Cleaning up old images and volumes..."
+            echo "🧹 Cleaning up old images..."
             docker system prune -f
             
-            echo "🔨 Building Docker images (this may take a while)..."
-            docker compose $COMPOSE_FILES build --no-cache
+            echo "🔨 Building Docker images with --no-cache (this may take a while)..."
+            docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
             
-            echo "🚀 Starting infrastructure services (MySQL, Redis, Mercure)..."
-            docker compose $COMPOSE_FILES up -d mysql redis mercure
+            echo "🚀 Starting all services..."
+            docker compose -f $COMPOSE_FILE up -d
             
-            echo "⏳ Waiting for database and Redis to be ready (60s)..."
-            sleep 60
+            echo "⏳ Waiting for services to be ready (30s)..."
+            sleep 30
             
             # Vérifier que MySQL est prêt
             echo "🔍 Checking MySQL status..."
-            docker compose $COMPOSE_FILES exec -T mysql mysqladmin ping -h localhost || {
-              echo "⚠️ MySQL not responding, checking logs..."
-              docker compose $COMPOSE_FILES logs mysql
-            }
+            for i in {1..10}; do
+              if docker compose -f $COMPOSE_FILE exec -T mysql mysqladmin ping -h localhost --silent; then
+                echo "✅ MySQL is ready"
+                break
+              fi
+              if [ $i -eq 10 ]; then
+                echo "⚠️ MySQL not responding after 10 attempts"
+                docker compose -f $COMPOSE_FILE logs mysql
+              fi
+              sleep 3
+            done
             
             # Vérifier que Redis est prêt
             echo "🔍 Checking Redis status..."
-            docker compose $COMPOSE_FILES exec -T redis redis-cli ping || {
-              echo "⚠️ Redis not responding, checking logs..."
-              docker compose $COMPOSE_FILES logs redis
-            }
+            if docker compose -f $COMPOSE_FILE exec -T redis redis-cli ping | grep -q PONG; then
+              echo "✅ Redis is ready"
+            else
+              echo "⚠️ Redis not responding"
+              docker compose -f $COMPOSE_FILE logs redis
+            fi
             
             echo "🗄️ Running database migrations..."
-            docker compose $COMPOSE_FILES run --rm backend php bin/console doctrine:database:create --if-not-exists --no-interaction || echo "Database already exists"
-            docker compose $COMPOSE_FILES run --rm backend php bin/console doctrine:migrations:migrate --no-interaction || echo "Migrations completed or failed"
-            
-            echo "🚀 Starting application services (backend, frontend)..."
-            docker compose $COMPOSE_FILES up -d
-            
-            echo "⏳ Waiting for all services to stabilize (30s)..."
-            sleep 30
+            docker compose -f $COMPOSE_FILE exec -T php-fpm php bin/console doctrine:migrations:migrate --no-interaction || {
+              echo "⚠️ Migrations failed or already applied"
+            }
             
             echo "📊 Container status:"
-            docker compose $COMPOSE_FILES ps
+            docker compose -f $COMPOSE_FILE ps
             
-            echo "📋 Service logs (last 20 lines):"
-            docker compose $COMPOSE_FILES logs --tail=20
+            echo "📋 Recent logs from php-fpm:"
+            docker compose -f $COMPOSE_FILE logs --tail=30 php-fpm
             
             echo "🧹 Final cleanup..."
             docker image prune -f
@@ -203,58 +215,59 @@ jobs:
           RETRY_COUNT=0
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if curl -f -s -m 10 http://${{ env.VPS_HOST }}/ > /dev/null 2>&1; then
-              echo "✅ Root endpoint is responding!"
-              exit 0
-            elif curl -f -s -m 10 http://${{ env.VPS_HOST }}/health > /dev/null 2>&1; then
-              echo "✅ Health endpoint is responding!"
-              exit 0
-            elif curl -f -s -m 10 http://${{ env.VPS_HOST }}/api > /dev/null 2>&1; then
+            # Test de l'API
+            if curl -f -s -m 10 http://${{ env.VPS_HOST }}/api > /dev/null 2>&1; then
               echo "✅ API endpoint is responding!"
-              exit 0
-            elif curl -s -m 10 http://${{ env.VPS_HOST }}/ 2>&1 | grep -q "<!DOCTYPE\|<html"; then
-              echo "✅ Application is serving HTML!"
-              exit 0
-            else
-              RETRY_COUNT=$((RETRY_COUNT+1))
-              echo "⏳ Attempt $RETRY_COUNT/$MAX_RETRIES - Waiting 15s..."
-              sleep 15
+              
+              # Test du frontend
+              if curl -f -s -m 10 http://${{ env.VPS_HOST }}/ > /dev/null 2>&1; then
+                echo "✅ Frontend is responding!"
+                echo "✅ All health checks passed!"
+                exit 0
+              fi
             fi
+            
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            echo "⏳ Attempt $RETRY_COUNT/$MAX_RETRIES - Waiting 15s..."
+            sleep 15
           done
           
-          echo "⚠️ Health checks didn't fully pass, but deployment may still be successful"
-          echo "🔍 Check manually at: http://${{ env.VPS_HOST }}"
+          echo "⚠️ Health checks didn't fully pass, checking deployment status..."
           
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             cd /home/onlyroll/production
             echo "📋 Container status:"
-            docker compose ps
+            docker compose -f docker-compose.prod.yml ps
             echo ""
-            echo "📋 Recent logs:"
-            docker compose logs --tail=50
+            echo "📋 Recent logs from php-fpm:"
+            docker compose -f docker-compose.prod.yml logs --tail=50 php-fpm
+            echo ""
+            echo "📋 Recent logs from nginx:"
+            docker compose -f docker-compose.prod.yml logs --tail=30 nginx
           ENDSSH
           
-          exit 0
+          exit 1
       
       - name: Show deployment info
         if: always()
         run: |
           echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "📊 DEPLOYMENT INFORMATION"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
           echo "🌐 VPS Host: ${{ env.VPS_HOST }}"
           echo "📁 Deploy Path: ${{ env.DEPLOY_PATH }}"
           echo "🔗 Application URL: http://${{ env.VPS_HOST }}"
+          echo "🔗 API URL: http://${{ env.VPS_HOST }}/api"
           echo ""
           echo "🔧 To check logs on VPS:"
           echo "   ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
           echo "   cd ${{ env.DEPLOY_PATH }}"
-          echo "   docker compose logs -f"
+          echo "   docker compose -f docker-compose.prod.yml logs -f"
           echo ""
-          echo "🔍 To check container status:"
-          echo "   docker compose ps"
+          echo "📋 To check container status:"
+          echo "   docker compose -f docker-compose.prod.yml ps"
           echo ""
       
       - name: Rollback on failure
@@ -276,9 +289,8 @@ jobs:
               tar -xzf /home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz
               
               echo "🚀 Restarting services..."
-              docker compose -f docker-compose.yml up -d --remove-orphans || {
-                docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
-              }
+              docker compose -f docker-compose.prod.yml down
+              docker compose -f docker-compose.prod.yml up -d
               
               echo "✅ Rollback completed"
             else
@@ -291,9 +303,9 @@ jobs:
         if: success()
         run: |
           echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🎉 DEPLOYMENT SUCCESSFUL!"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
           echo "🌐 Your application is now live at:"
           echo "   http://${{ env.VPS_HOST }}"
@@ -303,9 +315,9 @@ jobs:
         if: failure()
         run: |
           echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "❌ DEPLOYMENT FAILED"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
           echo "🔍 Check the logs above for details"
           echo "🔧 Connect to server:"

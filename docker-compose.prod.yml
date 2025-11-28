@@ -74,9 +74,12 @@ services:
       MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
       CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+    # IMPORTANT: Ne pas monter le code source en production !
+    # Le code est intégré dans l'image Docker
+    # On monte uniquement les répertoires qui doivent persister
     volumes:
-      - ./backend:/var/www/html:cached
       - backend-var:/var/www/html/var
+      - backend-uploads:/var/www/html/public/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -85,6 +88,12 @@ services:
     networks:
       - onlyroll-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # ===========================================
   # FRONTEND - PRODUCTION (Vue.js + Nginx)
@@ -115,7 +124,8 @@ services:
     container_name: onlyroll-nginx-prod
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./backend/public:/var/www/html/public:ro
+      # Monter le répertoire public depuis le conteneur PHP (read-only)
+      - backend-public:/var/www/html/public:ro
     ports:
       - "80:80"
       - "443:443"
@@ -164,6 +174,10 @@ volumes:
   redis-data:
     driver: local
   backend-var:
+    driver: local
+  backend-uploads:
+    driver: local
+  backend-public:
     driver: local
   mercure-data:
     driver: local
