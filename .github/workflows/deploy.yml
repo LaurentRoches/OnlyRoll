@@ -181,7 +181,16 @@ jobs:
             COMPOSE_FILE="docker-compose.prod.yml"
             
             echo "🛑 Stopping existing containers..."
-            docker compose -f $COMPOSE_FILE down --remove-orphans || echo "No containers to stop"
+            docker compose -f $COMPOSE_FILE down --remove-orphans 2>/dev/null || echo "No compose containers to stop"
+            
+            # Forcer l'arrêt des conteneurs par nom (au cas où)
+            echo "🧹 Removing any existing OnlyRoll containers..."
+            docker rm -f onlyroll-php-prod onlyroll-nginx-prod onlyroll-frontend-prod \
+                        onlyroll-mysql-prod onlyroll-redis-prod onlyroll-mercure-prod 2>/dev/null || echo "No individual containers to remove"
+            
+            # Supprimer le réseau s'il existe
+            echo "🧹 Removing old network..."
+            docker network rm onlyroll-network-prod 2>/dev/null || echo "No network to remove"
             
             echo "🧹 Cleaning up old images..."
             docker system prune -f

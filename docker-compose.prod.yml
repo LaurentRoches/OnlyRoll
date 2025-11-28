@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # ===========================================
   # MYSQL - PRODUCTION
@@ -186,5 +184,4 @@ volumes:
 
 networks:
   onlyroll-network:
-    driver: bridge
     name: onlyroll-network-prod
