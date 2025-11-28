@@ -83,12 +83,22 @@ jobs:
           scp -i ~/.ssh/deploy_key deployment.tar.gz ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:/home/onlyroll/production/
           echo "✅ Upload completed"
       
-      - name: Create .env file on VPS
+      - name: Extract and create .env file on VPS
         run: |
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
-            cd /home/onlyroll/production
+            set -e
             
-            echo "📝 Creating .env file..."
+            DEPLOY_PATH="/home/onlyroll/production"
+            
+            cd "$DEPLOY_PATH"
+            
+            echo "📦 Extracting deployment package..."
+            tar -xzf deployment.tar.gz
+            rm deployment.tar.gz
+            
+            echo "📝 Creating .env files..."
+            
+            # Créer le .env principal
             cat > .env << 'ENVEOF'
           APP_ENV=prod
           APP_DEBUG=0
@@ -119,7 +129,23 @@ jobs:
           VITE_WS_URL=ws://72.61.195.28:3000
           ENVEOF
             
-            echo "✅ .env file created"
+            # Créer le .env pour le backend (copié dans l'image Docker)
+            cat > backend/.env << 'BACKENDENVEOF'
+          APP_ENV=prod
+          APP_DEBUG=0
+          APP_SECRET=${{ secrets.APP_SECRET }}
+          DATABASE_URL=mysql://${{ secrets.MYSQL_USER }}:${{ secrets.MYSQL_PASSWORD }}@mysql:3306/${{ secrets.MYSQL_DATABASE }}?serverVersion=8.0
+          REDIS_URL=redis://redis:6379
+          JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+          JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+          JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}
+          MERCURE_URL=http://mercure:3000/.well-known/mercure
+          MERCURE_PUBLIC_URL=http://72.61.195.28:3000/.well-known/mercure
+          MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
+          CORS_ALLOW_ORIGIN=http://72.61.195.28
+          BACKENDENVEOF
+            
+            echo "✅ .env files created"
           ENDSSH
       
       - name: Deploy on VPS
