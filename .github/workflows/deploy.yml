@@ -271,10 +271,10 @@ jobs:
           RETRY_COUNT=0
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            # Test de l'API
-            if curl -f -s -m 10 http://${{ env.VPS_HOST }}/api > /dev/null 2>&1; then
-              echo "API endpoint is responding!"
-              
+            # Test de l'API health endpoint (public)
+            if curl -f -s -m 10 http://${{ env.VPS_HOST }}/api/health > /dev/null 2>&1; then
+              echo "API health endpoint is responding!"
+
               # Test du frontend
               if curl -f -s -m 10 http://${{ env.VPS_HOST }}/ > /dev/null 2>&1; then
                 echo "Frontend is responding!"
