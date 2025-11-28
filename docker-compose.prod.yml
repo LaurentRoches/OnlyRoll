@@ -80,6 +80,8 @@ services:
     volumes:
       - backend-var:/var/www/html/var
       - backend-uploads:/var/www/html/public/uploads
+      # Monter le fichier .env depuis l'hôte
+      - ./backend/.env:/var/www/html/.env:ro
     depends_on:
       mysql:
         condition: service_healthy
