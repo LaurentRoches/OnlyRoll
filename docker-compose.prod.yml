@@ -63,6 +63,7 @@ services:
       APP_ENV: prod
       APP_DEBUG: 0
       APP_SECRET: ${APP_SECRET}
+      DEFAULT_URI: ${DEFAULT_URI}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: redis://redis:6379
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
@@ -131,7 +132,7 @@ services:
       - onlyroll-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
