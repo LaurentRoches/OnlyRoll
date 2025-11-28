@@ -103,6 +103,7 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
+          DEFAULT_URI=http://72.61.195.28
 
           # Database
           MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -110,20 +111,23 @@ jobs:
           MYSQL_USER=${{ secrets.DB_USER }}
           MYSQL_PASSWORD=${{ secrets.DB_PASSWORD }}
           DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@mysql:3306/${{ secrets.DB_NAME }}?serverVersion=8.0
-          
+
+          # Redis
+          REDIS_URL=redis://redis:6379
+
           # JWT
           JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
           JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
           JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}
-          
+
           # Mercure
           MERCURE_URL=http://mercure:3000/.well-known/mercure
           MERCURE_PUBLIC_URL=http://72.61.195.28:3000/.well-known/mercure
           MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
-          
+
           # CORS
           CORS_ALLOW_ORIGIN=http://72.61.195.28
-          
+
           # Frontend
           VITE_API_URL=http://72.61.195.28/api
           VITE_WS_URL=ws://72.61.195.28:3000
@@ -134,6 +138,7 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
+          DEFAULT_URI=http://72.61.195.28
           DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@mysql:3306/${{ secrets.DB_NAME }}?serverVersion=8.0
           REDIS_URL=redis://redis:6379
           JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
