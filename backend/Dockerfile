@@ -49,11 +49,11 @@ ARG APP_ENV=prod
 
 COPY composer.json composer.lock symfony.lock ./
 
-# Installation avec scripts pour générer les bundles
+# Installation SANS scripts (bin/console n'existe pas encore)
 RUN if [ "$APP_ENV" = "prod" ]; then \
-        composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader; \
+        composer install --no-dev --prefer-dist --no-interaction --no-scripts --no-autoloader; \
     else \
-        composer install --prefer-dist --no-interaction; \
+        composer install --prefer-dist --no-interaction --no-scripts --no-autoloader; \
     fi
 
 # ===========================================
@@ -66,8 +66,9 @@ ARG APP_ENV=prod
 # Copier tout le code source
 COPY . .
 
-# Générer l'autoloader optimisé
-RUN composer dump-autoload --optimize --classmap-authoritative
+# Maintenant qu'on a bin/console, on peut exécuter les scripts Composer
+RUN composer dump-autoload --optimize --classmap-authoritative && \
+    composer run-script --no-interaction post-install-cmd || true
 
 # Créer les répertoires nécessaires avec les bonnes permissions
 RUN mkdir -p var/cache var/log var/sessions \
