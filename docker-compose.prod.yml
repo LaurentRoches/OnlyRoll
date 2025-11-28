@@ -5,15 +5,12 @@ services:
   # MYSQL - PRODUCTION
   # ===========================================
   mysql:
-    image: mysql:9.0
-    container_name: onlyroll-mysql-prod
+    image: mysql:8.0
+    container_name: onlyroll-mysql
     command:
       - --default-authentication-plugin=mysql_native_password
       - --max_connections=200
       - --innodb_buffer_pool_size=512M
-      - --innodb_log_file_size=96M
-      - --innodb_flush_log_at_trx_commit=2
-      - --innodb_flush_method=O_DIRECT
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -29,22 +26,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 40s
+      start_period: 60s
 
   # ===========================================
   # REDIS - PRODUCTION
   # ===========================================
   redis:
     image: redis:7.2-alpine
-    container_name: onlyroll-redis-prod
+    container_name: onlyroll-redis
     command: >
       redis-server
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
-      --save 900 1
-      --save 300 10
-      --save 60 10000
-      --appendonly yes
     volumes:
       - redis-data:/data
     networks:
@@ -67,19 +60,22 @@ services:
       args:
         APP_ENV: prod
         APP_DEBUG: 0
-    container_name: onlyroll-php-prod
+    container_name: onlyroll-php
     environment:
       APP_ENV: prod
       APP_DEBUG: 0
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: redis://redis:6379
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       JWT_PASSPHRASE: ${JWT_PASSPHRASE}
       MERCURE_URL: http://mercure:3000/.well-known/mercure
       MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL}
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET}
       CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
     volumes:
+      - ./backend:/var/www/html:cached
       - backend-var:/var/www/html/var
     depends_on:
       mysql:
@@ -89,62 +85,31 @@ services:
     networks:
       - onlyroll-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # ===========================================
-  # FRONTEND - PRODUCTION
-  # ===========================================
-  frontend:
-    build:
-      context: ./frontend
-      target: nginx_prod
-      args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_WS_URL: ${VITE_WS_URL}
-    container_name: onlyroll-frontend-prod
-    networks:
-      - onlyroll-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ===========================================
   # NGINX - PRODUCTION (Reverse Proxy)
   # ===========================================
   nginx:
     image: nginx:1.25-alpine
-    container_name: onlyroll-nginx-prod
+    container_name: onlyroll-nginx
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/public:/var/www/html/public:ro
     ports:
       - "80:80"
       - "443:443"
     depends_on:
       - php-fpm
-      - frontend
     networks:
       - onlyroll-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ===========================================
   # MERCURE - PRODUCTION (WebSocket Hub)
   # ===========================================
   mercure:
     image: dunglas/mercure:v0.15
-    container_name: onlyroll-mercure-prod
+    container_name: onlyroll-mercure
     environment:
       SERVER_NAME: ':3000'
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
@@ -152,6 +117,8 @@ services:
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins ${CORS_ALLOW_ORIGIN}
         log_level info
+    ports:
+      - "3000:3000"
     volumes:
       - mercure-data:/data
     networks:
@@ -162,7 +129,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
 
 volumes:
   mysql-data:
