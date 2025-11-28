@@ -204,6 +204,10 @@ jobs:
             echo "⏳ Waiting for services to be ready (30s)..."
             sleep 30
             
+            # Afficher les logs MySQL pour debug
+            echo "📋 MySQL logs (for debugging):"
+            docker compose -f $COMPOSE_FILE logs mysql --tail=50
+            
             # Vérifier que MySQL est prêt
             echo "🔍 Checking MySQL status..."
             for i in {1..10}; do
