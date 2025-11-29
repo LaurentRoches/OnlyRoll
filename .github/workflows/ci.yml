@@ -359,8 +359,8 @@ jobs:
       - name: Test backend image
         run: |
           docker images
-          docker run --rm onlyroll-backend:latest php -v
-          docker run --rm onlyroll-backend:latest php bin/console --version || echo "Console not available in prod mode"
+          docker run --rm --entrypoint php onlyroll-backend:latest -v
+          docker run --rm --entrypoint php onlyroll-backend:latest bin/console --version || echo "Console not available in prod mode"
 
       - name: Test frontend image
         run: |
