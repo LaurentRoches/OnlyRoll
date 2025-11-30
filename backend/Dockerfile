@@ -118,9 +118,10 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.
     && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-# S'assurer que les permissions sont correctes
-RUN chown -R www-data:www-data var \
-    && chmod -R 775 var
+# Créer le répertoire JWT et s'assurer que les permissions sont correctes
+RUN mkdir -p config/jwt \
+    && chown -R www-data:www-data var config/jwt \
+    && chmod -R 775 var config/jwt
 
 # Passer en www-data pour la sécurité
 USER www-data
