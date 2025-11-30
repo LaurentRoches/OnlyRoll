@@ -103,7 +103,7 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
-          DEFAULT_URI=http://72.61.195.28
+          DEFAULT_URI=https://onlyroll.cloud
 
           # Database
           MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}
@@ -122,16 +122,16 @@ jobs:
 
           # Mercure
           MERCURE_URL=http://mercure:3000/.well-known/mercure
-          MERCURE_PUBLIC_URL=http://72.61.195.28:3000/.well-known/mercure
+          MERCURE_PUBLIC_URL=https://onlyroll.cloud:3000/.well-known/mercure
           MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
 
           # CORS
-          CORS_ALLOW_ORIGIN=http://72.61.195.28
+          CORS_ALLOW_ORIGIN=https://onlyroll.cloud
 
           # Frontend
-          VITE_API_URL=http://72.61.195.28/api
-          VITE_WS_URL=ws://72.61.195.28:3000
-          VITE_MERCURE_URL=http://72.61.195.28:3000/.well-known/mercure
+          VITE_API_URL=https://onlyroll.cloud/api
+          VITE_WS_URL=wss://onlyroll.cloud:3000
+          VITE_MERCURE_URL=https://onlyroll.cloud:3000/.well-known/mercure
           ENVEOF
             
             # Créer le .env pour le backend (copié dans l'image Docker)
@@ -139,16 +139,16 @@ jobs:
           APP_ENV=prod
           APP_DEBUG=0
           APP_SECRET=${{ secrets.APP_SECRET }}
-          DEFAULT_URI=http://72.61.195.28
+          DEFAULT_URI=https://onlyroll.cloud
           DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@mysql:3306/${{ secrets.DB_NAME }}?serverVersion=8.0
           REDIS_URL=redis://redis:6379
           JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
           JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
           JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}
           MERCURE_URL=http://mercure:3000/.well-known/mercure
-          MERCURE_PUBLIC_URL=http://72.61.195.28:3000/.well-known/mercure
+          MERCURE_PUBLIC_URL=https://onlyroll.cloud:3000/.well-known/mercure
           MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
-          CORS_ALLOW_ORIGIN=http://72.61.195.28
+          CORS_ALLOW_ORIGIN=https://onlyroll.cloud
           BACKENDENVEOF
             
             echo ".env files created"
@@ -211,7 +211,27 @@ jobs:
             
             echo "Building Docker images with --no-cache (this may take a while)..."
             docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
-            
+
+            # Initialize SSL certificates if they don't exist
+            echo "🔐 Checking SSL certificates..."
+            if [ ! -d "/var/lib/docker/volumes/production_certbot-certs/_data/live/onlyroll.cloud" ]; then
+              echo "📝 SSL certificates not found. Creating dummy certificates for initial nginx start..."
+
+              # Create directories
+              docker compose -f $COMPOSE_FILE run --rm --entrypoint sh certbot -c "
+                mkdir -p /etc/letsencrypt/live/onlyroll.cloud && \
+                openssl req -x509 -nodes -newkey rsa:4096 \
+                  -days 1 \
+                  -keyout /etc/letsencrypt/live/onlyroll.cloud/privkey.pem \
+                  -out /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem \
+                  -subj '/CN=onlyroll.cloud'
+              "
+
+              echo "✅ Dummy certificates created"
+            else
+              echo "✅ SSL certificates already exist"
+            fi
+
             echo "Starting all services..."
             docker compose -f $COMPOSE_FILE up -d
             
@@ -245,6 +265,39 @@ jobs:
               docker compose -f $COMPOSE_FILE logs redis
             fi
             
+            # Obtain real SSL certificate if needed
+            echo "🔐 Obtaining real SSL certificate with Let's Encrypt..."
+            if [ -f "/var/lib/docker/volumes/production_certbot-certs/_data/live/onlyroll.cloud/privkey.pem" ]; then
+              # Check if it's a dummy certificate (valid for only 1 day)
+              CERT_DAYS=$(docker compose -f $COMPOSE_FILE run --rm --entrypoint sh certbot -c "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -enddate" | grep -o '[0-9]* day' || echo "365 day")
+
+              if [[ "$CERT_DAYS" == *"0 day"* ]] || [[ "$CERT_DAYS" == *"1 day"* ]]; then
+                echo "📝 Dummy certificate detected. Obtaining real certificate..."
+
+                docker compose -f $COMPOSE_FILE run --rm certbot certonly \
+                  --webroot \
+                  --webroot-path=/var/www/certbot \
+                  --email support@onlyroll.cloud \
+                  --agree-tos \
+                  --no-eff-email \
+                  --force-renewal \
+                  -d onlyroll.cloud \
+                  -d www.onlyroll.cloud
+
+                if [ $? -eq 0 ]; then
+                  echo "✅ Real SSL certificate obtained!"
+                  echo "🔄 Reloading Nginx..."
+                  docker compose -f $COMPOSE_FILE restart nginx
+                  sleep 5
+                else
+                  echo "⚠️  Failed to obtain real certificate. Using dummy certificate for now."
+                  echo "   Please check DNS configuration and try again later."
+                fi
+              else
+                echo "✅ Real SSL certificate already in place"
+              fi
+            fi
+
             echo "Running database migrations..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm php bin/console doctrine:migrations:migrate --no-interaction || {
               echo "Migrations failed or already applied"
@@ -272,12 +325,12 @@ jobs:
           RETRY_COUNT=0
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            # Test de l'API health endpoint (public)
-            if curl -f -s -m 10 http://${{ env.VPS_HOST }}/api/health > /dev/null 2>&1; then
+            # Test de l'API health endpoint (public) - using insecure flag for self-signed cert
+            if curl -k -f -s -m 10 https://onlyroll.cloud/health > /dev/null 2>&1; then
               echo "API health endpoint is responding!"
 
               # Test du frontend
-              if curl -f -s -m 10 http://${{ env.VPS_HOST }}/ > /dev/null 2>&1; then
+              if curl -k -f -s -m 10 https://onlyroll.cloud/ > /dev/null 2>&1; then
                 echo "Frontend is responding!"
                 echo "All health checks passed!"
                 exit 0
@@ -315,8 +368,9 @@ jobs:
           echo ""
           echo "VPS Host: ${{ env.VPS_HOST }}"
           echo "Deploy Path: ${{ env.DEPLOY_PATH }}"
-          echo "Application URL: http://${{ env.VPS_HOST }}"
-          echo "API URL: http://${{ env.VPS_HOST }}/api"
+          echo "Application URL: https://onlyroll.cloud"
+          echo "API URL: https://onlyroll.cloud/api"
+          echo "Alternative: https://www.onlyroll.cloud"
           echo ""
           echo "To check logs on VPS:"
           echo "   ssh ${{ env.VPS_USER }}@${{ env.VPS_HOST }}"
@@ -365,7 +419,8 @@ jobs:
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
           echo "Your application is now live at:"
-          echo "   http://${{ env.VPS_HOST }}"
+          echo "   https://onlyroll.cloud"
+          echo "   https://www.onlyroll.cloud"
           echo ""
       
       - name: Notify on failure
