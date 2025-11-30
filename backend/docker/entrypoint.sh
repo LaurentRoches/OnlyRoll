@@ -78,7 +78,28 @@ echo "Creating necessary directories..."
 mkdir -p var/cache var/log var/sessions public/uploads
 
 # ===========================================
-# 6. Clear and warmup Symfony cache
+# 6. Generate JWT keys if they don't exist
+# ===========================================
+if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
+    echo "🔐 Generating JWT keys..."
+    mkdir -p config/jwt
+
+    # Generate private key
+    openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:4096 -pass pass:"${JWT_PASSPHRASE}"
+
+    # Generate public key from private key
+    openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem -passin pass:"${JWT_PASSPHRASE}"
+
+    # Set proper permissions
+    chmod 644 config/jwt/private.pem config/jwt/public.pem
+
+    echo "✅ JWT keys generated successfully"
+else
+    echo "✅ JWT keys already exist"
+fi
+
+# ===========================================
+# 7. Clear and warmup Symfony cache
 # ===========================================
 if [ "$APP_ENV" = "prod" ]; then
     echo "Warming up production cache..."
@@ -100,7 +121,7 @@ else
 fi
 
 # ===========================================
-# 7. Run database migrations
+# 8. Run database migrations
 # ===========================================
 echo "🗄️  Running database migrations..."
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || {
@@ -108,7 +129,7 @@ php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migratio
 }
 
 # ===========================================
-# 8. Display startup information
+# 9. Display startup information
 # ===========================================
 echo "========================================"
 echo "Environment: $APP_ENV"

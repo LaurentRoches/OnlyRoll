@@ -131,6 +131,7 @@ jobs:
           # Frontend
           VITE_API_URL=http://72.61.195.28/api
           VITE_WS_URL=ws://72.61.195.28:3000
+          VITE_MERCURE_URL=http://72.61.195.28:3000/.well-known/mercure
           ENVEOF
             
             # Créer le .env pour le backend (copié dans l'image Docker)
