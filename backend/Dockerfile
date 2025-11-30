@@ -17,6 +17,7 @@ RUN apk add --no-cache \
     bash \
     git \
     unzip \
+    openssl \
     icu-dev \
     libzip-dev \
     mysql-client \
