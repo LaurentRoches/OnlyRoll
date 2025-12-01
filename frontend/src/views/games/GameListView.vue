@@ -72,12 +72,12 @@ async function connectToPresence() {
   console.log('Connexion aux événements de présence pour les parties:', gameIds)
 
   try {
-    // Récupérer le token JWT Mercure pour la présence
-    const { token } = await gameApi.getMercurePresenceToken(gameIds)
+    // Récupérer le token JWT Mercure pour la présence (défini en cookie)
+    await gameApi.getMercurePresenceToken(gameIds)
     console.log('Token Mercure de présence obtenu')
 
-    // Se connecter aux événements de présence avec le token
-    mercureService.connectToPresence(gameIds, token)
+    // Se connecter aux événements de présence (le cookie mercureAuthorization est envoyé automatiquement)
+    mercureService.connectToPresence(gameIds)
 
     // Mémoriser les IDs connectés
     connectedGameIds.value = [...gameIds]

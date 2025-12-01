@@ -37,9 +37,8 @@ export class MercureService {
   /**
    * Se connecter aux événements de présence de plusieurs parties
    * @param gameIds - IDs des parties à écouter
-   * @param token - Token JWT optionnel pour les événements privés
    */
-  connectToPresence(gameIds: number[], token?: string): void {
+  connectToPresence(gameIds: number[]): void {
     // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
@@ -52,16 +51,13 @@ export class MercureService {
       url.searchParams.append('topic', `game/${gameId}/presence`)
     })
 
-    // Ajout du token JWT si fourni (pour événements privés)
-    // Note: Pour EventSource, Mercure attend le token sans le préfixe "Bearer"
-    if (token) {
-      url.searchParams.append('authorization', token)
-    }
+    // Note: Le token JWT est automatiquement envoyé via le cookie mercureAuthorization
+    // défini par le backend lors de l'appel à getMercurePresenceToken()
 
     console.log('Connexion à Mercure (présence uniquement)...', url.toString())
 
-    // Création de la connexion EventSource
-    this.eventSource = new EventSource(url.toString())
+    // Création de la connexion EventSource avec credentials pour envoyer les cookies
+    this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
   }
@@ -69,9 +65,8 @@ export class MercureService {
   /**
    * Se connecter aux événements d'une partie
    * @param gameId - ID de la partie
-   * @param token - Token JWT optionnel pour les événements privés
    */
-  connect(gameId: number, token?: string): void {
+  connect(gameId: number): void {
     // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
@@ -85,16 +80,13 @@ export class MercureService {
       url.searchParams.append('topic', `game/${gameId}/${topic}`)
     })
 
-    // Ajout du token JWT si fourni (pour événements privés)
-    // Note: Pour EventSource, Mercure attend le token sans le préfixe "Bearer"
-    if (token) {
-      url.searchParams.append('authorization', token)
-    }
+    // Note: Le token JWT est automatiquement envoyé via le cookie mercureAuthorization
+    // défini par le backend lors de l'appel à getMercureToken()
 
     console.log('Connexion à Mercure...', url.toString())
 
-    // Création de la connexion EventSource
-    this.eventSource = new EventSource(url.toString())
+    // Création de la connexion EventSource avec credentials pour envoyer les cookies
+    this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
   }

@@ -35,19 +35,10 @@ describe('useMercure', () => {
 
   it('should connect to mercure with gameId', () => {
     const { connect } = useMercure()
-    
+
     connect(42)
 
-    expect(mercureService.connect).toHaveBeenCalledWith(42, undefined)
-  })
-
-  it('should connect to mercure with gameId and token', () => {
-    const { connect } = useMercure()
-    const token = 'jwt-token-123'
-    
-    connect(42, token)
-
-    expect(mercureService.connect).toHaveBeenCalledWith(42, token)
+    expect(mercureService.connect).toHaveBeenCalledWith(42)
   })
 
   it('should update connection state after connect', () => {
