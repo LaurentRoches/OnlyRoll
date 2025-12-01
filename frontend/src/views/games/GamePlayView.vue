@@ -165,12 +165,12 @@ async function setupMercure() {
   console.log('Configuration de Mercure pour la partie', gameId.value)
 
   try {
-    // Récupérer le token JWT Mercure depuis l'API
-    const { token } = await gameApi.getMercureToken(gameId.value)
+    // Récupérer le token JWT Mercure depuis l'API (défini en cookie)
+    await gameApi.getMercureToken(gameId.value)
     console.log('Token Mercure obtenu')
 
-    // Se connecter à Mercure avec le token
-    mercureService.connect(gameId.value, token)
+    // Se connecter à Mercure (le cookie mercureAuthorization est envoyé automatiquement)
+    mercureService.connect(gameId.value)
 
     // Vérifier l'état de connexion
     const checkConnection = setInterval(() => {
