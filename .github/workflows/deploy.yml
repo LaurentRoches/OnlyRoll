@@ -212,22 +212,31 @@ jobs:
             echo "Building Docker images with --no-cache (this may take a while)..."
             docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
 
-            # Initialize SSL certificates if they don't exist
-            echo "🔐 Checking SSL certificates..."
-            if [ ! -d "/var/lib/docker/volumes/production_certbot-certs/_data/live/onlyroll.cloud" ]; then
+            # Initialize SSL certificates - Always ensure they exist
+            echo "🔐 Initializing SSL certificates..."
+
+            # Create certbot volumes first
+            docker volume create production_certbot-certs 2>/dev/null || true
+            docker volume create production_certbot-webroot 2>/dev/null || true
+
+            # Check if certificates exist using docker run
+            CERT_EXISTS=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
+              "test -f /etc/letsencrypt/live/onlyroll.cloud/privkey.pem && echo 'yes' || echo 'no'")
+
+            if [ "$CERT_EXISTS" = "no" ]; then
               echo "📝 SSL certificates not found. Creating dummy certificates for initial nginx start..."
 
-              # Create directories
-              docker compose -f $COMPOSE_FILE run --rm --entrypoint sh certbot -c "
+              docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c "
                 mkdir -p /etc/letsencrypt/live/onlyroll.cloud && \
-                openssl req -x509 -nodes -newkey rsa:4096 \
-                  -days 1 \
-                  -keyout /etc/letsencrypt/live/onlyroll.cloud/privkey.pem \
-                  -out /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem \
-                  -subj '/CN=onlyroll.cloud'
-              "
-
-              echo "✅ Dummy certificates created"
+                cd /etc/letsencrypt/live/onlyroll.cloud && \
+                openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+                  -keyout privkey.pem \
+                  -out fullchain.pem \
+                  -subj '/CN=onlyroll.cloud' 2>/dev/null
+              " && echo "✅ Dummy certificates created" || {
+                echo "❌ Failed to create dummy certificates"
+                exit 1
+              }
             else
               echo "✅ SSL certificates already exist"
             fi
@@ -266,36 +275,38 @@ jobs:
             fi
             
             # Obtain real SSL certificate if needed
-            echo "🔐 Obtaining real SSL certificate with Let's Encrypt..."
-            if [ -f "/var/lib/docker/volumes/production_certbot-certs/_data/live/onlyroll.cloud/privkey.pem" ]; then
-              # Check if it's a dummy certificate (valid for only 1 day)
-              CERT_DAYS=$(docker compose -f $COMPOSE_FILE run --rm --entrypoint sh certbot -c "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -enddate" | grep -o '[0-9]* day' || echo "365 day")
+            echo "🔐 Checking if real SSL certificate is needed..."
 
-              if [[ "$CERT_DAYS" == *"0 day"* ]] || [[ "$CERT_DAYS" == *"1 day"* ]]; then
-                echo "📝 Dummy certificate detected. Obtaining real certificate..."
+            # Check certificate validity using docker run
+            CERT_IS_DUMMY=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
+              "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -enddate 2>/dev/null | grep -q 'Jan.*2025' && echo 'yes' || echo 'no'")
 
-                docker compose -f $COMPOSE_FILE run --rm certbot certonly \
-                  --webroot \
-                  --webroot-path=/var/www/certbot \
-                  --email support@onlyroll.cloud \
-                  --agree-tos \
-                  --no-eff-email \
-                  --force-renewal \
-                  -d onlyroll.cloud \
-                  -d www.onlyroll.cloud
+            if [ "$CERT_IS_DUMMY" = "yes" ]; then
+              echo "📝 Dummy certificate detected. Obtaining real certificate from Let's Encrypt..."
 
-                if [ $? -eq 0 ]; then
+              # Wait a bit for nginx to be fully ready
+              sleep 5
+
+              docker compose -f $COMPOSE_FILE run --rm certbot certonly \
+                --webroot \
+                --webroot-path=/var/www/certbot \
+                --email support@onlyroll.cloud \
+                --agree-tos \
+                --no-eff-email \
+                --force-renewal \
+                -d onlyroll.cloud \
+                -d www.onlyroll.cloud && {
                   echo "✅ Real SSL certificate obtained!"
                   echo "🔄 Reloading Nginx..."
-                  docker compose -f $COMPOSE_FILE restart nginx
+                  docker compose -f $COMPOSE_FILE exec -T nginx nginx -s reload || docker compose -f $COMPOSE_FILE restart nginx
                   sleep 5
-                else
+                } || {
                   echo "⚠️  Failed to obtain real certificate. Using dummy certificate for now."
-                  echo "   Please check DNS configuration and try again later."
-                fi
-              else
-                echo "✅ Real SSL certificate already in place"
-              fi
+                  echo "   The site will work but with a self-signed certificate warning."
+                  echo "   Please verify DNS is propagated and try running the deployment again later."
+                }
+            else
+              echo "✅ Real SSL certificate already in place"
             fi
 
             echo "Running database migrations..."
