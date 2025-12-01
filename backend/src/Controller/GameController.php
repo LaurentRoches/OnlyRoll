@@ -334,10 +334,28 @@ final class GameController extends AbstractController
         // Générer le token Mercure
         $token = $this->mercureTokenService->generateTokenForGame($user, $id);
 
-        return $this->json([
+        // Créer la réponse avec le cookie mercureAuthorization
+        $response = $this->json([
             'token' => $token,
             'expiresIn' => 3600, // 1 heure en secondes
         ], Response::HTTP_OK);
+
+        // Définir le cookie mercureAuthorization pour EventSource
+        $response->headers->setCookie(
+            new \Symfony\Component\HttpFoundation\Cookie(
+                'mercureAuthorization',
+                $token,
+                time() + 3600, // Expire dans 1 heure
+                '/.well-known/mercure', // Path spécifique à Mercure
+                null, // Domain (null = domaine actuel)
+                true, // Secure (HTTPS uniquement)
+                false, // HttpOnly = false pour que JS puisse y accéder si besoin
+                false, // Raw
+                'none' // SameSite=None pour permettre les requêtes cross-origin
+            )
+        );
+
+        return $response;
     }
 
     /**
@@ -359,9 +377,27 @@ final class GameController extends AbstractController
         // Générer le token Mercure pour la présence
         $token = $this->mercureTokenService->generateTokenForPresence($user, $gameIds);
 
-        return $this->json([
+        // Créer la réponse avec le cookie mercureAuthorization
+        $response = $this->json([
             'token' => $token,
             'expiresIn' => 3600, // 1 heure en secondes
         ], Response::HTTP_OK);
+
+        // Définir le cookie mercureAuthorization pour EventSource
+        $response->headers->setCookie(
+            new \Symfony\Component\HttpFoundation\Cookie(
+                'mercureAuthorization',
+                $token,
+                time() + 3600, // Expire dans 1 heure
+                '/.well-known/mercure', // Path spécifique à Mercure
+                null, // Domain (null = domaine actuel)
+                true, // Secure (HTTPS uniquement)
+                false, // HttpOnly = false pour que JS puisse y accéder si besoin
+                false, // Raw
+                'none' // SameSite=None pour permettre les requêtes cross-origin
+            )
+        );
+
+        return $response;
     }
 }
