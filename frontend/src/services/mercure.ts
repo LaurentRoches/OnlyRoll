@@ -37,8 +37,9 @@ export class MercureService {
   /**
    * Se connecter aux événements de présence de plusieurs parties
    * @param gameIds - IDs des parties à écouter
+   * @param token - Token JWT optionnel pour les événements privés
    */
-  connectToPresence(gameIds: number[]): void {
+  connectToPresence(gameIds: number[], token?: string): void {
     // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
@@ -50,6 +51,11 @@ export class MercureService {
     gameIds.forEach((gameId) => {
       url.searchParams.append('topic', `game/${gameId}/presence`)
     })
+
+    // Ajout du token JWT si fourni (pour événements privés)
+    if (token) {
+      url.searchParams.append('authorization', `Bearer ${token}`)
+    }
 
     console.log('Connexion à Mercure (présence uniquement)...', url.toString())
 

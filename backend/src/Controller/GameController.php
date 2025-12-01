@@ -339,4 +339,29 @@ final class GameController extends AbstractController
             'expiresIn' => 3600, // 1 heure en secondes
         ], Response::HTTP_OK);
     }
+
+    /**
+     * Obtenir un token JWT Mercure pour s'abonner aux événements de présence de plusieurs parties.
+     */
+    #[Route('/mercure-presence-token', name: 'mercure_presence_token', methods: ['POST'])]
+    public function getMercurePresenceToken(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $gameIds = $data['gameIds'] ?? [];
+
+        if (empty($gameIds) || !is_array($gameIds)) {
+            return $this->json(['error' => 'gameIds requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // Générer le token Mercure pour la présence
+        $token = $this->mercureTokenService->generateTokenForPresence($user, $gameIds);
+
+        return $this->json([
+            'token' => $token,
+            'expiresIn' => 3600, // 1 heure en secondes
+        ], Response::HTTP_OK);
+    }
 }
