@@ -17,7 +17,7 @@ COPY . .
 
 ARG VITE_API_URL=http://localhost/api
 ARG VITE_WS_URL=ws://localhost:3000
-ARG VITE_MERCURE_URL=http://localhost:3000/.well-known/mercure
+ARG VITE_MERCURE_URL=http://localhost/.well-known/mercure
 
 ENV VITE_API_URL=${VITE_API_URL} \
     VITE_WS_URL=${VITE_WS_URL} \
