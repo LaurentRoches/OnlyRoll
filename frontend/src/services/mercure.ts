@@ -37,9 +37,9 @@ export class MercureService {
   /**
    * Se connecter aux événements de présence de plusieurs parties
    * @param gameIds - IDs des parties à écouter
-   * @param token - Token JWT optionnel (ignoré, le cookie mercureAuthorization est utilisé)
+   * @param _token - Token JWT optionnel (ignoré, le cookie mercureAuthorization est utilisé)
    */
-  connectToPresence(gameIds: number[], token?: string): void {
+  connectToPresence(gameIds: number[], _token?: string): void {
     // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
@@ -66,9 +66,9 @@ export class MercureService {
   /**
    * Se connecter aux événements d'une partie
    * @param gameId - ID de la partie
-   * @param token - Token JWT optionnel (ignoré, le cookie mercureAuthorization est utilisé)
+   * @param _token - Token JWT optionnel (ignoré, le cookie mercureAuthorization est utilisé)
    */
-  connect(gameId: number, token?: string): void {
+  connect(gameId: number, _token?: string): void {
     // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
