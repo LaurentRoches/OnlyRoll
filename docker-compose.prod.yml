@@ -102,6 +102,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-http://72.61.195.28/api}
         VITE_WS_URL: ${VITE_WS_URL:-ws://72.61.195.28:3000}
+        VITE_MERCURE_URL: ${VITE_MERCURE_URL:-http://72.61.195.28:3000/.well-known/mercure}
     container_name: onlyroll-frontend-prod
     networks:
       - onlyroll-network
