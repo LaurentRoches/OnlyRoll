@@ -53,8 +53,9 @@ export class MercureService {
     })
 
     // Ajout du token JWT si fourni (pour événements privés)
+    // Note: Pour EventSource, Mercure attend le token sans le préfixe "Bearer"
     if (token) {
-      url.searchParams.append('authorization', `Bearer ${token}`)
+      url.searchParams.append('authorization', token)
     }
 
     console.log('Connexion à Mercure (présence uniquement)...', url.toString())
@@ -85,8 +86,9 @@ export class MercureService {
     })
 
     // Ajout du token JWT si fourni (pour événements privés)
+    // Note: Pour EventSource, Mercure attend le token sans le préfixe "Bearer"
     if (token) {
-      url.searchParams.append('authorization', `Bearer ${token}`)
+      url.searchParams.append('authorization', token)
     }
 
     console.log('Connexion à Mercure...', url.toString())
