@@ -11,6 +11,7 @@ use App\DTO\Game\UpdateGameDTO;
 use App\Enum\GameStatus;
 use App\Repository\GameRepository;
 use App\Service\GameService;
+use App\Service\MercureTokenService;
 use Exception;
 use InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -34,6 +35,7 @@ final class GameController extends AbstractController
         private readonly GameRepository $gameRepository,
         private readonly SerializerInterface $serializer,
         private readonly ValidatorInterface $validator,
+        private readonly MercureTokenService $mercureTokenService,
     ) {
     }
 
@@ -307,5 +309,34 @@ final class GameController extends AbstractController
         catch (Exception $e) {
             return $this->json(['error' => $e->getMessage()], $e->getCode());
         }
+    }
+
+    /**
+     * Obtenir un token JWT Mercure pour s'abonner aux événements de la partie.
+     */
+    #[Route('/{id}/mercure-token', name: 'mercure_token', methods: ['GET'])]
+    public function getMercureToken(int $id): JsonResponse
+    {
+        $game = $this->gameRepository->find($id);
+
+        if (!$game) {
+            return $this->json(['error' => 'Partie introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        // Vérifier que l'utilisateur a accès à cette partie
+        if (!$game->canBeViewedBy($user)) {
+            return $this->json(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Générer le token Mercure
+        $token = $this->mercureTokenService->generateTokenForGame($user, $id);
+
+        return $this->json([
+            'token' => $token,
+            'expiresIn' => 3600, // 1 heure en secondes
+        ], Response::HTTP_OK);
     }
 }
