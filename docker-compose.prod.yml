@@ -102,7 +102,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-http://72.61.195.28/api}
         VITE_WS_URL: ${VITE_WS_URL:-ws://72.61.195.28:3000}
-        VITE_MERCURE_URL: ${VITE_MERCURE_URL:-http://72.61.195.28:3000/.well-known/mercure}
+        VITE_MERCURE_URL: ${VITE_MERCURE_URL:-http://72.61.195.28/.well-known/mercure}
     container_name: onlyroll-frontend-prod
     networks:
       - onlyroll-network
@@ -165,10 +165,8 @@ services:
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins ${CORS_ALLOW_ORIGIN:-http://72.61.195.28}
+        cors_origins ${CORS_ALLOW_ORIGIN:-https://onlyroll.cloud}
         log_level info
-    ports:
-      - "3000:3000"
     volumes:
       - mercure-data:/data
     networks:

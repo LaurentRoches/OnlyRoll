@@ -354,7 +354,7 @@ jobs:
           build-args: |
             VITE_API_URL=https://onlyroll.cloud/api
             VITE_WS_URL=wss://onlyroll.cloud:3000
-            VITE_MERCURE_URL=https://onlyroll.cloud:3000/.well-known/mercure
+            VITE_MERCURE_URL=https://onlyroll.cloud/.well-known/mercure
 
       # Test des images buildées
       - name: Test backend image
