@@ -121,7 +121,7 @@ services:
     container_name: onlyroll-nginx-prod
     volumes:
       - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
-      - backend-public:/var/www/html/public:ro
+      - backend-uploads:/var/www/html/public/uploads:ro
       - certbot-webroot:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
     ports:
@@ -187,8 +187,6 @@ volumes:
   backend-var:
     driver: local
   backend-uploads:
-    driver: local
-  backend-public:
     driver: local
   mercure-data:
     driver: local
