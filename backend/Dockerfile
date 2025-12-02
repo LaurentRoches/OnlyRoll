@@ -123,5 +123,7 @@ RUN mkdir -p config/jwt \
     && chown -R www-data:www-data var config/jwt \
     && chmod -R 775 var config/jwt
 
-# Passer en www-data pour la sécurité
-USER www-data
+# Note: On ne définit pas USER www-data ici car:
+# 1. PHP-FPM gère déjà l'utilisateur via sa config (user = www-data)
+# 2. L'entrypoint a besoin de privilèges root pour fixer les permissions des volumes montés
+# 3. PHP-FPM lancera automatiquement les workers en tant que www-data
