@@ -86,7 +86,10 @@ async function connectToPresence() {
           console.log(`État initial chargé pour partie ${gameId}:`, response.onlineUsers)
         }
       } catch (error) {
-        console.error(`Erreur lors du chargement de l'état initial pour la partie ${gameId}:`, error)
+        console.error(
+          `Erreur lors du chargement de l'état initial pour la partie ${gameId}:`,
+          error
+        )
       }
     }
 
