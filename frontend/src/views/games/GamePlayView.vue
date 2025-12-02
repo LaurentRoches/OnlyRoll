@@ -231,7 +231,8 @@ async function setupMercure() {
 
   // Envoyer un heartbeat de présence toutes les 30 secondes
   const heartbeatInterval = setInterval(async () => {
-    if (mercureService.isConnected()) {
+    // Vérifier que gameId est valide avant d'envoyer
+    if (mercureService.isConnected() && gameId.value && !isNaN(gameId.value)) {
       try {
         await presenceApi.heartbeat(gameId.value)
         console.log('Heartbeat envoyé pour la partie', gameId.value)
