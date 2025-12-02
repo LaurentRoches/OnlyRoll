@@ -77,6 +77,11 @@ composer dump-autoload --no-interaction --optimize --classmap-authoritative
 echo "Creating necessary directories..."
 mkdir -p var/cache var/log var/sessions public/uploads
 
+# Fix permissions for uploads directory (volume mount)
+echo "Fixing permissions for uploads directory..."
+chown -R www-data:www-data public/uploads
+chmod -R 775 public/uploads
+
 # ===========================================
 # 6. Generate JWT keys if they don't exist
 # ===========================================
