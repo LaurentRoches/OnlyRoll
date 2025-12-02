@@ -33,6 +33,7 @@ final class GameService
         private readonly GameRepository $gameRepository,
         private readonly GamePlayerRepository $gamePlayerRepository,
         private readonly LoggerInterface $logger,
+        private readonly MercurePublisher $mercurePublisher,
     ) {
     }
 
@@ -155,6 +156,14 @@ final class GameService
             'game_id' => $game->getId(),
         ]);
 
+        // Publier un événement Mercure pour notifier les autres clients
+        $this->mercurePublisher->publishPlayerEvent($gameId, [
+            'action' => 'joined',
+            'userId' => $user->getId(),
+            'userName' => $user->getPseudo(),
+            'role' => $gamePlayer->getRole()->value,
+        ]);
+
         return $gamePlayer;
     }
 
@@ -182,6 +191,16 @@ final class GameService
             'user_id' => $user->getId(),
             'game_id' => $game->getId(),
         ]);
+
+        // Publier un événement Mercure pour notifier les autres clients
+        $gameId = $game->getId();
+        if (null !== $gameId) {
+            $this->mercurePublisher->publishPlayerEvent($gameId, [
+                'action' => 'left',
+                'userId' => $user->getId(),
+                'userName' => $user->getPseudo(),
+            ]);
+        }
     }
 
     /**

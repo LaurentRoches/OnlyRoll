@@ -17,6 +17,7 @@ use App\Exception\Game\InvalidPasswordException;
 use App\Repository\GamePlayerRepository;
 use App\Repository\GameRepository;
 use App\Service\GameService;
+use App\Service\MercurePublisher;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -33,6 +34,8 @@ class GameServiceTest extends TestCase
 
     private LoggerInterface&MockObject $logger;
 
+    private MercurePublisher&MockObject $mercurePublisher;
+
     private GameService $gameService;
 
     protected function setUp(): void
@@ -41,12 +44,14 @@ class GameServiceTest extends TestCase
         $this->gameRepository = $this->createMock(GameRepository::class);
         $this->gamePlayerRepository = $this->createMock(GamePlayerRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->mercurePublisher = $this->createMock(MercurePublisher::class);
 
         $this->gameService = new GameService(
             $this->entityManager,
             $this->gameRepository,
             $this->gamePlayerRepository,
             $this->logger,
+            $this->mercurePublisher,
         );
     }
 
@@ -235,6 +240,15 @@ class GameServiceTest extends TestCase
         $this->entityManager->expects($this->once())
             ->method('flush');
 
+        $this->mercurePublisher->expects($this->once())
+            ->method('publishPlayerEvent')
+            ->with(1, $this->callback(function ($data) {
+                return $data['action'] === 'joined'
+                    && isset($data['userId'])
+                    && isset($data['userName'])
+                    && isset($data['role']);
+            }));
+
         $gamePlayer = $this->gameService->joinGame(1, $user);
 
         $this->assertInstanceOf(GamePlayer::class, $gamePlayer);
@@ -391,6 +405,14 @@ class GameServiceTest extends TestCase
 
         $this->entityManager->expects($this->once())
             ->method('flush');
+
+        $this->mercurePublisher->expects($this->once())
+            ->method('publishPlayerEvent')
+            ->with(1, $this->callback(function ($data) {
+                return $data['action'] === 'left'
+                    && isset($data['userId'])
+                    && isset($data['userName']);
+            }));
 
         $this->gameService->leaveGame($game, $user);
     }
