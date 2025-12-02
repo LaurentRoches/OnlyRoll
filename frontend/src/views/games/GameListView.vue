@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { usePresenceStore } from '@/stores/presenceStore'
 import { mercureService } from '@/services/mercure'
 import { gameApi } from '@/services/api/gameApi'
+import { presenceApi } from '@/services/api/presenceApi'
 import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
@@ -75,6 +76,22 @@ async function connectToPresence() {
     // Récupérer le token JWT Mercure pour la présence (défini en cookie)
     await gameApi.getMercurePresenceToken(gameIds)
     console.log('Token Mercure de présence obtenu')
+
+    // Charger l'état initial des utilisateurs en ligne pour chaque partie
+    for (const gameId of gameIds) {
+      try {
+        const response = await presenceApi.getOnlineUsers(gameId)
+        if (response.onlineUsers && response.onlineUsers.length > 0) {
+          presenceStore.setOnlineUsers(gameId, response.onlineUsers)
+          console.log(`État initial chargé pour partie ${gameId}:`, response.onlineUsers)
+        }
+      } catch (error) {
+        console.error(
+          `Erreur lors du chargement de l'état initial pour la partie ${gameId}:`,
+          error
+        )
+      }
+    }
 
     // Se connecter aux événements de présence (le cookie mercureAuthorization est envoyé automatiquement)
     mercureService.connectToPresence(gameIds)
