@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, triggerRef } from 'vue'
 
 /**
  * Store pour gérer la présence en temps réel des joueurs
@@ -46,6 +46,7 @@ export const usePresenceStore = defineStore('presence', () => {
       connectedUsers.value.set(gameId, new Set())
     }
     connectedUsers.value.get(gameId)!.add(userId)
+    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
     console.log(`User ${userId} is now online in game ${gameId}`)
   }
 
@@ -56,6 +57,7 @@ export const usePresenceStore = defineStore('presence', () => {
     const gameUsers = connectedUsers.value.get(gameId)
     if (gameUsers) {
       gameUsers.delete(userId)
+      triggerRef(connectedUsers) // Forcer Vue à détecter le changement
       console.log(`User ${userId} is now offline in game ${gameId}`)
     }
   }
@@ -65,6 +67,7 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function setOnlineUsers(gameId: number, userIds: number[]) {
     connectedUsers.value.set(gameId, new Set(userIds))
+    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
     console.log(`Updated online users for game ${gameId}:`, userIds)
   }
 
@@ -100,6 +103,7 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function clearGamePresence(gameId: number) {
     connectedUsers.value.delete(gameId)
+    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
   }
 
   /**
@@ -107,6 +111,7 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function $reset() {
     connectedUsers.value.clear()
+    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
     lastHeartbeat.value = Date.now()
   }
 

@@ -17,9 +17,11 @@ COPY . .
 
 ARG VITE_API_URL=http://localhost/api
 ARG VITE_WS_URL=ws://localhost:3000
+ARG VITE_MERCURE_URL=http://localhost/.well-known/mercure
 
 ENV VITE_API_URL=${VITE_API_URL} \
     VITE_WS_URL=${VITE_WS_URL} \
+    VITE_MERCURE_URL=${VITE_MERCURE_URL} \
     NODE_ENV=production
 
 RUN npm run build

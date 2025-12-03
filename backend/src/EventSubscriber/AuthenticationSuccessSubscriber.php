@@ -52,14 +52,17 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
         // Si rememberMe est true : 30 jours, sinon : 1 heure
         $expirationTime = $rememberMe ? '+30 days' : '+1 hour';
 
+        // En production, utiliser secure=true uniquement si on a HTTPS
+        // Pour l'instant, on désactive secure car on est en HTTP
         $isProduction = ($_ENV['APP_ENV'] ?? 'dev') === 'prod';
+        $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
 
         $cookie = Cookie::create('jwt_token')
             ->withValue($token)
             ->withExpires(new DateTime($expirationTime))
             ->withPath('/')
             ->withDomain(null)
-            ->withSecure($isProduction)
+            ->withSecure($isProduction && $isHttps) // Secure uniquement si prod ET HTTPS
             ->withHttpOnly(true)
             ->withSameSite(Cookie::SAMESITE_LAX);
 

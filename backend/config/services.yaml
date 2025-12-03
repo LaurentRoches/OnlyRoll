@@ -31,3 +31,8 @@ services:
     App\Service\PresenceService:
         arguments:
             $presenceCache: '@cache.presence'
+
+    # Injecter le secret Mercure pour la génération de tokens JWT
+    App\Service\MercureTokenService:
+        arguments:
+            $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'

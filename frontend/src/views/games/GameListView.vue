@@ -4,6 +4,8 @@ import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import { usePresenceStore } from '@/stores/presenceStore'
 import { mercureService } from '@/services/mercure'
+import { gameApi } from '@/services/api/gameApi'
+import { presenceApi } from '@/services/api/presenceApi'
 import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
@@ -50,7 +52,7 @@ function handlePresenceEvent(data: unknown) {
 }
 
 // Connecter aux événements de présence pour les parties affichées
-function connectToPresence() {
+async function connectToPresence() {
   const gameIds = displayedGames.value.map((game) => game.id)
 
   if (gameIds.length === 0) {
@@ -70,11 +72,35 @@ function connectToPresence() {
 
   console.log('Connexion aux événements de présence pour les parties:', gameIds)
 
-  // Se connecter aux événements de présence
-  mercureService.connectToPresence(gameIds)
+  try {
+    // Récupérer le token JWT Mercure pour la présence (défini en cookie)
+    await gameApi.getMercurePresenceToken(gameIds)
+    console.log('Token Mercure de présence obtenu')
 
-  // Mémoriser les IDs connectés
-  connectedGameIds.value = [...gameIds]
+    // Charger l'état initial des utilisateurs en ligne pour chaque partie
+    for (const gameId of gameIds) {
+      try {
+        const response = await presenceApi.getOnlineUsers(gameId)
+        if (response.onlineUsers && response.onlineUsers.length > 0) {
+          presenceStore.setOnlineUsers(gameId, response.onlineUsers)
+          console.log(`État initial chargé pour partie ${gameId}:`, response.onlineUsers)
+        }
+      } catch (error) {
+        console.error(
+          `Erreur lors du chargement de l'état initial pour la partie ${gameId}:`,
+          error
+        )
+      }
+    }
+
+    // Se connecter aux événements de présence (le cookie mercureAuthorization est envoyé automatiquement)
+    mercureService.connectToPresence(gameIds)
+
+    // Mémoriser les IDs connectés
+    connectedGameIds.value = [...gameIds]
+  } catch (error) {
+    console.error('Erreur lors de la récupération du token Mercure de présence:', error)
+  }
 }
 
 onMounted(async () => {

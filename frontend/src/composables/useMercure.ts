@@ -36,10 +36,9 @@ export function useMercure() {
   /**
    * Connecter à Mercure pour une partie spécifique
    * @param gameId - ID de la partie
-   * @param token - Token JWT optionnel pour événements privés
    */
-  const connect = (gameId: number, token?: string): void => {
-    mercureService.connect(gameId, token)
+  const connect = (gameId: number): void => {
+    mercureService.connect(gameId)
     updateConnectionState()
   }
 

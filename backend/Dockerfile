@@ -17,6 +17,7 @@ RUN apk add --no-cache \
     bash \
     git \
     unzip \
+    openssl \
     icu-dev \
     libzip-dev \
     mysql-client \
@@ -45,12 +46,15 @@ COPY docker/php-fpm/php.ini /usr/local/etc/php/php.ini
 # ===========================================
 FROM php_base AS php_dependencies
 
+ARG APP_ENV=prod
+
 COPY composer.json composer.lock symfony.lock ./
 
+# Installation SANS scripts (bin/console n'existe pas encore)
 RUN if [ "$APP_ENV" = "prod" ]; then \
-        composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction; \
+        composer install --no-dev --prefer-dist --no-interaction --no-scripts --no-autoloader; \
     else \
-        composer install --no-scripts --no-autoloader --prefer-dist --no-interaction; \
+        composer install --prefer-dist --no-interaction --no-scripts --no-autoloader; \
     fi
 
 # ===========================================
@@ -58,11 +62,18 @@ RUN if [ "$APP_ENV" = "prod" ]; then \
 # ===========================================
 FROM php_dependencies AS php_app
 
+ARG APP_ENV=prod
+
+# Copier tout le code source
 COPY . .
 
-RUN composer dump-autoload --optimize --classmap-authoritative \
-    && mkdir -p var/cache var/log var/sessions \
-    && chmod -R 777 var
+# Générer uniquement l'autoloader optimisé (pas de scripts Symfony)
+RUN composer dump-autoload --optimize --classmap-authoritative
+
+# Créer les répertoires nécessaires avec les bonnes permissions
+RUN mkdir -p var/cache var/log var/sessions \
+    && chown -R www-data:www-data var \
+    && chmod -R 775 var
 
 # Copier l'entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
@@ -79,6 +90,10 @@ FROM php_app AS php_dev
 ENV APP_ENV=dev \
     APP_DEBUG=1 \
     XDEBUG_MODE=develop,debug
+
+# Réinstaller les dépendances dev (sans exécuter les scripts)
+RUN composer install --prefer-dist --no-interaction --no-scripts && \
+    composer dump-autoload
 
 # Installer Xdebug
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
@@ -103,11 +118,12 @@ RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.
     && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-# Warmup cache
-RUN php bin/console cache:warmup --env=prod --no-debug || true
+# Créer le répertoire JWT et s'assurer que les permissions sont correctes
+RUN mkdir -p config/jwt \
+    && chown -R www-data:www-data var config/jwt \
+    && chmod -R 775 var config/jwt
 
-# Permissions strictes
-RUN chown -R www-data:www-data var \
-    && chmod -R 755 var
-
-USER www-data
+# Note: On ne définit pas USER www-data ici car:
+# 1. PHP-FPM gère déjà l'utilisateur via sa config (user = www-data)
+# 2. L'entrypoint a besoin de privilèges root pour fixer les permissions des volumes montés
+# 3. PHP-FPM lancera automatiquement les workers en tant que www-data

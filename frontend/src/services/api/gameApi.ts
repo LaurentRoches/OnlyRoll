@@ -126,4 +126,18 @@ export const gameApi = {
   async archive(id: number): Promise<Game> {
     return post<Game>(`/games/${id}/archive`)
   },
+
+  /**
+   * Obtenir un token JWT Mercure pour s'abonner aux événements temps réel de la partie
+   */
+  async getMercureToken(id: number): Promise<{ token: string; expiresIn: number }> {
+    return get<{ token: string; expiresIn: number }>(`/games/${id}/mercure-token`)
+  },
+
+  /**
+   * Obtenir un token JWT Mercure pour s'abonner aux événements de présence de plusieurs parties
+   */
+  async getMercurePresenceToken(gameIds: number[]): Promise<{ token: string; expiresIn: number }> {
+    return post<{ token: string; expiresIn: number }>('/games/mercure-presence-token', { gameIds })
+  },
 }

@@ -7,6 +7,7 @@ import { useChatStore } from '@/stores/chatStore'
 import { usePresenceStore } from '@/stores/presenceStore'
 import { mercureService } from '@/services/mercure'
 import { presenceApi } from '@/services/api/presenceApi'
+import { gameApi } from '@/services/api/gameApi'
 import type {
   MercureTokenEventData,
   MercureMapEventData,
@@ -160,21 +161,30 @@ async function initializeGame() {
 // ============================================
 // Setup Mercure
 // ============================================
-function setupMercure() {
+async function setupMercure() {
   console.log('Configuration de Mercure pour la partie', gameId.value)
 
-  mercureService.connect(gameId.value)
+  try {
+    // Récupérer le token JWT Mercure depuis l'API (défini en cookie)
+    await gameApi.getMercureToken(gameId.value)
+    console.log('Token Mercure obtenu')
 
-  // Vérifier l'état de connexion
-  const checkConnection = setInterval(() => {
-    isConnected.value = mercureService.isConnected()
-    connectionState.value = mercureService.getConnectionState()
+    // Se connecter à Mercure (le cookie mercureAuthorization est envoyé automatiquement)
+    mercureService.connect(gameId.value)
 
-    if (isConnected.value) {
-      console.log('Mercure connecté')
-      clearInterval(checkConnection)
-    }
-  }, 500)
+    // Vérifier l'état de connexion
+    const checkConnection = setInterval(() => {
+      isConnected.value = mercureService.isConnected()
+      connectionState.value = mercureService.getConnectionState()
+
+      if (isConnected.value) {
+        console.log('Mercure connecté')
+        clearInterval(checkConnection)
+      }
+    }, 500)
+  } catch (error) {
+    console.error('Erreur lors de la récupération du token Mercure:', error)
+  }
 
   // Écouter les événements de tokens
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -221,7 +231,8 @@ function setupMercure() {
 
   // Envoyer un heartbeat de présence toutes les 30 secondes
   const heartbeatInterval = setInterval(async () => {
-    if (mercureService.isConnected()) {
+    // Vérifier que gameId est valide avant d'envoyer
+    if (mercureService.isConnected() && gameId.value && !isNaN(gameId.value)) {
       try {
         await presenceApi.heartbeat(gameId.value)
         console.log('Heartbeat envoyé pour la partie', gameId.value)
