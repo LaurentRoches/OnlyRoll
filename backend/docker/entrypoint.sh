@@ -57,13 +57,16 @@ if [ ! -d "/var/www/html/vendor" ]; then
     composer install --no-dev --no-interaction --no-progress --optimize-autoloader
 fi
 
-# Check for API Platform specifically
-if [ ! -d "/var/www/html/vendor/api-platform" ]; then
-    echo "API Platform not found in vendor!"
-    exit 1
+# Check for API Platform specifically (only in production)
+if [ "$APP_ENV" = "prod" ]; then
+    if [ ! -d "/var/www/html/vendor/api-platform" ]; then
+        echo "API Platform not found in vendor!"
+        exit 1
+    fi
+    echo "Dependencies verified"
+else
+    echo "Development mode - skipping strict dependency check"
 fi
-
-echo "Dependencies verified"
 
 # ===========================================
 # 4. Regenerate autoloader
