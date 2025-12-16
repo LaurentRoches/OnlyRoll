@@ -403,4 +403,388 @@ class MapControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
+
+    public function testUpdateMapNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            '/api/games/' . $this->game->getId() . '/maps/99999',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'New Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testActivateMapNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/maps/99999/activate',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testDeleteMapNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'DELETE',
+            '/api/games/' . $this->game->getId() . '/maps/99999',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testUpdateSettingsSuccess(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $map->setSettings(['showGrid' => true]);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PATCH',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId() . '/settings',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'showGrid' => false,
+                'gridColor' => '#000000',
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('settings', $data);
+        $this->assertFalse($data['settings']['showGrid']);
+        $this->assertEquals('#000000', $data['settings']['gridColor']);
+    }
+
+    public function testUpdateSettingsAsPlayerForbidden(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'PATCH',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId() . '/settings',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['showGrid' => true]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testUpdateSettingsWithInvalidJson(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PATCH',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId() . '/settings',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            'invalid json',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testUpdateSettingsForNonExistentMap(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PATCH',
+            '/api/games/' . $this->game->getId() . '/maps/99999/settings',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['showGrid' => true]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testCreateMapForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'name' => 'New Map',
+                'width' => 20,
+                'height' => 20,
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetActiveMapForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/99999/maps/active');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testShowMapForWrongGame(): void
+    {
+        $otherGame = new Game();
+        $otherGame->setName('Other Game');
+        $otherGame->setGameMaster($this->gameMaster);
+        $this->entityManager->persist($otherGame);
+
+        $map = new GameMap();
+        $map->setGame($otherGame);
+        $map->setName('Other Game Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'GET',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId(),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testListMapsForbiddenForNonParticipant(): void
+    {
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/maps');
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testGetActiveMapForbiddenForNonParticipant(): void
+    {
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/maps/active');
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testShowMapForbiddenForNonParticipant(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/maps/' . $map->getId());
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testUpdateSettingsForNonExistentGame(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PATCH',
+            '/api/games/99999/maps/' . $map->getId() . '/settings',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['showGrid' => true]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testActivateMapForNonExistentGame(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps/' . $map->getId() . '/activate',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testDeleteMapForNonExistentGame(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'DELETE',
+            '/api/games/99999/maps/' . $map->getId(),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testUpdateMapForNonExistentGame(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            '/api/games/99999/maps/' . $map->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'Updated Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testUpdateMapWithValidationErrors(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'width' => 1,  // Too small
+                'height' => 250,  // Too large
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testShowMapForNonExistentGame(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Test Map');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'GET',
+            '/api/games/99999/maps/' . $map->getId(),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testUpdateMapWithPatchMethod(): void
+    {
+        $map = new GameMap();
+        $map->setGame($this->game);
+        $map->setName('Original Name');
+        $map->setWidth(20);
+        $map->setHeight(20);
+        $this->entityManager->persist($map);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PATCH',
+            '/api/games/' . $this->game->getId() . '/maps/' . $map->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'description' => 'Patched description',
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Patched description', $data['description']);
+    }
 }

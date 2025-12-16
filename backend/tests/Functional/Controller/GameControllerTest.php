@@ -419,6 +419,158 @@ class GameControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
+    // ==================== MERCURE TOKEN ====================
+
+    public function testGetMercureTokenForValidGame(): void
+    {
+        $game = $this->createPublicGame('Test Game', $this->testUser);
+
+        $this->client->loginUser($this->testUser);
+        $this->client->request('GET', '/api/games/' . $game->getId() . '/mercure-token');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('token', $response);
+        $this->assertArrayHasKey('expiresIn', $response);
+        $this->assertSame(3600, $response['expiresIn']);
+    }
+
+    public function testGetMercureTokenForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->testUser);
+        $this->client->request('GET', '/api/games/99999/mercure-token');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetMercureTokenReturnsForbiddenForPrivateGame(): void
+    {
+        $game = $this->createPrivateGame('Private Game', $this->otherUser, 'secret');
+
+        $this->client->loginUser($this->testUser);
+        $this->client->request('GET', '/api/games/' . $game->getId() . '/mercure-token');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testGetMercureTokenRequiresAuthentication(): void
+    {
+        $game = $this->createPublicGame('Test Game', $this->testUser);
+        $this->client->request('GET', '/api/games/' . $game->getId() . '/mercure-token');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    // ==================== MERCURE PRESENCE TOKEN ====================
+
+    public function testGetMercurePresenceTokenWithValidGameIds(): void
+    {
+        $game1 = $this->createPublicGame('Game 1', $this->testUser);
+        $game2 = $this->createPublicGame('Game 2', $this->testUser);
+
+        $this->client->loginUser($this->testUser);
+        $this->client->request('POST', '/api/games/mercure-presence-token', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'gameIds' => [$game1->getId(), $game2->getId()],
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('token', $response);
+        $this->assertArrayHasKey('expiresIn', $response);
+        $this->assertSame(3600, $response['expiresIn']);
+    }
+
+    public function testGetMercurePresenceTokenWithEmptyGameIds(): void
+    {
+        $this->client->loginUser($this->testUser);
+        $this->client->request('POST', '/api/games/mercure-presence-token', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'gameIds' => [],
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testGetMercurePresenceTokenWithoutGameIds(): void
+    {
+        $this->client->loginUser($this->testUser);
+        $this->client->request('POST', '/api/games/mercure-presence-token', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testGetMercurePresenceTokenRequiresAuthentication(): void
+    {
+        $this->client->request('POST', '/api/games/mercure-presence-token', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'gameIds' => [1, 2],
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function testGetMercurePresenceTokenWithInvalidGameIds(): void
+    {
+        $this->client->loginUser($this->testUser);
+        $this->client->request('POST', '/api/games/mercure-presence-token', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'gameIds' => 'not-an-array',
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    // ==================== ADDITIONAL EDGE CASES ====================
+
+    public function testListGamesWithInvalidStatusFilter(): void
+    {
+        $this->client->loginUser($this->testUser);
+        $this->client->request('GET', '/api/games?status=invalid_status');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('data', $response);
+    }
+
+    public function testJoinByCodeWithPrivateGameAndCorrectPassword(): void
+    {
+        $game = $this->createPrivateGame('Private Game', $this->testUser, 'secret123');
+        $inviteCode = $game->getInviteCode();
+
+        $this->client->loginUser($this->otherUser);
+        $this->client->request('POST', '/api/games/join', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'inviteCode' => $inviteCode,
+            'password' => 'secret123',
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+    }
+
+    public function testUpdateGameWithValidationErrors(): void
+    {
+        $game = $this->createPublicGame('Test Game', $this->testUser);
+
+        $this->client->loginUser($this->testUser);
+        $this->client->request('PATCH', '/api/games/' . $game->getId(), [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'name' => '',
+        ]));
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     // ==================== HELPERS ====================
 
     private function createUser(string $email, string $pseudo): User
@@ -499,21 +651,17 @@ class GameControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        $gamePlayers = $this->entityManager->getRepository(GamePlayer::class)->findAll();
-        foreach ($gamePlayers as $gamePlayer) {
-            $this->entityManager->remove($gamePlayer);
+        // Désactiver temporairement les contraintes de clés étrangères
+        $connection = $this->entityManager->getConnection();
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+
+        // Supprimer toutes les données des tables dans l'ordre
+        $tables = ['game_message', 'game_token', 'game_player', 'game_map', 'game', 'user'];
+        foreach ($tables as $table) {
+            $connection->executeStatement("TRUNCATE TABLE $table");
         }
 
-        $games = $this->entityManager->getRepository(Game::class)->findAll();
-        foreach ($games as $game) {
-            $this->entityManager->remove($game);
-        }
-
-        $users = $this->entityManager->getRepository(User::class)->findAll();
-        foreach ($users as $user) {
-            $this->entityManager->remove($user);
-        }
-
-        $this->entityManager->flush();
+        // Réactiver les contraintes de clés étrangères
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
     }
 }

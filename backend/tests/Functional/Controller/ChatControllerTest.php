@@ -394,4 +394,321 @@ class ChatControllerTest extends WebTestCase
         $this->assertCount(1, $data);
         $this->assertEquals(MessageType::DICE_ROLL->value, $data[0]['type']);
     }
+
+    public function testGetDiceRollsForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/99999/chat/dice-rolls');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetDiceRollsWithoutPermission(): void
+    {
+        $outsider = new User();
+        $outsider->setPseudo('outsider');
+        $outsider->setEmail('outsider2@test.com');
+        $outsider->setPassword('password');
+        $this->entityManager->persist($outsider);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($outsider);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/dice-rolls');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testGetDiceRollsWithCustomLimit(): void
+    {
+        for ($i = 0; $i < 5; ++$i) {
+            $message = new GameMessage();
+            $message->setGame($this->game);
+            $message->setUser($this->player);
+            $message->setType(MessageType::DICE_ROLL);
+            $message->setContent("1d20");
+            $message->setDiceResult(['total' => 15, 'rolls' => [15]]);
+            $this->entityManager->persist($message);
+        }
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/dice-rolls?limit=3');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertCount(3, $data);
+    }
+
+    public function testSendMessageForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/chat/messages',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['type' => MessageType::CHAT->value, 'content' => 'Test']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testSendMessageWithoutPermission(): void
+    {
+        $outsider = new User();
+        $outsider->setPseudo('outsider3');
+        $outsider->setEmail('outsider3@test.com');
+        $outsider->setPassword('password');
+        $this->entityManager->persist($outsider);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($outsider);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/messages',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['type' => MessageType::CHAT->value, 'content' => 'Test']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testSendMessageWithMalformedJson(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/messages',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            'invalid-json',
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testGetMessagesByTypeForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/99999/chat/messages/type/' . MessageType::CHAT->value);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetMessagesByTypeWithoutPermission(): void
+    {
+        $outsider = new User();
+        $outsider->setPseudo('outsider4');
+        $outsider->setEmail('outsider4@test.com');
+        $outsider->setPassword('password');
+        $this->entityManager->persist($outsider);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($outsider);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/messages/type/' . MessageType::CHAT->value);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testGetMessagesByTypeWithInvalidType(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/messages/type/invalid_type');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testRollDiceForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d6']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testRollDiceWithoutPermission(): void
+    {
+        $outsider = new User();
+        $outsider->setPseudo('outsider5');
+        $outsider->setEmail('outsider5@test.com');
+        $outsider->setPassword('password');
+        $this->entityManager->persist($outsider);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($outsider);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d6']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testRollDiceWithTooFewSides(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '1d1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testRollDiceWithTooManySides(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '1d1001']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testRollDiceWithNonExistentRecipient(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d6', 'recipientId' => 99999]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testRollDiceWithRecipientNotInGame(): void
+    {
+        $nonPlayer = new User();
+        $nonPlayer->setPseudo('nonplayer');
+        $nonPlayer->setEmail('nonplayer@test.com');
+        $nonPlayer->setPassword('password');
+        $this->entityManager->persist($nonPlayer);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d6', 'recipientId' => $nonPlayer->getId()]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testRollDiceWithValidRecipient(): void
+    {
+        // Create a second player and add them to the game
+        $player2 = new User();
+        $player2->setPseudo('player2');
+        $player2->setEmail('player2@test.com');
+        $player2->setPassword('password');
+        $this->entityManager->persist($player2);
+
+        $gamePlayer2 = new GamePlayer();
+        $gamePlayer2->setGame($this->game);
+        $gamePlayer2->setUser($player2);
+        $gamePlayer2->setStatus(PlayerStatus::ACTIVE);
+        $this->game->addGamePlayer($gamePlayer2);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '1d20', 'recipientId' => $player2->getId()]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(MessageType::DICE_ROLL->value, $data['type']);
+    }
+
+    public function testGetStatsForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request('GET', '/api/games/99999/chat/stats');
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetMessagesSinceForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->player);
+        $since = new DateTimeImmutable();
+        $this->client->request(
+            'GET',
+            '/api/games/99999/chat/messages/since?since=' . urlencode($since->format('c')),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testGetMessagesSinceWithoutPermission(): void
+    {
+        $outsider = new User();
+        $outsider->setPseudo('outsider6');
+        $outsider->setEmail('outsider6@test.com');
+        $outsider->setPassword('password');
+        $this->entityManager->persist($outsider);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($outsider);
+        $since = new DateTimeImmutable();
+        $this->client->request(
+            'GET',
+            '/api/games/' . $this->game->getId() . '/chat/messages/since?since=' . urlencode($since->format('c')),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testGetMessagesWithLimitClampingMin(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/messages?limit=0');
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testGetMessagesWithLimitClampingMax(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/chat/messages?limit=300');
+
+        $this->assertResponseIsSuccessful();
+    }
 }
