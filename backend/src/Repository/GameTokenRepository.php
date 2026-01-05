@@ -204,7 +204,9 @@ class GameTokenRepository extends ServiceEntityRepository
 
         $counts = [];
         foreach ($result as $row) {
-            $counts[$row['type']] = (int) $row['count'];
+            $type = $row['type'];
+            $typeValue = $type instanceof \App\Enum\TokenType ? $type->value : (string) $type;
+            $counts[$typeValue] = (int) $row['count'];
         }
 
         return $counts;

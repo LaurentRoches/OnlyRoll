@@ -282,11 +282,18 @@ class AuthControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        // Supprimer tous les utilisateurs de test
-        $users = $this->entityManager->getRepository(User::class)->findAll();
-        foreach ($users as $user) {
-            $this->entityManager->remove($user);
-        }
-        $this->entityManager->flush();
+        // Désactiver temporairement les contraintes de clés étrangères
+        $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
+
+        // Supprimer toutes les données des tables dans l'ordre
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_message');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_token');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_player');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_map');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game');
+        $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE user');
+
+        // Réactiver les contraintes de clés étrangères
+        $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
     }
 }

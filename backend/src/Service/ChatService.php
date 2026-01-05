@@ -127,7 +127,7 @@ readonly class ChatService
      */
     public function getMessagesByType(Game $game, MessageType $type, ?int $limit = null): array
     {
-        return $this->messageRepository->findByType($game, $type);
+        return $this->messageRepository->findMessagesByType($game, $type, $limit ?? 50);
     }
 
     /**

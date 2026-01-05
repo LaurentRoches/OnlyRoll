@@ -42,6 +42,22 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # ===========================================
+# STAGE 3.5: Test
+# ===========================================
+FROM node:22-alpine AS node_test
+
+WORKDIR /app
+
+COPY --from=node_dependencies /app/node_modules ./node_modules
+COPY package.json package-lock.json ./
+COPY . .
+
+# Install Playwright browsers for E2E tests
+RUN npx playwright install --with-deps chromium
+
+CMD ["npm", "run", "test:coverage"]
+
+# ===========================================
 # STAGE 4: Production (Nginx)
 # ===========================================
 FROM nginx:1.25-alpine AS nginx_prod

@@ -229,15 +229,29 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci --legacy-peer-deps
-      
-      - name: Run unit tests
+
+      - name: Run unit tests with coverage
         working-directory: ./frontend
-        run: npm run test:unit
-      
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage-report
+          path: ./frontend/coverage
+
       - name: Build for production
         working-directory: ./frontend
         run: npm run build
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
