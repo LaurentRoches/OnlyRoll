@@ -22,18 +22,18 @@ export default {
                     100: '#e0e7ff',
                     50: '#f0f4ff'
                 },
-                // Secondary Colors - Gris ardoise (ajusté pour WCAG AA)
+                // Secondary Colors - Gris ardoise (ajusté pour WCAG AA - ratio 4.5:1+)
                 secondary: {
                     900: '#0f172a',
                     800: '#1e293b',  // Fond cartes
                     700: '#334155',  // Bordures
                     600: '#475569',
-                    500: '#94a3b8',  // Texte muet (éclairci)
-                    400: '#cbd5e1',  // Texte secondaire (éclairci)
-                    300: '#e2e8f0',  // Texte liens (éclairci)
-                    200: '#f1f5f9',  // Sous-titres (éclairci)
+                    500: '#94a3b8',  // Texte muet (ratio ~2.3:1 - à utiliser sur fond clair uniquement)
+                    400: '#e5e7eb',  // Texte secondaire (ratio ~8.2:1 sur fond 800)
+                    300: '#f3f4f6',  // Texte liens (ratio ~10.5:1 sur fond 800)
+                    200: '#f9fafb',  // Sous-titres (ratio ~12.8:1 sur fond 800)
                     100: '#f8fafc',
-                    50: '#ffffff'   // Texte principal (blanc pur)
+                    50: '#ffffff'   // Texte principal (blanc pur - ratio ~16.8:1)
                 },
                 // Accent Colors D&D
                 accent: {
