@@ -420,6 +420,12 @@ class ChatControllerTest extends WebTestCase
 
     public function testGetDiceRollsWithCustomLimit(): void
     {
+        // Clean messages to ensure we have exactly 5
+        $connection = $this->entityManager->getConnection();
+        $connection->executeStatement('DELETE FROM game_message WHERE game_id = :gameId', [
+            'gameId' => $this->game->getId()
+        ]);
+
         for ($i = 0; $i < 5; ++$i) {
             $message = new GameMessage();
             $message->setGame($this->game);

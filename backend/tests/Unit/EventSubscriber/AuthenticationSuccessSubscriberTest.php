@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\EventSubscriber;
 
+use App\Entity\User;
 use App\EventSubscriber\AuthenticationSuccessSubscriber;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
@@ -26,6 +27,13 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         $this->subscriber = new AuthenticationSuccessSubscriber($this->requestStack);
     }
 
+    private function createMockUser(): User
+    {
+        $user = $this->createMock(User::class);
+        $user->method('getUserIdentifier')->willReturn('test@example.com');
+        return $user;
+    }
+
     public function testGetSubscribedEvents(): void
     {
         $events = AuthenticationSuccessSubscriber::getSubscribedEvents();
@@ -37,7 +45,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
     public function testOnAuthenticationSuccessWithoutToken(): void
     {
         $response = new Response();
-        $event = new AuthenticationSuccessEvent([], null, $response);
+        $event = new AuthenticationSuccessEvent([], $this->createMockUser(), $response);
 
         $this->subscriber->onAuthenticationSuccess($event);
 
@@ -66,7 +74,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         );
         $this->requestStack->push($request);
 
-        $event = new AuthenticationSuccessEvent($data, null, $response);
+        $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
         // Vérifie qu'un cookie a été ajouté
@@ -107,7 +115,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         );
         $this->requestStack->push($request);
 
-        $event = new AuthenticationSuccessEvent($data, null, $response);
+        $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
         // Vérifie qu'un cookie a été ajouté
@@ -128,7 +136,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         ];
 
         // Pas de requête dans le RequestStack
-        $event = new AuthenticationSuccessEvent($data, null, $response);
+        $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
         // Vérifie qu'un cookie a été ajouté avec le comportement par défaut (rememberMe = false)
@@ -159,7 +167,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         );
         $this->requestStack->push($request);
 
-        $event = new AuthenticationSuccessEvent($data, null, $response);
+        $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
         // Vérifie qu'un cookie a été ajouté malgré le JSON invalide

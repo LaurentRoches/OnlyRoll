@@ -340,6 +340,7 @@ class GameRepositoryTest extends KernelTestCase
         $gamePlayer->setGame($game);
         $gamePlayer->setUser($user);
         $gamePlayer->setStatus($status);
+        $game->addGamePlayer($gamePlayer);
         $this->entityManager->persist($gamePlayer);
         $this->entityManager->flush();
 

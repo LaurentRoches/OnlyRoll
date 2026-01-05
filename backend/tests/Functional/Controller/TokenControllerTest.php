@@ -652,13 +652,12 @@ class TokenControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
-    public function testRemovePermissionsSuccess(): void
+    public function testAddPermissionsSuccess(): void
     {
         $token = $this->createToken('Test Token', true);
 
         $this->client->loginUser($this->gameMaster);
 
-        // Add permission first
         $this->client->request(
             'POST',
             $this->getTokenUrl($token->getId()) . '/permissions',
@@ -672,6 +671,17 @@ class TokenControllerTest extends WebTestCase
         );
 
         $this->assertResponseIsSuccessful();
+    }
+
+    public function testRemovePermissionsSuccess(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        // Add permission first by setting it in the token settings
+        $settings = $token->getSettings() ?? [];
+        $settings['controllableBy'] = [$this->player->getId()];
+        $token->setSettings($settings);
+        $this->entityManager->flush();
 
         // Remove permission
         $this->client->loginUser($this->gameMaster);

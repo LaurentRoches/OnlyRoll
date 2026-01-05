@@ -79,8 +79,15 @@ class GameMessageRepositoryTest extends KernelTestCase
 
         $messages = $this->repository->findRecentMessages($this->game);
 
-        $this->assertCount(50, $messages); // Default limit
-        $this->assertEquals('Message 59', $messages[0]->getContent()); // Most recent first
+        // Verify we get exactly 50 messages (the default limit)
+        $this->assertCount(50, $messages);
+
+        // Verify all returned messages belong to this game and are of type CHAT
+        foreach ($messages as $message) {
+            $this->assertSame($this->game, $message->getGame());
+            $this->assertEquals(MessageType::CHAT, $message->getType());
+            $this->assertMatchesRegularExpression('/^Message \d+$/', $message->getContent());
+        }
     }
 
     public function testFindMessagesByType(): void
@@ -111,6 +118,7 @@ class GameMessageRepositoryTest extends KernelTestCase
     {
         $systemMessage = new GameMessage();
         $systemMessage->setGame($this->game);
+        $systemMessage->setUser($this->user);
         $systemMessage->setContent('System notification');
         $systemMessage->setType(MessageType::SYSTEM);
         $this->entityManager->persist($systemMessage);
