@@ -9,31 +9,31 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Primary Colors - Violet mystique
+                // Primary Colors - Violet mystique (ajusté pour WCAG AA)
                 primary: {
                     900: '#1a0b2e',  // Fond principal
                     800: '#2d1b44',
                     700: '#402a5b',
                     600: '#553572',
-                    500: '#6366f1',  // Accent principal
+                    500: '#5558d9',  // Accent principal (assombri pour contraste avec white)
                     400: '#818cf8',
                     300: '#a5b4fc',
                     200: '#c7d2fe',
                     100: '#e0e7ff',
                     50: '#f0f4ff'
                 },
-                // Secondary Colors - Gris ardoise
+                // Secondary Colors - Gris ardoise (ajusté pour WCAG AA)
                 secondary: {
                     900: '#0f172a',
                     800: '#1e293b',  // Fond cartes
                     700: '#334155',  // Bordures
                     600: '#475569',
-                    500: '#64748b',
-                    400: '#94a3b8',  // Texte muet
-                    300: '#cbd5e1',  // Texte secondaire
-                    200: '#e2e8f0',
-                    100: '#f1f5f9',
-                    50: '#f8fafc'   // Texte principal
+                    500: '#94a3b8',  // Texte muet (éclairci)
+                    400: '#cbd5e1',  // Texte secondaire (éclairci)
+                    300: '#e2e8f0',  // Texte liens (éclairci)
+                    200: '#f1f5f9',  // Sous-titres (éclairci)
+                    100: '#f8fafc',
+                    50: '#ffffff'   // Texte principal (blanc pur)
                 },
                 // Accent Colors D&D
                 accent: {

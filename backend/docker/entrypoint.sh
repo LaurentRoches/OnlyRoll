@@ -71,8 +71,9 @@ fi
 # ===========================================
 # 4. Regenerate autoloader
 # ===========================================
-echo "Regenerating autoloader..."
-composer dump-autoload --no-interaction --optimize --classmap-authoritative
+# Autoloader already generated during build, no need to regenerate
+# echo "Regenerating autoloader..."
+# composer dump-autoload --no-interaction --optimize --classmap-authoritative
 
 # ===========================================
 # 5. Create necessary directories

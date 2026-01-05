@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-900">
     <!-- Navigation -->
-    <nav class="relative z-50 bg-secondary-800/50 backdrop-blur-sm border-b border-secondary-700">
+    <nav class="relative z-50 bg-secondary-800/95 backdrop-blur-sm border-b border-secondary-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
@@ -60,16 +60,17 @@
 
     <!-- Hero Section -->
     <section class="relative py-20 lg:py-32 overflow-hidden">
-      <!-- Background Image avec overlay -->
+      <!-- Background Image avec overlay - optimisé pour visibilité tout en maintenant contraste WCAG -->
       <div class="absolute inset-0 z-0">
         <img
           src="/hero_banner_onlyroll.jpg"
           alt=""
-          class="w-full h-full object-cover opacity-20"
+          class="w-full h-full object-cover opacity-40"
           aria-hidden="true"
         />
+        <!-- Overlay gradient pour garantir le contraste du texte -->
         <div
-          class="absolute inset-0 bg-gradient-to-b from-primary-900/50 via-primary-800/50 to-secondary-900/80"
+          class="absolute inset-0 bg-gradient-to-b from-primary-900/85 via-primary-800/80 to-secondary-900/85"
         ></div>
       </div>
 
