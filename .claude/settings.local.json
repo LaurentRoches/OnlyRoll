@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec:*)",
+      "Bash(vendor/bin/phpunit:*)",
+      "Bash(tee:*)",
+      "Bash(php bin/console doctrine:database:create:*)",
+      "Bash(docker compose:*)",
+      "Bash(mkdir:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker inspect:*)",
+      "Bash(cat:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(curl:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(cmd /c start \"\" \"backend\\\\var\\\\reports\\\\index.html\")",
+      "Bash(rm:*)",
+      "Bash(cmd /c start \"\" \"backend\\\\var\\\\reports\\\\coverage\\\\index.html\")",
+      "Bash(docker cp:*)",
+      "Bash(dir:*)",
+      "Bash(test:*)",
+      "Bash(cmd /c start \"\" \"backend\\\\var\\\\reports\\\\coverage-temp\\\\index.html\")",
+      "Bash(cmd /c start \"\" \"backend\\\\var\\\\reports\\\\coverage-final\\\\index.html\")",
+      "Bash(find:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(npm run test:unit:run:*)",
+      "Bash(start coverage/index.html)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "Bash(npx pa11y-ci:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(npm run format:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
