@@ -66,7 +66,9 @@ async function handleJoin() {
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h2 id="join-game-modal-title" class="text-2xl font-bold text-secondary-50">Rejoindre la partie</h2>
+        <h2 id="join-game-modal-title" class="text-2xl font-bold text-secondary-50">
+          Rejoindre la partie
+        </h2>
         <button
           @click="emit('close')"
           class="text-secondary-400 hover:text-secondary-50 transition-colors p-1 hover:bg-secondary-700 rounded-md"
@@ -136,7 +138,10 @@ async function handleJoin() {
         <div
           class="flex items-start gap-3 p-3 bg-accent-emerald/10 border border-accent-emerald/30 rounded-lg"
         >
-          <GlobeAltIcon class="w-5 h-5 text-accent-emerald flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <GlobeAltIcon
+            class="w-5 h-5 text-accent-emerald flex-shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
           <p class="text-secondary-300 text-sm">
             Cette partie est publique, vous pouvez la rejoindre directement sans mot de passe.
           </p>
@@ -149,7 +154,12 @@ async function handleJoin() {
         class="mb-6 p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose flex items-start gap-3"
         role="alert"
       >
-        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <svg
+          class="w-5 h-5 flex-shrink-0 mt-0.5"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
           <path
             fill-rule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"

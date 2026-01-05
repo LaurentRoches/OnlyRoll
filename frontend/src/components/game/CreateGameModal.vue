@@ -70,7 +70,9 @@ async function handleSubmit() {
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h2 id="create-game-modal-title" class="text-2xl font-bold text-secondary-50">Créer une nouvelle partie</h2>
+        <h2 id="create-game-modal-title" class="text-2xl font-bold text-secondary-50">
+          Créer une nouvelle partie
+        </h2>
         <button
           @click="emit('close')"
           class="text-secondary-400 hover:text-secondary-50 transition-colors p-1 hover:bg-secondary-700 rounded-md"
@@ -148,7 +150,11 @@ async function handleSubmit() {
             </div>
             <div class="ml-3 flex-1">
               <div class="flex items-center gap-2">
-                <GlobeAltIcon v-if="formData.isPublic" class="w-5 h-5 text-accent-emerald" aria-hidden="true" />
+                <GlobeAltIcon
+                  v-if="formData.isPublic"
+                  class="w-5 h-5 text-accent-emerald"
+                  aria-hidden="true"
+                />
                 <LockClosedIcon v-else class="w-5 h-5 text-accent-amber" aria-hidden="true" />
                 <span class="text-secondary-50 font-medium">
                   {{ formData.isPublic ? 'Partie publique' : 'Partie privée' }}
@@ -190,7 +196,12 @@ async function handleSubmit() {
           class="p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose flex items-start gap-3"
           role="alert"
         >
-          <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <svg
+            class="w-5 h-5 flex-shrink-0 mt-0.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            aria-hidden="true"
+          >
             <path
               fill-rule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
