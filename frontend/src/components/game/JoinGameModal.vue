@@ -56,6 +56,9 @@ async function handleJoin() {
   <div
     class="fixed inset-0 bg-primary-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click="emit('close')"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="join-game-modal-title"
   >
     <div
       class="bg-secondary-800 rounded-lg max-w-md w-full p-6 border border-secondary-700 shadow-purple-lg"
@@ -63,13 +66,13 @@ async function handleJoin() {
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-secondary-50">Rejoindre la partie</h2>
+        <h2 id="join-game-modal-title" class="text-2xl font-bold text-secondary-50">Rejoindre la partie</h2>
         <button
           @click="emit('close')"
           class="text-secondary-400 hover:text-secondary-50 transition-colors p-1 hover:bg-secondary-700 rounded-md"
-          aria-label="Fermer"
+          aria-label="Fermer la modale"
         >
-          <XMarkIcon class="w-6 h-6" />
+          <XMarkIcon class="w-6 h-6" aria-hidden="true" />
         </button>
       </div>
 
@@ -92,8 +95,8 @@ async function handleJoin() {
                 : 'bg-accent-amber/20 text-accent-amber',
             ]"
           >
-            <GlobeAltIcon v-if="game.isPublic" class="w-3.5 h-3.5" />
-            <LockClosedIcon v-else class="w-3.5 h-3.5" />
+            <GlobeAltIcon v-if="game.isPublic" class="w-3.5 h-3.5" aria-hidden="true" />
+            <LockClosedIcon v-else class="w-3.5 h-3.5" aria-hidden="true" />
             <span>{{ game.isPublic ? 'Publique' : 'Privée' }}</span>
           </div>
         </div>
@@ -104,7 +107,7 @@ async function handleJoin() {
 
         <div class="flex items-center justify-between pt-3 border-t border-secondary-600">
           <div class="flex items-center gap-2 text-secondary-400 text-sm">
-            <UsersIcon class="w-4 h-4" />
+            <UsersIcon class="w-4 h-4" aria-hidden="true" />
             <span>{{ game.currentPlayersCount }} / {{ game.maxPlayers }} joueurs</span>
           </div>
           <span v-if="isFull" class="text-accent-rose text-sm font-medium"> Partie complète </span>
@@ -113,11 +116,12 @@ async function handleJoin() {
 
       <!-- Password Input (if private) -->
       <div v-if="needsPassword" class="mb-6">
-        <label class="block text-sm font-medium text-secondary-300 mb-2">
-          <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" />
+        <label for="joinPassword" class="block text-sm font-medium text-secondary-300 mb-2">
+          <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
           Mot de passe <span class="text-accent-rose">*</span>
         </label>
         <input
+          id="joinPassword"
           v-model="password"
           type="password"
           placeholder="Entrez le mot de passe de la partie"
@@ -132,7 +136,7 @@ async function handleJoin() {
         <div
           class="flex items-start gap-3 p-3 bg-accent-emerald/10 border border-accent-emerald/30 rounded-lg"
         >
-          <GlobeAltIcon class="w-5 h-5 text-accent-emerald flex-shrink-0 mt-0.5" />
+          <GlobeAltIcon class="w-5 h-5 text-accent-emerald flex-shrink-0 mt-0.5" aria-hidden="true" />
           <p class="text-secondary-300 text-sm">
             Cette partie est publique, vous pouvez la rejoindre directement sans mot de passe.
           </p>
@@ -143,8 +147,9 @@ async function handleJoin() {
       <div
         v-if="error"
         class="mb-6 p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose flex items-start gap-3"
+        role="alert"
       >
-        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
           <path
             fill-rule="evenodd"
             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -169,7 +174,7 @@ async function handleJoin() {
           class="px-6 py-2.5 bg-primary-500 hover:bg-primary-600 disabled:bg-secondary-600 disabled:text-secondary-500 disabled:cursor-not-allowed text-white rounded-md font-medium transition-all duration-200 shadow-purple hover:shadow-purple-lg disabled:shadow-none"
         >
           <span v-if="isSubmitting" class="flex items-center gap-2">
-            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <circle
                 class="opacity-25"
                 cx="12"
