@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import type { ApiError } from '@/services/api/apiClient'
+import type { AxiosInstance } from 'axios'
 
 // Import apiClient directly to test it
-let apiClient: any
-let get: any
-let post: any
-let put: any
-let patch: any
-let deleteFunc: any
+let apiClient: AxiosInstance
+let get: <T>(url: string) => Promise<T>
+let post: <T>(url: string, data?: unknown) => Promise<T>
+let put: <T>(url: string, data?: unknown) => Promise<T>
+let patch: <T>(url: string, data?: unknown) => Promise<T>
+let deleteFunc: <T = void>(url: string) => Promise<T>
 
 describe('apiClient', () => {
   beforeEach(async () => {

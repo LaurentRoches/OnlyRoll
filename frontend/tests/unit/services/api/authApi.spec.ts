@@ -61,7 +61,7 @@ describe('authApi', () => {
       const credentials: RegisterCredentials = {
         email: 'newuser@example.com',
         password: 'password123',
-        passwordConfirm: 'password123',
+        confirmPassword: 'password123',
         pseudo: 'NewUser'
       }
 
@@ -88,7 +88,7 @@ describe('authApi', () => {
       const credentials: RegisterCredentials = {
         email: 'existing@example.com',
         password: 'password123',
-        passwordConfirm: 'password123',
+        confirmPassword: 'password123',
         pseudo: 'ExistingUser'
       }
 

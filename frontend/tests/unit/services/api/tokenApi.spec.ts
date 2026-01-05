@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { tokenApi } from '@/services/api/tokenApi'
 import * as apiClient from '@/services/api/apiClient'
+import { TokenType } from '@/types/game'
 
 vi.mock('@/services/api/apiClient')
 
@@ -47,7 +48,7 @@ describe('tokenApi', () => {
 
   describe('create', () => {
     it('should create token', async () => {
-      const dto = { name: 'NewToken', type: 'player', x: 5, y: 10 }
+      const dto = { name: 'NewToken', type: TokenType.CHARACTER, x: 5, y: 10 }
       const mockToken = { id: 1, ...dto }
       vi.mocked(apiClient.post).mockResolvedValue(mockToken)
 

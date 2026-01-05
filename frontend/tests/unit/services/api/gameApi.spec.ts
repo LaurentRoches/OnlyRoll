@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { gameApi } from '@/services/api/gameApi'
 import * as apiClient from '@/services/api/apiClient'
 import type { CreateGameDTO, UpdateGameDTO, GameFilters } from '@/types/game'
+import { GameStatus } from '@/types/game'
 
 vi.mock('@/services/api/apiClient')
 
@@ -51,7 +52,7 @@ describe('gameApi', () => {
         search: 'Adventure',
         title: 'Epic Quest',
         gameMaster: 'GM1',
-        status: 'active',
+        status: GameStatus.IN_PROGRESS,
         page: 2,
         limit: 20
       }
@@ -68,7 +69,7 @@ describe('gameApi', () => {
       await gameApi.listPublic(filters)
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/games?search=Adventure&title=Epic+Quest&gameMaster=GM1&status=active&page=2&limit=20'
+        '/games?search=Adventure&title=Epic+Quest&gameMaster=GM1&status=in_progress&page=2&limit=20'
       )
     })
 
@@ -118,7 +119,7 @@ describe('gameApi', () => {
   describe('create', () => {
     it('should call POST /games with DTO', async () => {
       const dto: CreateGameDTO = {
-        title: 'New Game',
+        name: 'New Game',
         description: 'A new adventure'
       }
 
@@ -136,7 +137,7 @@ describe('gameApi', () => {
   describe('update', () => {
     it('should call PUT /games/:id with DTO', async () => {
       const dto: UpdateGameDTO = {
-        title: 'Updated Game'
+        name: 'Updated Game'
       }
 
       const mockGame = { id: 1, ...dto }
