@@ -5,7 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
-          <RouterLink to="/" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <RouterLink
+            to="/"
+            class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
             <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center">
               <img style="width: 100%; height: 100%" src="/logo.png" alt="Logo OnlyRoll" />
             </div>
@@ -76,8 +79,12 @@
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <!-- Titre principal -->
-        <h1 class="text-4xl md:text-6xl font-bold text-secondary-50 mb-6 text-shadow-stronger">OnlyRoll</h1>
-        <p class="text-xl md:text-2xl text-secondary-200 mb-4 text-shadow-stronger">One site to Roll them all</p>
+        <h1 class="text-4xl md:text-6xl font-bold text-secondary-50 mb-6 text-shadow-stronger">
+          OnlyRoll
+        </h1>
+        <p class="text-xl md:text-2xl text-secondary-200 mb-4 text-shadow-stronger">
+          One site to Roll them all
+        </p>
         <p class="text-lg text-secondary-400 mb-12 max-w-3xl mx-auto text-shadow-strong">
           Jouez à distance avec vos amis !<br />
           Interface simple, données SRD intégrées,<br />
@@ -105,7 +112,9 @@
     <!-- Features Section -->
     <section id="features" class="py-20 bg-secondary-50/5">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-center text-secondary-50 mb-16 text-shadow-strong">Fonctionnalités</h2>
+        <h2 class="text-3xl font-bold text-center text-secondary-50 mb-16 text-shadow-strong">
+          Fonctionnalités
+        </h2>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <!-- Wiki D&D -->
