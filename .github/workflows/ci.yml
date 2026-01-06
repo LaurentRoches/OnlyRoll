@@ -382,8 +382,8 @@ jobs:
             },
             "urls": [
               "http://localhost:8080/",
-              "http://localhost:8080/#/games",
-              "http://localhost:8080/#/login"
+              "http://localhost:8080/auth/login",
+              "http://localhost:8080/auth/register"
             ]
           }
           EOF

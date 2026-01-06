@@ -9,8 +9,8 @@
     }
   },
   "urls": [
-    "http://localhost:4173/",
-    "http://localhost:4173/auth/login",
-    "http://localhost:4173/auth/register"
+    "http://localhost:8080/",
+    "http://localhost:8080/auth/login",
+    "http://localhost:8080/auth/register"
   ]
 }

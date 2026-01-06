@@ -9,8 +9,8 @@
     }
   },
   "urls": [
-    "http://localhost:4173/",
-    "http://localhost:4173/auth/login",
-    "http://localhost:4173/auth/register"
+    "http://localhost:62008/",
+    "http://localhost:62008/#/games",
+    "http://localhost:62008/#/login"
   ]
 }

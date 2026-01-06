@@ -365,7 +365,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
     <Transition name="slide-down">
       <div
         v-if="openSecondaryBar"
-        class="bg-secondary-800/95 border-b border-secondary-700 px-4 py-2 flex items-center gap-2"
+        class="bg-secondary-800 border-b border-secondary-700 px-4 py-2 flex items-center gap-2"
       >
         <!-- Section Carte -->
         <template v-if="openSecondaryBar === 'maps' && isGameMaster">

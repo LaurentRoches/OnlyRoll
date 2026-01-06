@@ -163,27 +163,27 @@
         </p>
       </div>
 
-      <ul class="text-xs text-secondary-500 space-y-1">
+      <ul class="text-xs text-secondary-400 space-y-1">
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.minlength ? '✓' : '○' }}
           </span>
           <span>Au moins 8 caractères</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.lowercase ? '✓' : '○' }}
           </span>
           <span>Une minuscule</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.uppercase ? '✓' : '○' }}
           </span>
           <span>Une majuscule</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.number ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.number ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.number ? '✓' : '○' }}
           </span>
           <span>Un chiffre</span>
