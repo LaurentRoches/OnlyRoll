@@ -218,6 +218,7 @@ jobs:
             # Create certbot volumes first
             docker volume create production_certbot-certs 2>/dev/null || true
             docker volume create production_certbot-webroot 2>/dev/null || true
+            docker volume create production_certbot-var 2>/dev/null || true
 
             # Check if certificates exist using docker run
             CERT_EXISTS=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
@@ -277,12 +278,12 @@ jobs:
             # Obtain real SSL certificate if needed
             echo "🔐 Checking if real SSL certificate is needed..."
 
-            # Check certificate validity using docker run
+            # Check if certificate is valid for more than 30 days (dummy certs are only valid for 1 day)
             CERT_IS_DUMMY=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
-              "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -enddate 2>/dev/null | grep -q 'Jan.*2025' && echo 'yes' || echo 'no'")
+              "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -checkend 2592000 2>/dev/null && echo 'no' || echo 'yes'")
 
             if [ "$CERT_IS_DUMMY" = "yes" ]; then
-              echo "📝 Dummy certificate detected. Obtaining real certificate from Let's Encrypt..."
+              echo "📝 Certificate needs renewal or is dummy. Obtaining certificate from Let's Encrypt..."
 
               # Wait a bit for nginx to be fully ready
               sleep 5

@@ -29,3 +29,5 @@ frontend/.env.*.local
 
 # Clés JWT (générées localement)
 /backend/config/jwt/*.pem
+
+api_hostinger.json
