@@ -6,6 +6,7 @@
 /backend/.env.local.php
 /backend/.env.*.local
 /backend/coverage.xml
+/backend/coverage/*
 # Uploads (ne pas versionner les fichiers uploadés)
 /backend/public/uploads/*
 !/backend/public/uploads/.gitkeep
@@ -28,3 +29,5 @@ frontend/.env.*.local
 
 # Clés JWT (générées localement)
 /backend/config/jwt/*.pem
+
+api_hostinger.json

@@ -31,3 +31,7 @@ coverage
 
 test-results/
 playwright-report/
+
+# Accessibility reports
+pa11y-report*.json
+.lighthouseci/

@@ -152,7 +152,7 @@ function addToFormula(text: string) {
           v-if="formula"
           @click="clearFormula"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors"
-          title="Effacer"
+          aria-label="Effacer la formule"
         >
           ✕
         </button>
@@ -164,30 +164,35 @@ function addToFormula(text: string) {
           v-for="num in [1, 2, 3, 4]"
           :key="num"
           @click="addToFormula(num.toString())"
+          :aria-label="`Ajouter ${num}`"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           {{ num }}
         </button>
         <button
           @click="addToFormula('d')"
+          aria-label="Ajouter d (dé)"
           class="px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-bold"
         >
           d
         </button>
         <button
           @click="addToFormula('+')"
+          aria-label="Ajouter +"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           +
         </button>
         <button
           @click="addToFormula('-')"
+          aria-label="Ajouter -"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           −
         </button>
         <button
           @click="formula = formula.slice(0, -1)"
+          aria-label="Effacer le dernier caractère"
           class="px-3 py-2 bg-error/80 text-white rounded-lg hover:bg-error transition-colors"
         >
           ⌫
@@ -201,6 +206,7 @@ function addToFormula(text: string) {
       <div class="flex items-center gap-2">
         <button
           @click="modifier--"
+          aria-label="Diminuer le modificateur"
           class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
         >
           −
@@ -208,10 +214,12 @@ function addToFormula(text: string) {
         <input
           v-model.number="modifier"
           type="number"
+          aria-label="Modificateur"
           class="form-input text-center w-20 font-mono font-bold"
         />
         <button
           @click="modifier++"
+          aria-label="Augmenter le modificateur"
           class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
         >
           +

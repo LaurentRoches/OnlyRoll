@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-secondary-800/50 backdrop-blur-sm border-b border-secondary-700">
+  <nav class="bg-secondary-800 backdrop-blur-sm border-b border-secondary-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Logo -->

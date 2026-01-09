@@ -16,6 +16,7 @@
           class="w-5 h-5 text-error flex-shrink-0 mt-0.5"
           fill="currentColor"
           viewBox="0 0 20 20"
+          aria-hidden="true"
         >
           <path
             fill-rule="evenodd"
@@ -106,6 +107,7 @@
           type="button"
           @click="togglePasswordVisibility"
           :disabled="isLoading"
+          :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <svg
@@ -114,6 +116,7 @@
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               stroke-linecap="round"
@@ -122,7 +125,14 @@
               d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
             />
           </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            v-else
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -153,27 +163,27 @@
         </p>
       </div>
 
-      <ul class="text-xs text-secondary-500 space-y-1">
+      <ul class="text-xs text-secondary-400 space-y-1">
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.minlength ? '✓' : '○' }}
           </span>
           <span>Au moins 8 caractères</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.lowercase ? '✓' : '○' }}
           </span>
           <span>Une minuscule</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.uppercase ? '✓' : '○' }}
           </span>
           <span>Une majuscule</span>
         </li>
         <li class="flex items-center space-x-2">
-          <span :class="passwordRules.number ? 'text-success' : 'text-secondary-500'">
+          <span :class="passwordRules.number ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.number ? '✓' : '○' }}
           </span>
           <span>Un chiffre</span>
@@ -202,6 +212,11 @@
           type="button"
           @click="toggleConfirmPasswordVisibility"
           :disabled="isLoading"
+          :aria-label="
+            showConfirmPassword
+              ? 'Masquer la confirmation du mot de passe'
+              : 'Afficher la confirmation du mot de passe'
+          "
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <svg
@@ -210,6 +225,7 @@
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               stroke-linecap="round"
@@ -218,7 +234,14 @@
               d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
             />
           </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            v-else
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -282,6 +305,7 @@
         class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
         fill="none"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <circle
           class="opacity-25"

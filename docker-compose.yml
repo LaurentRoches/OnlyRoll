@@ -99,7 +99,7 @@ services:
     networks:
       - onlyroll-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -152,6 +152,27 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  # ===========================================
+  # FRONTEND TESTS (Unit + Coverage)
+  # ===========================================
+  frontend-test:
+    build:
+      context: ./frontend
+      target: node_test
+    container_name: onlyroll-frontend-test
+    environment:
+      CI: "true"
+      VITE_API_URL: http://nginx/api
+    volumes:
+      - ./frontend:/app:cached
+      - frontend-node-modules:/app/node_modules
+      - ./frontend/coverage:/app/coverage
+    networks:
+      - onlyroll-network
+    profiles:
+      - test
+    command: npm run test:coverage
 
 volumes:
   mysql-data:

@@ -387,6 +387,574 @@ class TokenControllerTest extends WebTestCase
         return $tokenId ? $base . '/' . $tokenId : $base;
     }
 
+    public function testUpdateTokenAsGameMasterSuccess(): void
+    {
+        $token = $this->createToken('Original Name', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            $this->getTokenUrl($token->getId()),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'name' => 'Updated Name',
+                'size' => 2.0,
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Updated Name', $data['name']);
+        $this->assertEquals(2.0, $data['size']);
+    }
+
+    public function testUpdateTokenAsPlayerForbidden(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'PUT',
+            $this->getTokenUrl($token->getId()),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'Hacked Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testUpdateTokenNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            $this->getTokenUrl(99999),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'New Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testManagePermissionsAsGameMasterSuccess(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'add',
+                'userId' => $this->player->getId(),
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testManagePermissionsAsPlayerForbidden(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'controllableBy' => [$this->player->getId()],
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testShowTokenNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request('GET', $this->getTokenUrl(99999));
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testMoveTokenNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl(99999) . '/move',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['x' => 15, 'y' => 20]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testToggleVisibilityNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request('POST', $this->getTokenUrl(99999) . '/toggle-visibility');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testToggleLockNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request('POST', $this->getTokenUrl(99999) . '/toggle-lock');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testDeleteTokenNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request('DELETE', $this->getTokenUrl(99999));
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testListTokensForNonExistentMap(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request('GET', '/api/games/' . $this->game->getId() . '/maps/99999/tokens');
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testCreateTokenForNonExistentMap(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/maps/99999/tokens',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'name' => 'New Token',
+                'type' => 'character',
+                'x' => 5,
+                'y' => 5,
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testListTokensForbiddenForNonParticipant(): void
+    {
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', $this->getTokenUrl());
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testShowTokenForbiddenForNonParticipant(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request('GET', $this->getTokenUrl($token->getId()));
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testMoveTokenWithInvalidData(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/move',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['x' => -1, 'y' => -1]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testManagePermissionsNotFound(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl(99999) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['controllableBy' => []]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testManagePermissionsWithInvalidAction(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'invalid',
+                'userId' => $this->player->getId(),
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testManagePermissionsWithMissingUserId(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'add',
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testAddPermissionsSuccess(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'add',
+                'userId' => $this->player->getId(),
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testRemovePermissionsSuccess(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        // Add permission first by setting it in the token settings
+        $settings = $token->getSettings() ?? [];
+        $settings['controllableBy'] = [$this->player->getId()];
+        $token->setSettings($settings);
+        $this->entityManager->flush();
+
+        // Remove permission
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'remove',
+                'userId' => $this->player->getId(),
+            ]),
+        );
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testUpdateTokenForNonExistentGame(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'New Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testUpdateTokenForNonExistentMap(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'PUT',
+            '/api/games/' . $this->game->getId() . '/maps/99999/tokens/' . $token->getId(),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['name' => 'New Name']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testCreateTokenForNonExistentGame(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'name' => 'New Token',
+                'type' => 'character',
+                'x' => 5,
+                'y' => 5,
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testMoveTokenForbiddenForNonParticipant(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $otherUser = new User();
+        $otherUser->setPseudo('other');
+        $otherUser->setEmail('other@test.com');
+        $otherUser->setPassword('password');
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+
+        $this->client->loginUser($otherUser);
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl($token->getId()) . '/move',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['x' => 10, 'y' => 10]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testToggleVisibilityForNonExistentGame(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-visibility'
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testToggleLockForNonExistentGame(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-lock'
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testDeleteTokenForNonExistentGame(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'DELETE',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId()
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testManagePermissionsForNonExistentGame(): void
+    {
+        $token = $this->createToken('Test Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+        $this->client->request(
+            'POST',
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/permissions',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'action' => 'add',
+                'userId' => $this->player->getId(),
+            ]),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    // ==================== MULTIPART/FORM-DATA TESTS ====================
+
+    public function testCreateTokenWithMultipartFormData(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+
+        // For POST requests, use form parameters directly
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl(),
+            [
+                'name' => 'Test Token Multipart',
+                'type' => 'character',
+                'x' => '10',
+                'y' => '15',
+                'size' => '2.0',
+                'rotation' => '90',
+                'isVisible' => 'true',
+                'isLocked' => 'false',
+                'layer' => 'tokens',
+            ],
+            [],
+            [
+                'CONTENT_TYPE' => 'multipart/form-data',
+            ]
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Test Token Multipart', $response['name']);
+        $this->assertEquals(10, $response['x']);
+        $this->assertEquals(15, $response['y']);
+    }
+
+    public function testCreateTokenWithMultipartFormDataMissingName(): void
+    {
+        $this->client->loginUser($this->gameMaster);
+
+        $this->client->request(
+            'POST',
+            $this->getTokenUrl(),
+            [
+                'type' => 'character',
+                'x' => '10',
+            ],
+            [],
+            ['CONTENT_TYPE' => 'multipart/form-data']
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testUpdateTokenWithMultipartFormDataPut(): void
+    {
+        $token = $this->createToken('Original Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+
+        $boundary = '----WebKitFormBoundary' . uniqid();
+
+        $data = "--{$boundary}\r\n";
+        $data .= "Content-Disposition: form-data; name=\"name\"\r\n\r\n";
+        $data .= "Updated via Multipart\r\n";
+        $data .= "--{$boundary}\r\n";
+        $data .= "Content-Disposition: form-data; name=\"x\"\r\n\r\n";
+        $data .= "20\r\n";
+        $data .= "--{$boundary}\r\n";
+        $data .= "Content-Disposition: form-data; name=\"y\"\r\n\r\n";
+        $data .= "25\r\n";
+        $data .= "--{$boundary}--\r\n";
+
+        $this->client->request(
+            'PUT',
+            $this->getTokenUrl($token->getId()),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'multipart/form-data; boundary=' . $boundary],
+            $data
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('Updated via Multipart', $response['name']);
+        $this->assertEquals(20, $response['x']);
+        $this->assertEquals(25, $response['y']);
+    }
+
+    public function testUpdateTokenWithMultipartFormDataPatch(): void
+    {
+        $token = $this->createToken('Original Token', true);
+
+        $this->client->loginUser($this->gameMaster);
+
+        $boundary = '----WebKitFormBoundary' . uniqid();
+
+        $data = "--{$boundary}\r\n";
+        $data .= "Content-Disposition: form-data; name=\"size\"\r\n\r\n";
+        $data .= "3.5\r\n";
+        $data .= "--{$boundary}\r\n";
+        $data .= "Content-Disposition: form-data; name=\"rotation\"\r\n\r\n";
+        $data .= "180\r\n";
+        $data .= "--{$boundary}--\r\n";
+
+        $this->client->request(
+            'PATCH',
+            $this->getTokenUrl($token->getId()),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'multipart/form-data; boundary=' . $boundary],
+            $data
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(3.5, $response['size']);
+        $this->assertEquals(180, $response['rotation']);
+    }
+
     private function createToken(
         string $name,
         bool $visible,

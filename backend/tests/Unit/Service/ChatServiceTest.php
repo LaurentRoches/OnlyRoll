@@ -209,8 +209,8 @@ class ChatServiceTest extends TestCase
         $messages = [$this->createMock(GameMessage::class)];
 
         $this->messageRepository->expects($this->once())
-            ->method('findByType')
-            ->with($game, MessageType::CHAT)
+            ->method('findMessagesByType')
+            ->with($game, MessageType::CHAT, 50)
             ->willReturn($messages);
 
         $result = $this->chatService->getMessagesByType($game, MessageType::CHAT);

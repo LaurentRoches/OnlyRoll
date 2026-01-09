@@ -125,6 +125,7 @@ services:
       - backend-uploads:/var/www/html/public/uploads:ro
       - certbot-webroot:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
+      - certbot-var:/var/lib/letsencrypt:ro
     ports:
       - "80:80"
       - "443:443"
@@ -150,6 +151,7 @@ services:
     volumes:
       - certbot-webroot:/var/www/certbot
       - certbot-certs:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
       - onlyroll-network
@@ -192,6 +194,8 @@ volumes:
   certbot-webroot:
     driver: local
   certbot-certs:
+    driver: local
+  certbot-var:
     driver: local
 
 networks:
