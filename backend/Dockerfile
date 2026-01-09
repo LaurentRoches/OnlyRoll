@@ -75,7 +75,7 @@ RUN mkdir -p var/cache var/log var/sessions \
     && chown -R www-data:www-data var \
     && chmod -R 775 var
 
-# Copier l'entrypoint
+# Copier et configurer l'entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 RUN chmod +x /usr/local/bin/entrypoint
 

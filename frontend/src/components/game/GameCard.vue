@@ -70,9 +70,14 @@ function handleJoin(event: Event) {
 </script>
 
 <template>
-  <div
+  <article
     class="bg-secondary-800 rounded-lg overflow-hidden border border-secondary-700 hover:border-primary-500 transition-all duration-300 cursor-pointer group"
     @click="viewGame"
+    @keydown.enter="viewGame"
+    @keydown.space.prevent="viewGame"
+    tabindex="0"
+    role="button"
+    :aria-label="`Voir la partie ${game.name}`"
   >
     <!-- Header Image avec gradient gris/violet pâle comme maquette -->
     <div
@@ -93,7 +98,7 @@ function handleJoin(event: Event) {
         <div
           class="flex items-center gap-1 text-secondary-200 text-xs bg-secondary-900/60 px-2 py-1 rounded-md backdrop-blur-sm"
         >
-          <LockClosedIcon class="w-3 h-3" />
+          <LockClosedIcon class="w-3 h-3" aria-hidden="true" />
           <span>Privée</span>
         </div>
       </div>
@@ -120,6 +125,7 @@ function handleJoin(event: Event) {
           <UsersIcon
             class="w-5 h-5"
             :class="onlinePlayersCount > 0 ? 'text-success' : 'text-secondary-400'"
+            aria-hidden="true"
           />
           <span class="text-secondary-400">
             <span :class="onlinePlayersCount > 0 ? 'text-success font-semibold' : ''">{{
@@ -145,5 +151,5 @@ function handleJoin(event: Event) {
         </button>
       </div>
     </div>
-  </div>
+  </article>
 </template>
