@@ -10,7 +10,7 @@
             class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
             <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center">
-              <img style="width: 100%; height: 100%" src="/logo.png" alt="Logo OnlyRoll" />
+              <img style="width: 100%; height: 100%" src="/images/logo.png" alt="Logo OnlyRoll" />
             </div>
             <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
           </RouterLink>
@@ -66,7 +66,7 @@
       <!-- Background Image avec overlay - optimisé pour visibilité tout en maintenant contraste WCAG -->
       <div class="absolute inset-0 z-0">
         <img
-          src="/hero_banner_onlyroll.jpg"
+          src="/images/hero_banner_onlyroll.jpg"
           alt=""
           class="w-full h-full object-cover opacity-40"
           aria-hidden="true"
