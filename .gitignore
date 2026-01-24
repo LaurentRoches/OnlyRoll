@@ -20,6 +20,7 @@ frontend/.env.*.local
 # Docker
 .env.docker
 .env.docker.local
+docker-compose.override.yml
 
 # Fichiers d'environnement sensibles
 .env.local
