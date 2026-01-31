@@ -6,6 +6,7 @@ import { chatApi } from './chatApi'
 import { gameApi } from './gameApi'
 import { mapApi } from './mapApi'
 import { tokenApi } from './tokenApi'
+import { securityApi } from './securityApi'
 
 // Export du client HTTP de base
 export { apiClient } from './apiClient'
@@ -17,6 +18,7 @@ export { gameApi } from './gameApi'
 export { mapApi } from './mapApi'
 export { tokenApi } from './tokenApi'
 export { chatApi } from './chatApi'
+export { securityApi } from './securityApi'
 
 export type { CreateMapDTO, UpdateMapDTO } from './mapApi'
 
@@ -39,4 +41,5 @@ export const api = {
   maps: mapApi,
   tokens: tokenApi,
   chat: chatApi,
+  security: securityApi,
 }

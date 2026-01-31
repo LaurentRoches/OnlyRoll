@@ -132,6 +132,41 @@ describe('chatStore', () => {
     expect(chatApi.list).not.toHaveBeenCalled()
   })
 
+  it('should not load more when isLoading is true', async () => {
+    const store = useChatStore()
+    store.hasMore = true
+    store.isLoading = true
+
+    await store.loadMoreMessages(1)
+
+    expect(chatApi.list).not.toHaveBeenCalled()
+  })
+
+  it('should set hasMore to false when loadMoreMessages returns empty array', async () => {
+    const store = useChatStore()
+    store.hasMore = true
+    store.messages = [createMockMessage({ id: 2 })]
+
+    vi.mocked(chatApi.list).mockResolvedValueOnce([])
+
+    await store.loadMoreMessages(1)
+
+    expect(store.hasMore).toBe(false)
+  })
+
+  it('should handle loadMessagesSince with non-array response', async () => {
+    const store = useChatStore()
+    store.messages = [createMockMessage({ id: 1 })]
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(chatApi.listSince).mockResolvedValueOnce(null as any)
+
+    await store.loadMessagesSince(1, '2024-01-01')
+
+    // Should not throw and messages should remain unchanged
+    expect(store.messages).toHaveLength(1)
+  })
+
   // ========== LOAD SINCE ==========
 
   it('should load messages since timestamp', async () => {
@@ -230,6 +265,188 @@ describe('chatStore', () => {
     expect(store.messages).toContainEqual(mockMessage)
   })
 
+  // ========== ERROR HANDLING FOR SEND FUNCTIONS ==========
+
+  it('should handle sendMessage error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendChat).mockRejectedValueOnce({
+      message: 'Send failed',
+    })
+
+    await expect(store.sendMessage(1, 'Hello')).rejects.toBeDefined()
+    expect(store.error).toBe('Send failed')
+    expect(store.isSending).toBe(false)
+  })
+
+  it('should handle sendMessage error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendChat).mockRejectedValueOnce({})
+
+    await expect(store.sendMessage(1, 'Hello')).rejects.toBeDefined()
+    expect(store.error).toBe("Erreur lors de l'envoi du message")
+  })
+
+  it('should handle sendEmote error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendEmote).mockRejectedValueOnce({
+      message: 'Emote failed',
+    })
+
+    await expect(store.sendEmote(1, '*waves*')).rejects.toBeDefined()
+    expect(store.error).toBe('Emote failed')
+    expect(store.isSending).toBe(false)
+  })
+
+  it('should handle sendEmote error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendEmote).mockRejectedValueOnce({})
+
+    await expect(store.sendEmote(1, '*waves*')).rejects.toBeDefined()
+    expect(store.error).toBe("Erreur lors de l'envoi de l'émote")
+  })
+
+  it('should handle sendWhisper error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendWhisper).mockRejectedValueOnce({
+      message: 'Whisper failed',
+    })
+
+    await expect(store.sendWhisper(1, 2, 'Secret')).rejects.toBeDefined()
+    expect(store.error).toBe('Whisper failed')
+    expect(store.isSending).toBe(false)
+  })
+
+  it('should handle sendWhisper error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendWhisper).mockRejectedValueOnce({})
+
+    await expect(store.sendWhisper(1, 2, 'Secret')).rejects.toBeDefined()
+    expect(store.error).toBe("Erreur lors de l'envoi du chuchotement")
+  })
+
+  it('should handle sendSystemMessage error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendSystem).mockRejectedValueOnce({
+      message: 'System message failed',
+    })
+
+    await expect(store.sendSystemMessage(1, 'Alert')).rejects.toBeDefined()
+    expect(store.error).toBe('System message failed')
+    expect(store.isSending).toBe(false)
+  })
+
+  it('should handle sendSystemMessage error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.sendSystem).mockRejectedValueOnce({})
+
+    await expect(store.sendSystemMessage(1, 'Alert')).rejects.toBeDefined()
+    expect(store.error).toBe("Erreur lors de l'envoi du message système")
+  })
+
+  it('should handle rollDice error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.rollDice).mockRejectedValueOnce({
+      message: 'Dice roll failed',
+    })
+
+    await expect(store.rollDice(1, '2d6')).rejects.toBeDefined()
+    expect(store.error).toBe('Dice roll failed')
+    expect(store.isSending).toBe(false)
+  })
+
+  it('should handle rollDice error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.rollDice).mockRejectedValueOnce({})
+
+    await expect(store.rollDice(1, '2d6')).rejects.toBeDefined()
+    expect(store.error).toBe('Erreur lors du lancer de dés')
+  })
+
+  it('should handle deleteMessage error', async () => {
+    const store = useChatStore()
+    store.messages = [createMockMessage({ id: 1 })]
+
+    vi.mocked(chatApi.delete).mockRejectedValueOnce({
+      message: 'Delete failed',
+    })
+
+    await expect(store.deleteMessage(1)).rejects.toBeDefined()
+    expect(store.error).toBe('Delete failed')
+    expect(store.messages).toHaveLength(1) // Message not deleted on error
+  })
+
+  it('should handle deleteMessage error without message property', async () => {
+    const store = useChatStore()
+    store.messages = [createMockMessage({ id: 1 })]
+
+    vi.mocked(chatApi.delete).mockRejectedValueOnce({})
+
+    await expect(store.deleteMessage(1)).rejects.toBeDefined()
+    expect(store.error).toBe('Erreur lors de la suppression du message')
+  })
+
+  it('should handle loadMoreMessages error', async () => {
+    const store = useChatStore()
+    store.hasMore = true
+
+    vi.mocked(chatApi.list).mockRejectedValueOnce({
+      message: 'Load more failed',
+    })
+
+    await expect(store.loadMoreMessages(1)).rejects.toBeDefined()
+    expect(store.error).toBe('Load more failed')
+    expect(store.isLoading).toBe(false)
+  })
+
+  it('should handle loadMoreMessages error without message property', async () => {
+    const store = useChatStore()
+    store.hasMore = true
+
+    vi.mocked(chatApi.list).mockRejectedValueOnce({})
+
+    await expect(store.loadMoreMessages(1)).rejects.toBeDefined()
+    expect(store.error).toBe('Erreur lors du chargement des messages')
+  })
+
+  it('should handle loadMessagesSince error', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.listSince).mockRejectedValueOnce({
+      message: 'Load since failed',
+    })
+
+    await expect(store.loadMessagesSince(1, '2024-01-01')).rejects.toBeDefined()
+    expect(store.error).toBe('Load since failed')
+  })
+
+  it('should handle loadMessagesSince error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.listSince).mockRejectedValueOnce({})
+
+    await expect(store.loadMessagesSince(1, '2024-01-01')).rejects.toBeDefined()
+    expect(store.error).toBe('Erreur lors du chargement des nouveaux messages')
+  })
+
+  it('should handle loadRecentMessages error without message property', async () => {
+    const store = useChatStore()
+
+    vi.mocked(chatApi.listRecent).mockRejectedValueOnce({})
+
+    await expect(store.loadRecentMessages(1)).rejects.toBeDefined()
+    expect(store.error).toBe('Erreur lors du chargement des messages')
+  })
+
   // ========== DICE ROLLS ==========
 
   it('should roll dice successfully', async () => {
@@ -252,6 +469,21 @@ describe('chatStore', () => {
 
     expect(chatApi.rollDice).toHaveBeenCalledWith(1, { formula: '2d6', isInCharacter: true })
     expect(store.messages).toContainEqual(mockMessage)
+  })
+
+  it('should roll dice with recipient (private roll)', async () => {
+    const store = useChatStore()
+    const mockMessage = createMockMessage({
+      id: 1,
+      type: MessageType.DICE_ROLL,
+      content: '2d6',
+    })
+
+    vi.mocked(chatApi.rollDice).mockResolvedValueOnce(mockMessage)
+
+    await store.rollDice(1, '2d6', true, 2)
+
+    expect(chatApi.rollDice).toHaveBeenCalledWith(1, { formula: '2d6', isInCharacter: true, recipientId: 2 })
   })
 
   // ========== DELETE MESSAGE ==========
@@ -292,6 +524,89 @@ describe('chatStore', () => {
     expect(store.messages[0].content).toBe('Hello from Mercure')
   })
 
+  it('should handle chat message from Mercure with recipient', () => {
+    const store = useChatStore()
+    const data = {
+      messageId: 1,
+      type: 'whisper' as MessageType,
+      content: 'Secret whisper',
+      userId: 1,
+      userName: 'Sender',
+      isIC: false,
+      createdAt: '2024-01-01',
+      recipientId: 2,
+      recipientName: 'Receiver',
+    }
+
+    store.handleChatMessage(data)
+
+    expect(store.messages).toHaveLength(1)
+    expect(store.messages[0].recipient).toBeDefined()
+    expect(store.messages[0].recipient?.id).toBe(2)
+    expect(store.messages[0].recipient?.pseudo).toBe('Receiver')
+  })
+
+  it('should handle chat message from Mercure with recipient but no name', () => {
+    const store = useChatStore()
+    const data = {
+      messageId: 1,
+      type: 'whisper' as MessageType,
+      content: 'Secret whisper',
+      userId: 1,
+      userName: 'Sender',
+      isIC: false,
+      createdAt: '2024-01-01',
+      recipientId: 2,
+    }
+
+    store.handleChatMessage(data)
+
+    expect(store.messages).toHaveLength(1)
+    expect(store.messages[0].recipient?.pseudo).toBe('Inconnu')
+  })
+
+  it('should handle chat message from Mercure with diceResult', () => {
+    const store = useChatStore()
+    const data = {
+      messageId: 1,
+      type: 'dice_roll' as MessageType,
+      content: '2d6',
+      userId: 1,
+      userName: 'User',
+      isIC: true,
+      createdAt: '2024-01-01',
+      diceResult: {
+        formula: '2d6',
+        rolls: [3, 4],
+        total: 7,
+        modifier: 2,
+      },
+    }
+
+    store.handleChatMessage(data)
+
+    expect(store.messages).toHaveLength(1)
+    expect(store.messages[0].diceResult).toBeDefined()
+    expect(store.messages[0].diceResult?.formula).toBe('2d6')
+    expect(store.messages[0].diceResult?.total).toBe(7)
+  })
+
+  it('should ignore chat message from Mercure without messageId', () => {
+    const store = useChatStore()
+    const data = {
+      type: 'chat' as MessageType,
+      content: 'Hello',
+      userId: 1,
+      userName: 'User',
+      createdAt: '2024-01-01',
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.handleChatMessage(data as any)
+
+    expect(store.messages).toHaveLength(0)
+  })
+
   it('should handle dice roll from Mercure', () => {
     const store = useChatStore()
     const data = {
@@ -314,6 +629,16 @@ describe('chatStore', () => {
     expect(store.messages[0].type).toBe(MessageType.DICE_ROLL)
   })
 
+  it('should ignore dice roll from Mercure without message', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = {} as any
+
+    store.handleDiceRoll(data)
+
+    expect(store.messages).toHaveLength(0)
+  })
+
   it('should handle message deleted from Mercure', () => {
     const store = useChatStore()
     store.messages = [createMockMessage({ id: 1, content: 'To delete' })]
@@ -321,6 +646,16 @@ describe('chatStore', () => {
     store.handleMessageDeleted({ messageId: 1 })
 
     expect(store.messages).toHaveLength(0)
+  })
+
+  it('should ignore message deleted from Mercure without messageId', () => {
+    const store = useChatStore()
+    store.messages = [createMockMessage({ id: 1, content: 'Keep this' })]
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.handleMessageDeleted({} as any)
+
+    expect(store.messages).toHaveLength(1)
   })
 
   // ========== COMPUTED PROPERTIES ==========
@@ -397,6 +732,72 @@ describe('chatStore', () => {
     expect(store.lastMessage?.id).toBe(2)
   })
 
+  it('should return null for lastMessage when empty', () => {
+    const store = useChatStore()
+    store.messages = []
+
+    expect(store.lastMessage).toBeNull()
+  })
+
+  it('should return empty array for messagesByType with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.messagesByType(MessageType.CHAT)).toEqual([])
+  })
+
+  it('should return empty array for chatMessages with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.chatMessages).toEqual([])
+  })
+
+  it('should return empty array for systemMessages with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.systemMessages).toEqual([])
+  })
+
+  it('should return empty array for diceRolls with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.diceRolls).toEqual([])
+  })
+
+  it('should return 0 for messagesCount with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.messagesCount).toBe(0)
+  })
+
+  it('should return null for lastMessage with non-array', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    expect(store.lastMessage).toBeNull()
+  })
+
+  it('should get system messages only', () => {
+    const store = useChatStore()
+    store.messages = [
+      createMockMessage({ id: 1, type: MessageType.CHAT }),
+      createMockMessage({ id: 2, type: MessageType.SYSTEM }),
+      createMockMessage({ id: 3, type: MessageType.SYSTEM }),
+    ]
+
+    expect(store.systemMessages).toHaveLength(2)
+  })
+
   // ========== UTILS ==========
 
   it('should clear messages', () => {
@@ -436,6 +837,27 @@ describe('chatStore', () => {
 
     expect(sorted).toEqual([])
     expect(store.messages).toEqual([])
+  })
+
+  it('should handle non-array messages in addMessageToList via handleChatMessage', () => {
+    const store = useChatStore()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store.messages = null as any
+
+    const data = {
+      messageId: 1,
+      type: 'chat' as MessageType,
+      content: 'Test message',
+      userId: 1,
+      userName: 'User',
+      isIC: false,
+      createdAt: '2024-01-01',
+    }
+
+    store.handleChatMessage(data)
+
+    expect(Array.isArray(store.messages)).toBe(true)
+    expect(store.messages).toHaveLength(1)
   })
 
   it('should not add duplicate messages', () => {
