@@ -77,16 +77,34 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
-        // Vérifie qu'un cookie a été ajouté
+        // Vérifie que 3 cookies ont été ajoutés : jwt_token, remember_me, last_activity
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(3, $cookies);
 
-        $cookie = $cookies[0];
-        $this->assertSame('jwt_token', $cookie->getName());
-        $this->assertSame('test_jwt_token', $cookie->getValue());
-        $this->assertTrue($cookie->isHttpOnly());
-        $this->assertSame('/', $cookie->getPath());
-        $this->assertSame('lax', $cookie->getSameSite());
+        // Récupérer les cookies par nom
+        $cookiesByName = [];
+        foreach ($cookies as $cookie) {
+            $cookiesByName[$cookie->getName()] = $cookie;
+        }
+
+        // Vérifier le cookie jwt_token
+        $this->assertArrayHasKey('jwt_token', $cookiesByName);
+        $jwtCookie = $cookiesByName['jwt_token'];
+        $this->assertSame('test_jwt_token', $jwtCookie->getValue());
+        $this->assertTrue($jwtCookie->isHttpOnly());
+        $this->assertSame('/', $jwtCookie->getPath());
+        $this->assertSame('lax', $jwtCookie->getSameSite());
+
+        // Vérifier le cookie remember_me
+        $this->assertArrayHasKey('remember_me', $cookiesByName);
+        $rememberMeCookie = $cookiesByName['remember_me'];
+        $this->assertSame('1', $rememberMeCookie->getValue());
+        $this->assertTrue($rememberMeCookie->isHttpOnly());
+
+        // Vérifier le cookie last_activity
+        $this->assertArrayHasKey('last_activity', $cookiesByName);
+        $lastActivityCookie = $cookiesByName['last_activity'];
+        $this->assertTrue($lastActivityCookie->isHttpOnly());
 
         // Vérifie que les données ont été modifiées
         $eventData = $event->getData();
@@ -118,13 +136,26 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
-        // Vérifie qu'un cookie a été ajouté
+        // Vérifie que 2 cookies ont été ajoutés : jwt_token et last_activity (pas de remember_me)
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(2, $cookies);
 
-        $cookie = $cookies[0];
-        $this->assertSame('jwt_token', $cookie->getName());
-        $this->assertSame('test_jwt_token', $cookie->getValue());
+        // Récupérer les cookies par nom
+        $cookiesByName = [];
+        foreach ($cookies as $cookie) {
+            $cookiesByName[$cookie->getName()] = $cookie;
+        }
+
+        // Vérifier le cookie jwt_token
+        $this->assertArrayHasKey('jwt_token', $cookiesByName);
+        $jwtCookie = $cookiesByName['jwt_token'];
+        $this->assertSame('test_jwt_token', $jwtCookie->getValue());
+
+        // Vérifier le cookie last_activity
+        $this->assertArrayHasKey('last_activity', $cookiesByName);
+
+        // Vérifier que remember_me n'est PAS présent
+        $this->assertArrayNotHasKey('remember_me', $cookiesByName);
     }
 
     public function testOnAuthenticationSuccessWithTokenWithoutRequest(): void
@@ -139,13 +170,26 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
-        // Vérifie qu'un cookie a été ajouté avec le comportement par défaut (rememberMe = false)
+        // Vérifie que 2 cookies ont été ajoutés avec le comportement par défaut (rememberMe = false)
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(2, $cookies);
 
-        $cookie = $cookies[0];
-        $this->assertSame('jwt_token', $cookie->getName());
-        $this->assertSame('test_jwt_token', $cookie->getValue());
+        // Récupérer les cookies par nom
+        $cookiesByName = [];
+        foreach ($cookies as $cookie) {
+            $cookiesByName[$cookie->getName()] = $cookie;
+        }
+
+        // Vérifier le cookie jwt_token
+        $this->assertArrayHasKey('jwt_token', $cookiesByName);
+        $jwtCookie = $cookiesByName['jwt_token'];
+        $this->assertSame('test_jwt_token', $jwtCookie->getValue());
+
+        // Vérifier le cookie last_activity
+        $this->assertArrayHasKey('last_activity', $cookiesByName);
+
+        // Vérifier que remember_me n'est PAS présent
+        $this->assertArrayNotHasKey('remember_me', $cookiesByName);
     }
 
     public function testOnAuthenticationSuccessWithTokenAndInvalidJson(): void
@@ -170,8 +214,21 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
         $event = new AuthenticationSuccessEvent($data, $this->createMockUser(), $response);
         $this->subscriber->onAuthenticationSuccess($event);
 
-        // Vérifie qu'un cookie a été ajouté malgré le JSON invalide
+        // Vérifie que 2 cookies ont été ajoutés malgré le JSON invalide (rememberMe = false par défaut)
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(2, $cookies);
+
+        // Récupérer les cookies par nom
+        $cookiesByName = [];
+        foreach ($cookies as $cookie) {
+            $cookiesByName[$cookie->getName()] = $cookie;
+        }
+
+        // Vérifier que jwt_token et last_activity sont présents
+        $this->assertArrayHasKey('jwt_token', $cookiesByName);
+        $this->assertArrayHasKey('last_activity', $cookiesByName);
+
+        // Vérifier que remember_me n'est PAS présent
+        $this->assertArrayNotHasKey('remember_me', $cookiesByName);
     }
 }
