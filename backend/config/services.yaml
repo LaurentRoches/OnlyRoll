@@ -36,3 +36,13 @@ services:
     App\Service\MercureTokenService:
         arguments:
             $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
+
+    # Configuration du subscriber des headers de sécurité OWASP
+    App\EventSubscriber\SecurityHeadersSubscriber:
+        arguments:
+            $appEnv: '%kernel.environment%'
+
+    # Configuration du subscriber de rafraîchissement du cookie JWT (sliding session)
+    App\EventSubscriber\JwtCookieRefreshSubscriber:
+        arguments:
+            $appEnv: '%kernel.environment%'

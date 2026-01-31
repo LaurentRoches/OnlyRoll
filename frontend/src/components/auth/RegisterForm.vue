@@ -87,9 +87,55 @@
 
     <!-- Champ Mot de passe -->
     <div class="space-y-1">
-      <label for="password" class="block text-sm font-medium text-secondary-200">
-        Mot de passe <span class="text-error">*</span>
-      </label>
+      <div class="flex items-center justify-between">
+        <label for="password" class="block text-sm font-medium text-secondary-200">
+          Mot de passe <span class="text-error">*</span>
+        </label>
+        <button
+          type="button"
+          @click="handleGeneratePassword"
+          :disabled="isLoading || isGenerating"
+          class="inline-flex items-center px-2 py-1 text-xs font-medium text-primary-400 hover:text-primary-300 disabled:text-secondary-500 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg
+            v-if="isGenerating"
+            class="animate-spin -ml-0.5 mr-1.5 h-3 w-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <svg
+            v-else
+            class="w-3 h-3 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+            />
+          </svg>
+          {{ isGenerating ? 'Génération...' : 'Générer un mot de passe sécurisé' }}
+        </button>
+      </div>
       <div class="relative">
         <input
           id="password"
@@ -100,8 +146,8 @@
           required
           :disabled="isLoading"
           class="block w-full px-4 py-3 pr-12 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          placeholder="••••••••"
-          minlength="8"
+          placeholder="••••••••••••"
+          minlength="12"
         />
         <button
           type="button"
@@ -168,25 +214,31 @@
           <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.minlength ? '✓' : '○' }}
           </span>
-          <span>Au moins 8 caractères</span>
+          <span>Au moins 12 caractères</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.lowercase ? '✓' : '○' }}
           </span>
-          <span>Une minuscule</span>
+          <span>Une minuscule (a-z)</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.uppercase ? '✓' : '○' }}
           </span>
-          <span>Une majuscule</span>
+          <span>Une majuscule (A-Z)</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.number ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.number ? '✓' : '○' }}
           </span>
-          <span>Un chiffre</span>
+          <span>Un chiffre (0-9)</span>
+        </li>
+        <li class="flex items-center space-x-2">
+          <span :class="passwordRules.special ? 'text-success' : 'text-secondary-400'">
+            {{ passwordRules.special ? '✓' : '○' }}
+          </span>
+          <span>Un caractère spécial (!@#$%&*...)</span>
         </li>
       </ul>
     </div>
@@ -338,12 +390,14 @@
 import { ref, computed, watch } from 'vue'
 import { useAuth } from '@/composables/useAuth'
 import { useFormValidation, validators } from '@/composables/useFormValidation'
+import { usePasswordGenerator } from '@/composables/usePasswordGenerator'
 import type { RegisterCredentials } from '@/types/auth'
 import { logger } from '@/utils/logger'
 
 // Composables
 const { register, isLoading, error, clearError } = useAuth()
 const { validationErrors, validateFields, clearErrors } = useFormValidation()
+const { generate: generatePassword, isGenerating } = usePasswordGenerator()
 
 // État du formulaire
 const form = ref<RegisterCredentials & { acceptTerms: boolean }>({
@@ -367,12 +421,13 @@ watch(
   }
 )
 
-// Règles de mot de passe pour l'indicateur de force
+// Règles de mot de passe pour l'indicateur de force (NIST SP 800-63B)
 const passwordRules = computed(() => ({
-  minlength: form.value.password.length >= 8,
+  minlength: form.value.password.length >= 12,
   lowercase: /[a-z]/.test(form.value.password),
   uppercase: /[A-Z]/.test(form.value.password),
   number: /\d/.test(form.value.password),
+  special: /[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/.test(form.value.password),
 }))
 
 const passwordsMatch = computed(() => {
@@ -387,25 +442,28 @@ const passwordStrength = computed(() => {
   if (passwordRules.value.lowercase) score++
   if (passwordRules.value.uppercase) score++
   if (passwordRules.value.number) score++
-  if (/[^A-Za-z0-9]/.test(form.value.password)) score++ // Caractère spécial
+  if (passwordRules.value.special) score++
+  // Bonus pour longueur > 16
+  if (form.value.password.length >= 16) score++
 
   return score
 })
 
 const passwordStrengthWidth = computed(() => {
-  return `${(passwordStrength.value / 5) * 100}%`
+  return `${(passwordStrength.value / 6) * 100}%`
 })
 
 const passwordStrengthColor = computed(() => {
   if (passwordStrength.value <= 2) return 'bg-error'
-  if (passwordStrength.value <= 3) return 'bg-warning'
+  if (passwordStrength.value <= 4) return 'bg-warning'
   return 'bg-success'
 })
 
 const passwordStrengthText = computed(() => {
   if (passwordStrength.value <= 2) return 'Mot de passe faible'
-  if (passwordStrength.value <= 3) return 'Mot de passe moyen'
-  return 'Mot de passe fort'
+  if (passwordStrength.value <= 4) return 'Mot de passe moyen'
+  if (passwordStrength.value === 5) return 'Mot de passe fort'
+  return 'Mot de passe excellent'
 })
 
 const isFormValid = computed(() => {
@@ -417,6 +475,7 @@ const isFormValid = computed(() => {
     passwordRules.value.lowercase &&
     passwordRules.value.uppercase &&
     passwordRules.value.number &&
+    passwordRules.value.special &&
     passwordsMatch.value &&
     form.value.acceptTerms
   )
@@ -456,6 +515,25 @@ const toggleConfirmPasswordVisibility = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
+// Génération de mot de passe sécurisé
+const handleGeneratePassword = async () => {
+  const password = await generatePassword({
+    length: 16,
+    includeLowercase: true,
+    includeUppercase: true,
+    includeDigits: true,
+    includeSpecial: true,
+    excludeAmbiguous: false,
+  })
+
+  if (password) {
+    form.value.password = password
+    form.value.confirmPassword = password
+    showPassword.value = true
+    showConfirmPassword.value = true
+  }
+}
+
 const markFieldAsTouched = (fieldName: string) => {
   touchedFields.value.add(fieldName)
 }
@@ -492,8 +570,8 @@ const validateForm = (): boolean => {
       rules: [
         { validator: validators.required, message: 'Le mot de passe est requis' },
         {
-          validator: validators.minLength(8),
-          message: 'Le mot de passe doit faire au moins 8 caractères',
+          validator: validators.minLength(12),
+          message: 'Le mot de passe doit faire au moins 12 caractères',
         },
         {
           validator: (v) => /[a-z]/.test(String(v)),
@@ -506,6 +584,10 @@ const validateForm = (): boolean => {
         {
           validator: (v) => /\d/.test(String(v)),
           message: 'Le mot de passe doit contenir au moins un chiffre',
+        },
+        {
+          validator: (v) => /[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/.test(String(v)),
+          message: 'Le mot de passe doit contenir au moins un caractère spécial',
         },
       ],
     },

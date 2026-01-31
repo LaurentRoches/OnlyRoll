@@ -49,8 +49,8 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
         }
 
         // Définir l'expiration du cookie selon rememberMe
-        // Si rememberMe est true : 30 jours, sinon : 1 heure
-        $expirationTime = $rememberMe ? '+30 days' : '+1 hour';
+        // Si rememberMe est true : 30 jours, sinon : 2 heures (sliding session)
+        $expirationTime = $rememberMe ? '+30 days' : '+2 hours';
 
         // En production, utiliser secure=true uniquement si on a HTTPS
         // Pour l'instant, on désactive secure car on est en HTTP
@@ -67,6 +67,32 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
             ->withSameSite(Cookie::SAMESITE_LAX);
 
         $response->headers->setCookie($cookie);
+
+        // Cookie marqueur pour "remember me" (utilisé par JwtCookieRefreshSubscriber)
+        if ($rememberMe) {
+            $rememberMeCookie = Cookie::create('remember_me')
+                ->withValue('1')
+                ->withExpires(new DateTime('+30 days'))
+                ->withPath('/')
+                ->withDomain(null)
+                ->withSecure($isProduction && $isHttps)
+                ->withHttpOnly(true)
+                ->withSameSite(Cookie::SAMESITE_LAX);
+
+            $response->headers->setCookie($rememberMeCookie);
+        }
+
+        // Cookie de dernière activité pour sliding session
+        $lastActivityCookie = Cookie::create('last_activity')
+            ->withValue((string) time())
+            ->withExpires(new DateTime($expirationTime))
+            ->withPath('/')
+            ->withDomain(null)
+            ->withSecure($isProduction && $isHttps)
+            ->withHttpOnly(true)
+            ->withSameSite(Cookie::SAMESITE_LAX);
+
+        $response->headers->setCookie($lastActivityCookie);
 
         $event->setData([
             'success' => true,
