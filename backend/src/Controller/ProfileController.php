@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -84,6 +85,7 @@ final class ProfileController extends AbstractController
     #[Route('/password', name: 'change_password', methods: ['PUT'])]
     public function changePassword(
         Request $request,
+        #[Autowire(service: 'password_change_limiter.limiter')]
         RateLimiterFactory $passwordChangeLimiter,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
