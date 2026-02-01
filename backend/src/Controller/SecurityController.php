@@ -9,6 +9,7 @@ use App\DTO\Security\GeneratePasswordDTO;
 use App\Service\DtoValidatorService;
 use App\Service\PasswordGeneratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -37,9 +38,9 @@ final class SecurityController extends AbstractController
     #[Route('/generate-password', name: 'generate_password', methods: ['POST'])]
     public function generatePassword(
         Request $request,
+        #[Autowire(service: 'limiter.password_change_limiter')]
         RateLimiterFactory $passwordChangeLimiter,
     ): JsonResponse {
-        // Rate limiting basé sur l'IP pour éviter les abus
         $limiter = $passwordChangeLimiter->create($request->getClientIp() ?? 'unknown');
 
         if (false === $limiter->consume(1)->isAccepted()) {
@@ -48,7 +49,6 @@ final class SecurityController extends AbstractController
             ], 429);
         }
 
-        // Validation du DTO (avec valeurs par défaut si body vide)
         $content = $request->getContent();
         if ('' === $content || '{}' === $content) {
             $content = '{}';

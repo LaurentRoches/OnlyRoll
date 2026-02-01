@@ -51,7 +51,6 @@ final class UserResponseDTO
     {
         $dto = new self();
 
-        // Gestion du cas où l'ID serait null (ne devrait pas arriver)
         $userId = $user->getId();
         if (null === $userId) {
             throw new RuntimeException('User ID cannot be null');
@@ -71,7 +70,6 @@ final class UserResponseDTO
         return $dto;
     }
 
-    // Getters
     public function getId(): int
     {
         return $this->id;

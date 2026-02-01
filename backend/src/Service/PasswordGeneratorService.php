@@ -67,8 +67,6 @@ final class PasswordGeneratorService
             ++$attempts;
 
             if ($attempts >= self::MAX_GENERATION_ATTEMPTS) {
-                // Après trop de tentatives, on retourne le dernier mot de passe généré
-                // même s'il est "courant" (très peu probable avec nos règles)
                 break;
             }
         } while ($checkCommonPassword && CommonPasswords::isCommon($password));
@@ -127,41 +125,35 @@ final class PasswordGeneratorService
             ++$score;
         }
 
-        // Minuscules
         if (preg_match('/[a-z]/', $password)) {
             ++$score;
         } else {
             $feedback[] = 'Au moins une minuscule requise';
         }
 
-        // Majuscules
         if (preg_match('/[A-Z]/', $password)) {
             ++$score;
         } else {
             $feedback[] = 'Au moins une majuscule requise';
         }
 
-        // Chiffres
         if (preg_match('/\d/', $password)) {
             ++$score;
         } else {
             $feedback[] = 'Au moins un chiffre requis';
         }
 
-        // Caractères spéciaux
         if (preg_match('/[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/', $password)) {
             ++$score;
         } else {
             $feedback[] = 'Au moins un caractère spécial requis (!@#$%&*()_+-=[]{}|;:,.<>?)';
         }
 
-        // Vérification mot de passe courant
         if (CommonPasswords::isCommon($password)) {
             $score = max(0, $score - 3);
             $feedback[] = 'Ce mot de passe est trop courant';
         }
 
-        // Déterminer la force
         $strength = match (true) {
             $score >= 6 => 'excellent',
             $score >= 5 => 'fort',
@@ -234,7 +226,6 @@ final class PasswordGeneratorService
         $digits = self::DIGITS;
 
         if ($excludeAmbiguous) {
-            // Exclure les caractères ambigus: 0, O, o, 1, l, I
             $lowercase = str_replace(['o', 'l'], '', $lowercase);
             $uppercase = str_replace(['O', 'I'], '', $uppercase);
             $digits = str_replace(['0', '1'], '', $digits);
@@ -275,19 +266,16 @@ final class PasswordGeneratorService
         $required = $charSets['required'];
         $allCharsLength = strlen($allChars);
 
-        // Commencer avec un caractère de chaque ensemble requis
         $password = [];
         foreach ($required as $charSet) {
             $password[] = $charSet[random_int(0, strlen($charSet) - 1)];
         }
 
-        // Remplir le reste avec des caractères aléatoires
         $remainingLength = $length - count($password);
         for ($i = 0; $i < $remainingLength; ++$i) {
             $password[] = $allChars[random_int(0, $allCharsLength - 1)];
         }
 
-        // Mélanger pour éviter que les caractères requis soient toujours au début
         shuffle($password);
 
         return implode('', $password);

@@ -67,7 +67,10 @@
       "Bash(then sed -i 's/\\\\r$//' \"$f\")",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(ls:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run format:check:*)"
     ]
   }
 }

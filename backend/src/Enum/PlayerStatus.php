@@ -9,11 +9,11 @@ namespace App\Enum;
  */
 enum PlayerStatus: string
 {
-    case PENDING = 'pending';      // Invitation en attente
-    case ACTIVE = 'active';        // Joueur actif
-    case INACTIVE = 'inactive';    // Temporairement inactif
-    case KICKED = 'kicked';        // Expulsé
-    case LEFT = 'left';            // Parti volontairement
+    case PENDING = 'pending';
+    case ACTIVE = 'active';
+    case INACTIVE = 'inactive';
+    case KICKED = 'kicked';
+    case LEFT = 'left';
 
     public function isParticipating(): bool
     {
@@ -25,7 +25,6 @@ enum PlayerStatus: string
 
     public function canReactivate(): bool
     {
-        // Can reactivate without GM intervention
         return match ($this) {
             self::INACTIVE, self::LEFT, self::KICKED => true,
             default => false,

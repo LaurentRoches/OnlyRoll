@@ -40,7 +40,6 @@ final class MapService
         $map->setIsActive($dto->isActive);
         $map->setSettings($dto->settings);
 
-        // Si cette carte est définie comme active, désactiver les autres
         if ($dto->isActive) {
             $this->deactivateOtherMaps($game);
         }
@@ -95,7 +94,6 @@ final class MapService
         if (null !== $dto->isActive) {
             $map->setIsActive($dto->isActive);
 
-            // Si on active cette carte, désactiver les autres
             if ($dto->isActive) {
                 $mapGame = $map->getGame();
                 if ($mapGame) {
@@ -110,7 +108,6 @@ final class MapService
 
         $this->entityManager->flush();
 
-        // Publier l'événement Mercure pour notifier tous les joueurs de la mise à jour
         $game = $map->getGame();
         \assert(null !== $game, 'Map must have a game');
         $gameId = $game->getId();
@@ -142,7 +139,6 @@ final class MapService
     {
         $this->mapRepository->activateMap($map);
 
-        // Publier l'événement Mercure pour notifier tous les joueurs
         $game = $map->getGame();
         \assert(null !== $game, 'Map must have a game');
         $gameId = $game->getId();

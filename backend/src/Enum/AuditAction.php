@@ -9,20 +9,17 @@ namespace App\Enum;
  */
 enum AuditAction: string
 {
-    // Authentification
     case LOGIN_SUCCESS = 'login_success';
     case LOGIN_FAILED = 'login_failed';
     case LOGOUT = 'logout';
     case ACCOUNT_LOCKED = 'account_locked';
     case ACCOUNT_UNLOCKED = 'account_unlocked';
 
-    // Gestion du mot de passe
     case PASSWORD_CHANGE = 'password_change';
     case PASSWORD_CHANGE_FAILED = 'password_change_failed';
     case PASSWORD_RESET_REQUEST = 'password_reset_request';
     case PASSWORD_RESET_COMPLETE = 'password_reset_complete';
 
-    // Gestion des utilisateurs (admin)
     case USER_CREATED = 'user_created';
     case USER_UPDATED = 'user_updated';
     case USER_ACTIVATED = 'user_activated';
@@ -31,12 +28,10 @@ enum AuditAction: string
     case USER_RESTORED = 'user_restored';
     case USER_ROLE_CHANGED = 'user_role_changed';
 
-    // Profil utilisateur
     case PROFILE_UPDATED = 'profile_updated';
     case AVATAR_CHANGED = 'avatar_changed';
     case EMAIL_CHANGED = 'email_changed';
 
-    // Actions admin
     case ADMIN_ACCESS = 'admin_access';
     case ADMIN_ACTION = 'admin_action';
 

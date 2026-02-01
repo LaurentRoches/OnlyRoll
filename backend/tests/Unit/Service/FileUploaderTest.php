@@ -42,7 +42,6 @@ class FileUploaderTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Cleanup
         if (is_dir($this->uploadsDirectory)) {
             $this->removeDirectory($this->uploadsDirectory);
         }
@@ -114,7 +113,7 @@ class FileUploaderTest extends TestCase
     {
         $file = $this->createMock(UploadedFile::class);
         $file->method('isValid')->willReturn(true);
-        $file->method('getSize')->willReturn(11 * 1024 * 1024); // 11 MB
+        $file->method('getSize')->willReturn(11 * 1024 * 1024);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Fichier trop volumineux');
@@ -205,7 +204,6 @@ class FileUploaderTest extends TestCase
 
         $this->slugger->method('slug')->willReturn(new UnicodeString('test'));
 
-        // Should not throw exception
         $url = $this->fileUploader->uploadMapImage($file);
         $this->assertNotEmpty($url);
     }
@@ -244,7 +242,7 @@ class FileUploaderTest extends TestCase
     {
         $file = $this->createMock(UploadedFile::class);
         $file->method('isValid')->willReturn(true);
-        $file->method('getSize')->willReturn(1024 * 1024); // 1MB
+        $file->method('getSize')->willReturn(1024 * 1024);
         $file->method('getMimeType')->willReturn('image/jpeg');
         $file->method('guessExtension')->willReturn('jpg');
         $file->method('getClientOriginalName')->willReturn('test-image.jpg');

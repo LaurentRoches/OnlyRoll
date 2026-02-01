@@ -75,7 +75,12 @@ backend/
 │   │   ├── MapController.php       # Cartes de jeu
 │   │   ├── TokenController.php     # Tokens (personnages)
 │   │   ├── PresenceController.php  # Présence utilisateurs
-│   │   └── SecurityController.php  # Génération mots de passe (OWASP)
+│   │   ├── SecurityController.php  # Génération mots de passe (OWASP)
+│   │   ├── ProfileController.php   # Gestion profil utilisateur
+│   │   └── Admin/                  # Administration (ROLE_ADMIN)
+│   │       ├── AdminDashboardController.php  # Dashboard admin
+│   │       ├── AdminUserController.php       # CRUD utilisateurs
+│   │       └── AdminAuditLogController.php   # Logs d'audit
 │   │
 │   ├── Entity/                     # Entités Doctrine
 │   │   ├── User.php                # Utilisateur (+ sécurité: lockout, soft delete)
@@ -93,7 +98,11 @@ backend/
 │   │   ├── TokenService.php        # Gestion des tokens
 │   │   ├── MercurePublisher.php    # Publication WebSocket
 │   │   ├── FileUploader.php        # Upload de fichiers
-│   │   └── PasswordGeneratorService.php  # Génération mots de passe sécurisés
+│   │   ├── PasswordGeneratorService.php  # Génération mots de passe sécurisés
+│   │   ├── AuditLogService.php     # Logging sécurisé (RGPD: hash IP)
+│   │   ├── ProfileService.php      # Gestion profil & changement MDP
+│   │   └── Admin/                  # Services administration
+│   │       └── AdminUserService.php  # CRUD users, soft delete, lock/unlock
 │   │
 │   ├── DTO/                        # Data Transfer Objects
 │   │   ├── Auth/                   # DTOs authentification
@@ -101,7 +110,14 @@ backend/
 │   │   ├── Chat/                   # DTOs chat
 │   │   ├── Map/                    # DTOs carte
 │   │   ├── Token/                  # DTOs token
-│   │   └── Security/               # DTOs sécurité (génération MDP)
+│   │   ├── Security/               # DTOs sécurité (génération MDP)
+│   │   ├── Profile/                # DTOs profil utilisateur
+│   │   │   ├── PasswordChangeDTO.php   # Changement de mot de passe
+│   │   │   └── ProfileUpdateDTO.php    # Mise à jour profil
+│   │   └── Admin/                  # DTOs administration
+│   │       ├── UserFilterDTO.php       # Filtres liste utilisateurs
+│   │       ├── UserUpdateDTO.php       # Mise à jour utilisateur
+│   │       └── AuditLogFilterDTO.php   # Filtres logs d'audit
 │   │
 │   ├── Enum/                       # Énumérations
 │   │   ├── GameStatus.php          # Statut partie (waiting, active, finished)
@@ -121,12 +137,28 @@ backend/
 │   │   ├── NotCommonPassword.php              # Contrainte NIST
 │   │   └── NotCommonPasswordValidator.php     # Validation wikimedia/common-passwords
 │   │
+│   ├── Exception/                  # Exceptions personnalisées
+│   │   └── Profile/                # Exceptions profil
+│   │       ├── ProfileException.php           # Exception base profil
+│   │       └── InvalidPasswordException.php   # Mot de passe invalide
+│   │
 │   └── Security/                   # Authentification JWT
 │
 ├── migrations/                     # Migrations BDD
 ├── tests/
 │   ├── Unit/                       # Tests unitaires
+│   │   └── Service/
+│   │       ├── AuditLogServiceTest.php
+│   │       ├── ProfileServiceTest.php
+│   │       └── Admin/
+│   │           └── AdminUserServiceTest.php
 │   └── Functional/                 # Tests d'intégration
+│       └── Controller/
+│           ├── ProfileControllerTest.php
+│           └── Admin/
+│               ├── AdminDashboardControllerTest.php
+│               ├── AdminUserControllerTest.php
+│               └── AdminAuditLogControllerTest.php
 │
 └── public/
     └── uploads/                    # Fichiers uploadés
@@ -202,6 +234,8 @@ frontend/
 │   │       ├── tokenApi.ts         # API tokens
 │   │       ├── presenceApi.ts      # API présence
 │   │       ├── securityApi.ts      # API sécurité (génération MDP)
+│   │       ├── profileApi.ts       # API profil utilisateur
+│   │       ├── adminApi.ts         # API administration (dashboard, users, audit)
 │   │       └── index.ts            # Export centralisé
 │   │
 │   ├── types/                      # Types TypeScript
@@ -213,6 +247,9 @@ frontend/
 │   │   ├── composables/
 │   │   ├── stores/
 │   │   └── services/
+│   │       └── api/
+│   │           ├── profileApi.spec.ts   # Tests API profil
+│   │           └── adminApi.spec.ts     # Tests API admin
 │   └── e2e/                        # Tests Playwright
 │
 └── public/
@@ -281,9 +318,18 @@ Le projet implémente les mesures de prévention OWASP suivantes :
 | Code | Vulnérabilité | Implémentation |
 |------|---------------|----------------|
 | **A02** | Security Misconfiguration | `SecurityHeadersSubscriber.php` (CSP, X-Frame-Options, HSTS) |
-| **A06** | Insecure Design | `rate_limiter.yaml` (login: 5/15min, password: 3/h) |
+| **A06** | Insecure Design | `rate_limiter.yaml` (login: 5/15min, password: 3/h, admin: 100/h) |
 | **A07** | Authentication Failures | `User.php` (lockout), `NotCommonPasswordValidator.php`, sliding session |
-| **A09** | Logging Failures | `AuditLog.php`, `AuditAction.php` |
+| **A09** | Logging Failures | `AuditLog.php`, `AuditAction.php`, `AuditLogService.php` |
+
+### Conformité RGPD
+
+| Élément | Implémentation |
+|---------|----------------|
+| **Hachage IP** | `AuditLogService::hashIpAddress()` - SHA-256 pour anonymisation |
+| **Données sensibles** | Sanitisation automatique (password, token, secret, api_key) |
+| **Soft Delete** | Suppression logique des utilisateurs (conservation audit) |
+| **Droit à l'oubli** | Anonymisation des données utilisateur via admin panel |
 
 ### Packages de sécurité
 
@@ -299,3 +345,37 @@ Le projet implémente les mesures de prévention OWASP suivantes :
 - Au moins 1 majuscule, 1 minuscule, 1 chiffre, 1 caractère spécial
 - Vérification contre les mots de passe courants
 - Service de génération sécurisée (`PasswordGeneratorService.php`)
+
+---
+
+## Administration (`ROLE_ADMIN`)
+
+### Endpoints API Admin
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/api/admin/dashboard/stats` | GET | Statistiques globales |
+| `/api/admin/dashboard/recent-activity` | GET | Activité récente |
+| `/api/admin/users` | GET | Liste utilisateurs (pagination, filtres) |
+| `/api/admin/users/{id}` | GET | Détail utilisateur |
+| `/api/admin/users/{id}` | PUT | Modifier utilisateur |
+| `/api/admin/users/{id}` | DELETE | Soft delete utilisateur |
+| `/api/admin/users/{id}/restore` | POST | Restaurer utilisateur |
+| `/api/admin/users/{id}/lock` | POST | Verrouiller compte |
+| `/api/admin/users/{id}/unlock` | POST | Déverrouiller compte |
+| `/api/admin/users/statistics` | GET | Statistiques utilisateurs |
+| `/api/admin/audit-logs` | GET | Liste logs d'audit |
+| `/api/admin/audit-logs/{id}` | GET | Détail log |
+| `/api/admin/audit-logs/user/{userId}` | GET | Logs par utilisateur |
+| `/api/admin/audit-logs/statistics` | GET | Statistiques audit |
+| `/api/admin/audit-logs/actions` | GET | Actions disponibles |
+
+### Endpoints API Profil
+
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/api/profile` | GET | Profil utilisateur |
+| `/api/profile` | PUT | Modifier profil |
+| `/api/profile/password` | PUT | Changer mot de passe (rate limited) |
+| `/api/profile/avatar` | POST | Upload avatar |
+| `/api/profile/avatar` | DELETE | Supprimer avatar |

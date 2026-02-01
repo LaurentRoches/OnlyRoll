@@ -45,7 +45,6 @@ final class GameController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
-        // Créer le DTO à partir des query params
         $filterDTO = new GameFilterDTO();
         $filterDTO->search = $request->query->getString('search') ?: null;
         $filterDTO->title = $request->query->getString('title') ?: null;
@@ -55,13 +54,11 @@ final class GameController extends AbstractController
         $filterDTO->page = (int) $request->query->get('page', 1);
         $filterDTO->limit = (int) $request->query->get('limit', 12);
 
-        // Validation
         $errors = $this->validator->validate($filterDTO);
         if (\count($errors) > 0) {
             return $this->json(['errors' => (string) $errors], Response::HTTP_BAD_REQUEST);
         }
 
-        // Récupérer les parties filtrées et paginées
         $result = $this->gameRepository->findPublicGamesWithFilters($filterDTO);
 
         return $this->json([
@@ -198,7 +195,6 @@ final class GameController extends AbstractController
             );
         }
 
-        // Chercher la partie par son code d'invitation
         $game = $this->gameRepository->findByInviteCode($inviteCode);
 
         if (!$game) {
@@ -326,32 +322,28 @@ final class GameController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // Vérifier que l'utilisateur a accès à cette partie
         if (!$game->canBeViewedBy($user)) {
             return $this->json(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
         }
 
-        // Générer le token Mercure
         $token = $this->mercureTokenService->generateTokenForGame($user, $id);
 
-        // Créer la réponse avec le cookie mercureAuthorization
         $response = $this->json([
             'token' => $token,
-            'expiresIn' => 3600, // 1 heure en secondes
+            'expiresIn' => 3600,
         ], Response::HTTP_OK);
 
-        // Définir le cookie mercureAuthorization pour EventSource
         $response->headers->setCookie(
             new \Symfony\Component\HttpFoundation\Cookie(
                 'mercureAuthorization',
                 $token,
-                time() + 3600, // Expire dans 1 heure
-                '/.well-known/mercure', // Path spécifique à Mercure
-                null, // Domain (null = domaine actuel)
-                true, // Secure (HTTPS uniquement)
-                false, // HttpOnly = false pour que JS puisse y accéder si besoin
-                false, // Raw
-                'none' // SameSite=None pour permettre les requêtes cross-origin
+                time() + 3600,
+                '/.well-known/mercure',
+                null,
+                true,
+                false,
+                false,
+                'none'
             )
         );
 
@@ -374,27 +366,24 @@ final class GameController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // Générer le token Mercure pour la présence
         $token = $this->mercureTokenService->generateTokenForPresence($user, $gameIds);
 
-        // Créer la réponse avec le cookie mercureAuthorization
         $response = $this->json([
             'token' => $token,
-            'expiresIn' => 3600, // 1 heure en secondes
+            'expiresIn' => 3600,
         ], Response::HTTP_OK);
 
-        // Définir le cookie mercureAuthorization pour EventSource
         $response->headers->setCookie(
             new \Symfony\Component\HttpFoundation\Cookie(
                 'mercureAuthorization',
                 $token,
-                time() + 3600, // Expire dans 1 heure
-                '/.well-known/mercure', // Path spécifique à Mercure
-                null, // Domain (null = domaine actuel)
-                true, // Secure (HTTPS uniquement)
-                false, // HttpOnly = false pour que JS puisse y accéder si besoin
-                false, // Raw
-                'none' // SameSite=None pour permettre les requêtes cross-origin
+                time() + 3600,
+                '/.well-known/mercure',
+                null,
+                true,
+                false,
+                false,
+                'none'
             )
         );
 

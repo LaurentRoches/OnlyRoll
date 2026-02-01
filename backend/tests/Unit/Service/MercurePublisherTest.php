@@ -316,7 +316,6 @@ class MercurePublisherTest extends TestCase
                 $this->assertEquals(1, $payload['gameId']);
                 $this->assertEquals($data, $payload['data']);
 
-                // Vérifier format ISO 8601
                 $this->assertMatchesRegularExpression(
                     '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}$/',
                     $payload['timestamp'],

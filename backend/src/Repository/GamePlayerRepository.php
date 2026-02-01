@@ -155,12 +155,10 @@ class GamePlayerRepository extends ServiceEntityRepository
      */
     public function canUserJoinGame(Game $game, User $user): bool
     {
-        // Déjà dans la partie ?
         if ($this->isUserInGame($game, $user)) {
             return false;
         }
 
-        // Partie pleine ?
         $activeCount = $this->createQueryBuilder('gp')
             ->select('COUNT(gp.id)')
             ->where('gp.game = :game')

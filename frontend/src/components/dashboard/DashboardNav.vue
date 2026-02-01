@@ -36,6 +36,18 @@
           >
             Parties
           </RouterLink>
+          <RouterLink
+            v-if="isAdmin"
+            to="/admin"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            :class="[
+              route.path.startsWith('/admin')
+                ? 'bg-primary-500 text-white'
+                : 'text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700',
+            ]"
+          >
+            Admin
+          </RouterLink>
         </div>
 
         <!-- Menu utilisateur -->
@@ -54,12 +66,17 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
+import { useAuthStore } from '@/stores/auth'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 
 const route = useRoute()
 const { logout } = useAuth()
+const authStore = useAuthStore()
+
+const isAdmin = computed(() => authStore.isAdmin)
 
 const handleLogout = async () => {
   await logout()

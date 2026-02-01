@@ -105,7 +105,6 @@ class UserTest extends TestCase
 
     public function testEraseCredentials(): void
     {
-        // Méthode vide, mais on teste qu'elle ne génère pas d'erreur
         $this->user->eraseCredentials();
         $this->assertTrue(true);
     }
@@ -194,7 +193,6 @@ class UserTest extends TestCase
     {
         $originalUpdatedAt = $this->user->getUpdatedAt();
 
-        // Attendre un peu pour s'assurer que le temps change
         sleep(1);
 
         $this->user->setUpdatedAtValue();

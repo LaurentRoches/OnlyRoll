@@ -183,13 +183,11 @@ class JwtCookieAuthenticatorTest extends TestCase
     {
         $request = Request::create('/api/test', 'GET');
 
-        // Create a mock exception avec une MessageKey qui pourrait causer des problèmes d'encodage
         $exception = $this->getMockBuilder(AuthenticationException::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getMessageKey'])
             ->getMock();
 
-        // On teste le cas nominal d'abord
         $exception->method('getMessageKey')->willReturn('test_error');
 
         $response = $this->authenticator->onAuthenticationFailure($request, $exception);
@@ -205,7 +203,6 @@ class JwtCookieAuthenticatorTest extends TestCase
         $request->cookies->set('jwt_token', 'cookie-token');
         $request->headers->set('Authorization', 'Bearer header-token');
 
-        // Should use cookie token, not header token
         $this->jwtManager->expects($this->once())
             ->method('parse')
             ->with('cookie-token')

@@ -28,7 +28,6 @@ readonly class TokenService
      */
     public function createToken(GameMap $map, CreateTokenDTO $dto): GameToken
     {
-        // Validation des coordonnées dans les limites de la carte
         if (
             $dto->x < 0
             || $dto->x > $map->getWidth()
@@ -53,26 +52,21 @@ readonly class TokenService
         $token->setLayer($dto->layer ?? TokenLayer::TOKENS);
         $token->setSettings($dto->settings);
 
-        // Appel manuel du hook PrePersist pour les tests unitaires
         $token->onPrePersist();
 
         $this->em->persist($token);
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $game = $map->getGame();
         \assert(null !== $game, 'Map must have a game');
         $gameId = $game->getId();
         \assert(null !== $gameId, 'Game ID cannot be null after flush');
 
-        // Vérifications pour PHPStan
         $tokenId = $token->getId();
         \assert(null !== $tokenId, 'Token ID cannot be null after flush');
         $createdAt = $token->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null after flush');
 
-        // Publication via Mercure
-        // IMPORTANT: Utiliser 'id' et non 'tokenId' pour compatibilité frontend
         $this->mercurePublisher->publishTokenCreated($gameId, [
             'id' => $tokenId,
             'mapId' => $map->getId(),
@@ -98,7 +92,6 @@ readonly class TokenService
      */
     public function moveToken(GameToken $token, MoveTokenDTO $dto): GameToken
     {
-        // Vérifier que le token n'est pas verrouillé
         if ($token->isLocked()) {
             throw new BadRequestHttpException('Ce token est verrouillé et ne peut pas être déplacé.');
         }
@@ -106,7 +99,6 @@ readonly class TokenService
         $map = $token->getMap();
         \assert(null !== $map, 'Token must have a map');
 
-        // Validation des nouvelles coordonnées
         if (
             $dto->x < 0
             || $dto->x > $map->getWidth()
@@ -121,7 +113,6 @@ readonly class TokenService
 
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $game = $map->getGame();
         \assert(null !== $game, 'Map must have a game');
         $gameId = $game->getId();
@@ -133,7 +124,6 @@ readonly class TokenService
         $createdAt = $token->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null');
 
-        // Publication via Mercure - Structure complète pour cohérence frontend
         $this->mercurePublisher->publishGameEvent($gameId, 'token', [
             'action' => 'moved',
             'token' => [
@@ -188,7 +178,6 @@ readonly class TokenService
         $token->setIsVisible(!$token->isVisible());
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $map = $token->getMap();
         \assert(null !== $map, 'Token must have a map');
         $game = $map->getGame();
@@ -200,7 +189,6 @@ readonly class TokenService
         $createdAt = $token->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null');
 
-        // Publication Mercure - Structure complète avec 'action' = 'updated'
         $this->mercurePublisher->publishGameEvent(
             $gameId,
             'token',
@@ -237,7 +225,6 @@ readonly class TokenService
         $token->setIsLocked(!$token->isLocked());
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $map = $token->getMap();
         \assert(null !== $map, 'Token must have a map');
         $game = $map->getGame();
@@ -249,7 +236,6 @@ readonly class TokenService
         $createdAt = $token->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null');
 
-        // Publication Mercure - Structure complète avec 'action' = 'updated'
         $this->mercurePublisher->publishGameEvent(
             $gameId,
             'token',
@@ -283,7 +269,6 @@ readonly class TokenService
      */
     public function deleteToken(GameToken $token): void
     {
-        // Vérifications pour PHPStan
         $map = $token->getMap();
         \assert(null !== $map, 'Token must have a map');
         $game = $map->getGame();
@@ -296,7 +281,6 @@ readonly class TokenService
         $this->em->remove($token);
         $this->em->flush();
 
-        // Publication Mercure
         $this->mercurePublisher->publishTokenDeleted($gameId, $tokenId);
     }
 
@@ -325,12 +309,10 @@ readonly class TokenService
      */
     public function canControlToken(GameToken $token, User $user, \App\Entity\Game $game): bool
     {
-        // Le MJ peut toujours contrôler tous les tokens
         if ($game->isGameMaster($user)) {
             return true;
         }
 
-        // Récupérer les settings du token
         $settings = $token->getSettings();
         if (!$settings || !isset($settings['controllableBy'])) {
             return false;
@@ -341,7 +323,6 @@ readonly class TokenService
             return false;
         }
 
-        // Vérifier si l'utilisateur est dans la liste
         return \in_array($user->getId(), $controllableBy, true);
     }
 
@@ -357,14 +338,12 @@ readonly class TokenService
             $controllableBy = [];
         }
 
-        // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
         if (!\in_array($userId, $controllableBy, true)) {
             $controllableBy[] = $userId;
             $settings['controllableBy'] = $controllableBy;
             $token->setSettings($settings);
             $this->em->flush();
 
-            // Publication Mercure
             $this->publishTokenUpdate($token);
         }
 
@@ -383,13 +362,11 @@ readonly class TokenService
             return $token;
         }
 
-        // Retirer l'utilisateur de la liste
         $controllableBy = array_values(array_filter($controllableBy, static fn ($id) => $id !== $userId));
         $settings['controllableBy'] = $controllableBy;
         $token->setSettings($settings);
         $this->em->flush();
 
-        // Publication Mercure
         $this->publishTokenUpdate($token);
 
         return $token;

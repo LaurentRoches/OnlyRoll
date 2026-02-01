@@ -25,7 +25,6 @@ class GameTokenRepositoryTest extends KernelTestCase
         $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
         $this->repository = $this->entityManager->getRepository(GameToken::class);
 
-        // Clean database
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
         $connection->executeStatement('TRUNCATE TABLE game_token');
@@ -292,7 +291,7 @@ class GameTokenRepositoryTest extends KernelTestCase
 
         $positions = [
             $token1->getId() => ['x' => 10, 'y' => 10],
-            $token2->getId() => ['x' => 20, 'y' => 20], // locked, should not move
+            $token2->getId() => ['x' => 20, 'y' => 20],
         ];
 
         $this->repository->moveTokens($positions);
@@ -302,7 +301,7 @@ class GameTokenRepositoryTest extends KernelTestCase
 
         $this->assertEquals(10, $token1->getX());
         $this->assertEquals(10, $token1->getY());
-        $this->assertEquals(2, $token2->getX()); // locked, not moved
+        $this->assertEquals(2, $token2->getX());
         $this->assertEquals(2, $token2->getY());
     }
 

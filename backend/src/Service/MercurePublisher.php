@@ -41,10 +41,8 @@ readonly class MercurePublisher
         bool $private = false,
     ): bool {
         try {
-            // Construction du topic au format: game/{gameId}/{eventType}
             $topic = \sprintf('game/%d/%s', $gameId, $eventType);
 
-            // Préparation du payload
             $payload = [
                 'type' => $eventType,
                 'gameId' => $gameId,
@@ -52,14 +50,12 @@ readonly class MercurePublisher
                 'timestamp' => (new DateTimeImmutable())->format('c'),
             ];
 
-            // Création de l'update Mercure
             $update = new Update(
                 topics: [$topic],
                 data: json_encode($payload, \JSON_THROW_ON_ERROR),
                 private: $private,
             );
 
-            // Publication via le hub
             $this->hub->publish($update);
 
             $this->logger->info('Mercure event published', [

@@ -26,7 +26,6 @@ try {
         echo "Framework parameter exists" . PHP_EOL;
     }
 
-    // Essayer de récupérer la configuration du framework
     $frameworkConfig = $container->getParameter('kernel.bundles');
     if (isset($frameworkConfig['FrameworkBundle'])) {
         echo "FrameworkBundle is loaded" . PHP_EOL;

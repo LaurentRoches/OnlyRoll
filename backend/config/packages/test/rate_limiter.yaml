@@ -1,0 +1,19 @@
+# Configuration du rate limiting pour les tests
+# Limites augmentées pour éviter les blocages entre les tests
+
+framework:
+    rate_limiter:
+        login_limiter:
+            policy: 'sliding_window'
+            limit: 1000
+            interval: '1 minute'
+
+        password_change_limiter:
+            policy: 'fixed_window'
+            limit: 1000
+            interval: '1 minute'
+
+        admin_action_limiter:
+            policy: 'sliding_window'
+            limit: 1000
+            interval: '1 minute'

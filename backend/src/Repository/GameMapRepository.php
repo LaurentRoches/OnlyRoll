@@ -80,7 +80,6 @@ class GameMapRepository extends ServiceEntityRepository
 
         $em = $this->getEntityManager();
 
-        // Désactiver toutes les cartes du jeu
         $em->createQueryBuilder()
             ->update(GameMap::class, 'm')
             ->set('m.isActive', ':inactive')
@@ -90,7 +89,6 @@ class GameMapRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
 
-        // Activer la carte sélectionnée
         $map->activate();
         $em->persist($map);
         $em->flush();

@@ -76,7 +76,6 @@ final class PresenceController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        // Pas besoin de vérifier l'accès pour leave
         $this->presenceService->userLeft($game, $user);
 
         return $this->json([

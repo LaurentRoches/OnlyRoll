@@ -71,14 +71,12 @@ final class GameService
             ->setMaxPlayers($dto->maxPlayers)
             ->setIsPublic($dto->isPublic);
 
-        // Hash du mot de passe si partie privée
         if ($dto->password && !$dto->isPublic) {
             $game->setPassword(password_hash($dto->password, \PASSWORD_ARGON2ID));
         }
 
         $this->entityManager->persist($game);
 
-        // Ajouter automatiquement le MJ comme joueur
         $gmPlayer = new GamePlayer();
         $gmPlayer->setGame($game)
                 ->setUser($gameMaster)
@@ -138,10 +136,8 @@ final class GameService
             throw new GameNotFoundException();
         }
 
-        // Vérifications
         $this->validateGameJoinability($game, $user, $password);
 
-        // Créer le GamePlayer
         $gamePlayer = new GamePlayer();
         $gamePlayer->setGame($game)
                    ->setUser($user)
@@ -156,7 +152,6 @@ final class GameService
             'game_id' => $game->getId(),
         ]);
 
-        // Publier un événement Mercure pour notifier les autres clients
         $this->mercurePublisher->publishPlayerEvent($gameId, [
             'action' => 'joined',
             'userId' => $user->getId(),
@@ -192,7 +187,6 @@ final class GameService
             'game_id' => $game->getId(),
         ]);
 
-        // Publier un événement Mercure pour notifier les autres clients
         $gameId = $game->getId();
         if (null !== $gameId) {
             $this->mercurePublisher->publishPlayerEvent($gameId, [
@@ -212,7 +206,6 @@ final class GameService
             throw new AccessDeniedException();
         }
 
-        // Archiver plutôt que supprimer
         $game->setStatus(GameStatus::ARCHIVED);
         $this->entityManager->flush();
 
@@ -224,17 +217,14 @@ final class GameService
      */
     private function validateGameJoinability(Game $game, User $user, ?string $password): void
     {
-        // Déjà dans la partie ?
         if ($this->gamePlayerRepository->isUserInGame($game, $user)) {
             throw new AccessDeniedException('Vous faites déjà partie de cette partie');
         }
 
-        // Partie complète ?
         if ($game->isFull()) {
             throw new GameFullException();
         }
 
-        // Vérification mot de passe pour parties privées
         if (!$game->isPublic()) {
             $gamePassword = $game->getPassword();
             if (!$password || !$gamePassword || !password_verify($password, $gamePassword)) {
@@ -242,7 +232,6 @@ final class GameService
             }
         }
 
-        // La partie est-elle en préparation ou en cours ?
         if (!\in_array($game->getStatus(), [GameStatus::PREPARATION, GameStatus::IN_PROGRESS])) {
             throw new AccessDeniedException('Cette partie n\'accepte plus de nouveaux joueurs');
         }
@@ -255,7 +244,6 @@ final class GameService
     {
         $oldStatus = $game->getStatus();
 
-        // Logique de transition de statuts
         if (GameStatus::IN_PROGRESS === $newStatus && GameStatus::PREPARATION === $oldStatus) {
             $game->setStartedAt(new DateTimeImmutable());
         }
