@@ -85,7 +85,7 @@ final class ProfileController extends AbstractController
     #[Route('/password', name: 'change_password', methods: ['PUT'])]
     public function changePassword(
         Request $request,
-        #[Autowire(service: 'password_change_limiter.limiter')]
+        #[Autowire(service: 'limiter.password_change_limiter')]
         RateLimiterFactory $passwordChangeLimiter,
     ): JsonResponse {
         /** @var \App\Entity\User $user */
