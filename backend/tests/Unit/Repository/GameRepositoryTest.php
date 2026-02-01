@@ -25,7 +25,6 @@ class GameRepositoryTest extends KernelTestCase
         $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
         $this->repository = $this->entityManager->getRepository(Game::class);
 
-        // Clean database
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
         $connection->executeStatement('TRUNCATE TABLE game_player');
@@ -266,7 +265,6 @@ class GameRepositoryTest extends KernelTestCase
         $user = $this->createUser('gm@test.com', 'GameMaster');
         $game = $this->createGame('Test Game', $user, true, GameStatus::IN_PROGRESS);
 
-        // L'inviteCode est généré automatiquement
         $inviteCode = $game->getInviteCode();
         $this->assertNotNull($inviteCode);
 
@@ -295,7 +293,6 @@ class GameRepositoryTest extends KernelTestCase
         $this->createGamePlayer($game2, $user1);
         $this->createGamePlayer($game3, $user1);
 
-        // User2 should not affect the count
         $game4 = $this->createGame('Game 4', $user2, true, GameStatus::IN_PROGRESS);
         $this->createGamePlayer($game4, $user2);
 

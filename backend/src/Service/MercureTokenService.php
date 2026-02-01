@@ -20,7 +20,6 @@ readonly class MercureTokenService
     public function __construct(
         private string $mercureJwtSecret,
     ) {
-        // Configuration JWT pour Mercure (utilise HMAC HS256)
         $this->jwtConfig = Configuration::forSymmetricSigner(
             new Sha256(),
             InMemory::plainText($this->mercureJwtSecret)
@@ -39,7 +38,6 @@ readonly class MercureTokenService
     {
         $now = new DateTimeImmutable();
 
-        // Topics auxquels l'utilisateur peut s'abonner pour cette partie
         $subscribeTopics = [
             sprintf('game/%d/chat', $gameId),
             sprintf('game/%d/token', $gameId),
@@ -50,7 +48,6 @@ readonly class MercureTokenService
             sprintf('game/%d/system', $gameId),
         ];
 
-        // Construction du token
         $token = $this->jwtConfig->builder()
             ->issuedAt($now)
             ->expiresAt($now->modify('+1 hour'))
@@ -74,13 +71,11 @@ readonly class MercureTokenService
     {
         $now = new DateTimeImmutable();
 
-        // Topics de présence pour toutes les parties
         $subscribeTopics = array_map(
             fn (int $gameId) => sprintf('game/%d/presence', $gameId),
             $gameIds
         );
 
-        // Construction du token
         $token = $this->jwtConfig->builder()
             ->issuedAt($now)
             ->expiresAt($now->modify('+1 hour'))

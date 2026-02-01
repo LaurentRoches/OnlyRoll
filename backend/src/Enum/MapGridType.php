@@ -7,9 +7,9 @@ namespace App\Enum;
  */
 enum MapGridType: string
 {
-    case SQUARE = 'square';  // Grille carrée standard
-    case HEX = 'hex';        // Grille hexagonale
-    case NONE = 'none';      // Pas de grille
+    case SQUARE = 'square';
+    case HEX = 'hex';
+    case NONE = 'none';
 
     /**
      * Retourne le label français du type de grille.
@@ -40,8 +40,8 @@ enum MapGridType: string
     public function getDirectionCount(): int
     {
         return match ($this) {
-            self::SQUARE => 8,  // 4 cardinales + 4 diagonales
-            self::HEX => 6,     // 6 directions hexagonales
+            self::SQUARE => 8,
+            self::HEX => 6,
             self::NONE => 0,
         };
     }

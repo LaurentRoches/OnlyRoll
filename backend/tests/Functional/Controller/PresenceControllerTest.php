@@ -32,7 +32,6 @@ final class PresenceControllerTest extends WebTestCase
         $container = $this->client->getContainer();
         $this->entityManager = $container->get(EntityManagerInterface::class);
 
-        // Créer un utilisateur de test
         $userRepository = $container->get(UserRepository::class);
         $this->user = $userRepository->findOneBy(['email' => 'presence@example.com']) ?? new User();
 
@@ -44,13 +43,12 @@ final class PresenceControllerTest extends WebTestCase
             $this->entityManager->flush();
         }
 
-        // Créer un jeu de test
         $gameService = $container->get(GameService::class);
         $dto = new CreateGameDTO();
         $dto->name = 'Test Presence Game';
         $dto->description = null;
         $dto->maxPlayers = 4;
-        $dto->isPublic = true; // Public pour éviter le mot de passe requis
+        $dto->isPublic = true;
         $this->game = $gameService->createGame($dto, $this->user);
 
         $this->entityManager->flush();
@@ -58,7 +56,6 @@ final class PresenceControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        // Nettoyer les données de test
         if ($this->game) {
             $this->entityManager->remove($this->game);
         }

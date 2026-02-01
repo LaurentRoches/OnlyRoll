@@ -49,7 +49,6 @@ final class MapController extends AbstractController
     {
         $contentType = $request->headers->get('Content-Type') ?? '';
 
-        // Extraire la boundary du Content-Type
         if (!preg_match('/boundary=(.+)$/i', $contentType, $matches)) {
             return null;
         }
@@ -57,7 +56,6 @@ final class MapController extends AbstractController
         $boundary = trim($matches[1]);
         $rawData = $request->getContent();
 
-        // Découper le contenu en parties
         $parts = preg_split('/--' . preg_quote($boundary, '/') . '/', $rawData);
 
         if (false === $parts) {
@@ -70,7 +68,6 @@ final class MapController extends AbstractController
                 continue;
             }
 
-            // Séparer les headers du body avec \r\n\r\n ou \n\n
             $divider = str_contains($part, "\r\n\r\n") ? "\r\n\r\n" : "\n\n";
             $sections = explode($divider, $part, 2);
 
@@ -80,12 +77,10 @@ final class MapController extends AbstractController
 
             [$headers, $body] = $sections;
 
-            // Parser le nom du champ depuis Content-Disposition
             if (preg_match('/name="([^"]+)"/', $headers, $nameMatch)) {
                 $name = $nameMatch[1];
                 $value = rtrim($body, "\r\n");
 
-                // Ajouter au request parameter bag
                 $request->request->set($name, $value);
             }
         }
@@ -329,7 +324,6 @@ final class MapController extends AbstractController
 
         $map = $this->mapRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $mapGame = $map?->getGame();
         if (!$map || !$mapGame || $mapGame->getId() !== $gameId) {
             return $this->json(
@@ -363,11 +357,8 @@ final class MapController extends AbstractController
             $contentType = $request->headers->get('Content-Type') ?? '';
 
             if (str_contains($contentType, 'multipart/form-data')) {
-                // Gestion du FormData
                 $dto = new UpdateMapDTO();
 
-                // Pour les requêtes PUT/PATCH, il faut parser manuellement le multipart/form-data
-                // car PHP ne le fait que pour POST
                 if (\in_array($request->getMethod(), ['PUT', 'PATCH'], true)) {
                     $this->parseMultipartFormData($request);
                 }
@@ -407,7 +398,6 @@ final class MapController extends AbstractController
                 }
             }
             else {
-                // Gestion du JSON
                 $dto = $this->serializer->deserialize(
                     $request->getContent(),
                     UpdateMapDTO::class,
@@ -597,19 +587,14 @@ final class MapController extends AbstractController
                 );
             }
 
-            // Récupérer les settings actuels ou initialiser un tableau vide
             $settings = $map->getSettings() ?? [];
 
-            // Fusionner les nouveaux paramètres avec les existants
             $settings = array_merge($settings, $data);
 
-            // Mettre à jour les settings
             $map->setSettings($settings);
 
-            // Sauvegarder
             $this->entityManager->flush();
 
-            // Publier l'événement via Mercure
             $this->mapService->publishMapUpdate($map);
 
             return $this->json(

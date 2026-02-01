@@ -30,11 +30,9 @@ class MapControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
 
-        // Clear database before each test
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
 
-        // Truncate all relevant tables
         $connection->executeStatement('TRUNCATE TABLE game_player');
         $connection->executeStatement('TRUNCATE TABLE game_map');
         $connection->executeStatement('TRUNCATE TABLE game');
@@ -223,9 +221,9 @@ class MapControllerTest extends WebTestCase
             [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-                'name' => 'A', // Trop court
-                'width' => 1,  // Trop petit
-                'height' => 250, // Trop grand
+                'name' => 'A',
+                'width' => 1,
+                'height' => 250,
             ]),
         );
 
@@ -311,7 +309,6 @@ class MapControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // Vérifier que map2 est active et map1 ne l'est plus
         $this->entityManager->refresh($map1);
         $this->entityManager->refresh($map2);
         $this->assertTrue($map2->isActive());
@@ -357,7 +354,6 @@ class MapControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
 
-        // Vérifier que la map est supprimée
         $deletedMap = $this->entityManager->getRepository(GameMap::class)->find($mapId);
         $this->assertNull($deletedMap);
     }
@@ -383,7 +379,6 @@ class MapControllerTest extends WebTestCase
 
     public function testMapBelongsToCorrectGame(): void
     {
-        // Créer un autre jeu
         $otherGame = new Game();
         $otherGame->setName('Other Game');
         $otherGame->setGameMaster($this->gameMaster);
@@ -397,7 +392,6 @@ class MapControllerTest extends WebTestCase
         $this->entityManager->persist($map);
         $this->entityManager->flush();
 
-        // Tenter d'accéder à la map via le mauvais jeu
         $this->client->loginUser($this->gameMaster);
         $this->client->request('GET', '/api/games/' . $this->game->getId() . '/maps/' . $map->getId());
 
@@ -734,8 +728,8 @@ class MapControllerTest extends WebTestCase
             [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-                'width' => 1,  // Too small
-                'height' => 250,  // Too large
+                'width' => 1,
+                'height' => 250,
             ]),
         );
 

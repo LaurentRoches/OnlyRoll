@@ -38,7 +38,6 @@ final class AuthController extends AbstractController
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
     ): JsonResponse {
-        // Validation du DTO
         ['dto' => $dto, 'errors' => $errors] = $this->dtoValidator->validateDto(
             $request->getContent(),
             RegisterRequestDTO::class,
@@ -50,19 +49,16 @@ final class AuthController extends AbstractController
 
         \assert($dto instanceof RegisterRequestDTO, 'DTO should not be null after validation');
 
-        // Vérifier si l'email existe déjà
         $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $dto->email]);
         if ($existingUser) {
             return $this->json(['error' => 'Email already exists'], 409);
         }
 
-        // Vérifier si le pseudo existe déjà
         $existingPseudo = $em->getRepository(User::class)->findOneBy(['pseudo' => $dto->pseudo]);
         if ($existingPseudo) {
             return $this->json(['error' => 'Pseudo already exists'], 409);
         }
 
-        // Création de l'utilisateur
         $user = new User();
         $user->setEmail($dto->email);
         $user->setPseudo($dto->pseudo);
@@ -75,7 +71,6 @@ final class AuthController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        // Réponse avec DTO
         $userResponse = UserResponseDTO::fromEntity($user);
 
         return new JsonResponse([
@@ -94,7 +89,6 @@ final class AuthController extends AbstractController
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        // Retour direct sans double sérialisation
         return $this->json([
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -115,10 +109,8 @@ final class AuthController extends AbstractController
     #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(): JsonResponse
     {
-        // Créer la réponse
         $response = new JsonResponse(['message' => 'Déconnexion réussie']);
 
-        // On crée un cookie expiré pour le supprimer côté client
         $isProduction = ($_ENV['APP_ENV'] ?? 'dev') === 'prod';
 
         $response->headers->clearCookie(

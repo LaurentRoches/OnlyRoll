@@ -67,18 +67,14 @@ class TokenServiceTest extends TestCase
         $dto->isLocked = false;
         $dto->layer = TokenLayer::TOKENS;
 
-        // Set up entity manager to properly set IDs and timestamps after flush
         $this->entityManager->expects($this->once())
             ->method('persist')
             ->willReturnCallback(function (GameToken $token) {
-                // Simulate Doctrine setting IDs and timestamps
                 $reflection = new ReflectionClass($token);
                 $idProperty = $reflection->getProperty('id');
-                $idProperty->setAccessible(true);
                 $idProperty->setValue($token, 1);
 
                 $createdAtProperty = $reflection->getProperty('createdAt');
-                $createdAtProperty->setAccessible(true);
                 $createdAtProperty->setValue($token, new DateTimeImmutable('2024-01-01 10:00:00'));
             });
 
@@ -103,7 +99,7 @@ class TokenServiceTest extends TestCase
         $dto = new CreateTokenDTO();
         $dto->name = 'Token';
         $dto->type = TokenType::CHARACTER;
-        $dto->x = 25; // Out of bounds
+        $dto->x = 25;
         $dto->y = 10;
 
         $this->expectException(BadRequestHttpException::class);

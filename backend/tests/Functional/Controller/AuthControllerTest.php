@@ -21,7 +21,6 @@ class AuthControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
 
-        // Nettoyer la base de données avant chaque test
         $this->cleanDatabase();
     }
 
@@ -53,7 +52,6 @@ class AuthControllerTest extends WebTestCase
         $this->assertSame('test@example.com', $response['user']['email']);
         $this->assertSame('TestUser', $response['user']['pseudo']);
 
-        // Vérifier que l'utilisateur est bien en base
         $user = $this->entityManager->getRepository(User::class)
             ->findOneBy(['email' => 'test@example.com']);
 
@@ -64,7 +62,6 @@ class AuthControllerTest extends WebTestCase
 
     public function testRegisterWithExistingEmail(): void
     {
-        // Créer un utilisateur existant
         $this->createUser('existing@example.com', 'ExistingUser');
 
         $this->client->request('POST', '/api/register', [], [], [
@@ -84,7 +81,6 @@ class AuthControllerTest extends WebTestCase
 
     public function testRegisterWithExistingPseudo(): void
     {
-        // Créer un utilisateur existant
         $this->createUser('existing@example.com', 'ExistingPseudo');
 
         $this->client->request('POST', '/api/register', [], [], [
@@ -121,7 +117,6 @@ class AuthControllerTest extends WebTestCase
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
             'email' => 'test@example.com',
-            // Pseudo manquant
             'password' => 'Password123!',
         ]));
 
@@ -156,7 +151,6 @@ class AuthControllerTest extends WebTestCase
     {
         $user = $this->createUser('auth@example.com', 'AuthUser');
 
-        // Simuler l'authentification
         $this->client->loginUser($user);
 
         $this->client->request('GET', '/api/me');
@@ -207,7 +201,6 @@ class AuthControllerTest extends WebTestCase
         $this->assertSame('fr', $response['language']);
         $this->assertSame('avatar.jpg', $response['avatar']);
 
-        // Vérifier le format de date ISO 8601
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', $response['createdAt']);
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', $response['updatedAt']);
     }
@@ -231,11 +224,9 @@ class AuthControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
 
-        // Vérifier que le cookie est supprimé
         $response = $this->client->getResponse();
         $cookies = $response->headers->getCookies();
 
-        // Chercher le cookie jwt_token
         $jwtCookie = null;
         foreach ($cookies as $cookie) {
             if ($cookie->getName() === 'jwt_token') {
@@ -245,7 +236,6 @@ class AuthControllerTest extends WebTestCase
         }
 
         if ($jwtCookie) {
-            // Le cookie devrait avoir une date d'expiration dans le passé
             $this->assertLessThan(time(), $jwtCookie->getExpiresTime());
         }
     }
@@ -270,7 +260,7 @@ class AuthControllerTest extends WebTestCase
         $user = new User();
         $user->setEmail($email);
         $user->setPseudo($pseudo);
-        $user->setPassword('$2y$13$hashed_password'); // Mot de passe fictif
+        $user->setPassword('$2y$13$hashed_password');
         $user->setRoles(['ROLE_USER']);
         $user->setIsVerified(true);
 
@@ -282,10 +272,8 @@ class AuthControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        // Désactiver temporairement les contraintes de clés étrangères
         $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
 
-        // Supprimer toutes les données des tables dans l'ordre
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_message');
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_token');
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game_player');
@@ -293,7 +281,6 @@ class AuthControllerTest extends WebTestCase
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE game');
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE user');
 
-        // Réactiver les contraintes de clés étrangères
         $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
     }
 }

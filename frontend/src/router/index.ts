@@ -95,6 +95,26 @@ const router = createRouter({
     //   ]
     // },
 
+    // ========== ADMINISTRATION (PROTEGE - ADMIN UNIQUEMENT) ==========
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/admin/AdminDashboardView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Administration' },
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('@/views/admin/AdminUsersView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestion des utilisateurs' },
+    },
+    {
+      path: '/admin/audit-logs',
+      name: 'admin-audit-logs',
+      component: () => import('@/views/admin/AdminAuditLogsView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Logs d\'audit' },
+    },
+
     // ========== PAGE 404 ==========
     {
       path: '/:pathMatch(.*)*',
@@ -145,6 +165,11 @@ router.beforeEach(async (to, from, next) => {
 
   // Si la route est réservée aux invités (login/register)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    return next({ name: 'dashboard' })
+  }
+
+  // Si la route nécessite le rôle admin
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return next({ name: 'dashboard' })
   }
 
