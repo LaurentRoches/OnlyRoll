@@ -69,7 +69,8 @@
       "Bash(done)",
       "Bash(npm run test:*)",
       "Bash(ls:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(npm run format:check:*)"
     ]
   }
 }

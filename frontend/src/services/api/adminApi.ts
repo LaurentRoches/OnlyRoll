@@ -117,7 +117,9 @@ export const adminApi = {
     },
 
     async getRecentActivity(): Promise<AuditLogEntry[]> {
-      return apiClient.get<AuditLogEntry[]>('/admin/dashboard/recent-activity').then((res) => res.data)
+      return apiClient
+        .get<AuditLogEntry[]>('/admin/dashboard/recent-activity')
+        .then((res) => res.data)
     },
   },
 
@@ -126,7 +128,9 @@ export const adminApi = {
    */
   users: {
     async list(params?: UserFilterParams): Promise<PaginatedResponse<AdminUser>> {
-      return apiClient.get<PaginatedResponse<AdminUser>>('/admin/users', { params }).then((res) => res.data)
+      return apiClient
+        .get<PaginatedResponse<AdminUser>>('/admin/users', { params })
+        .then((res) => res.data)
     },
 
     async get(id: number): Promise<AdminUser> {
@@ -142,15 +146,21 @@ export const adminApi = {
     },
 
     async restore(id: number): Promise<{ message: string }> {
-      return apiClient.post<{ message: string }>(`/admin/users/${id}/restore`).then((res) => res.data)
+      return apiClient
+        .post<{ message: string }>(`/admin/users/${id}/restore`)
+        .then((res) => res.data)
     },
 
     async lock(id: number, minutes: number): Promise<{ message: string }> {
-      return apiClient.post<{ message: string }>(`/admin/users/${id}/lock`, { minutes }).then((res) => res.data)
+      return apiClient
+        .post<{ message: string }>(`/admin/users/${id}/lock`, { minutes })
+        .then((res) => res.data)
     },
 
     async unlock(id: number): Promise<{ message: string }> {
-      return apiClient.post<{ message: string }>(`/admin/users/${id}/unlock`).then((res) => res.data)
+      return apiClient
+        .post<{ message: string }>(`/admin/users/${id}/unlock`)
+        .then((res) => res.data)
     },
 
     async getStatistics(): Promise<UserStats> {
@@ -163,7 +173,9 @@ export const adminApi = {
    */
   auditLogs: {
     async list(params?: AuditLogFilterParams): Promise<PaginatedResponse<AuditLogEntry>> {
-      return apiClient.get<PaginatedResponse<AuditLogEntry>>('/admin/audit-logs', { params }).then((res) => res.data)
+      return apiClient
+        .get<PaginatedResponse<AuditLogEntry>>('/admin/audit-logs', { params })
+        .then((res) => res.data)
     },
 
     async get(id: number): Promise<AuditLogEntry> {

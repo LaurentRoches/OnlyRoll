@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Les IPs sont hashées pour la conformité RGPD.
  * Les mots de passe ne sont jamais loggés.
  */
-final class AuditLogService
+class AuditLogService
 {
     private const SENSITIVE_FIELDS = [
         'password',

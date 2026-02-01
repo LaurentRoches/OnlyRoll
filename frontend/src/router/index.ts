@@ -112,7 +112,7 @@ const router = createRouter({
       path: '/admin/audit-logs',
       name: 'admin-audit-logs',
       component: () => import('@/views/admin/AdminAuditLogsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Logs d\'audit' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: "Logs d'audit" },
     },
 
     // ========== PAGE 404 ==========
