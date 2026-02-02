@@ -8,6 +8,9 @@
       Aller au contenu principal
     </a>
 
+    <!-- Navbar -->
+    <DashboardNav />
+
     <!-- Header -->
     <header role="banner" class="bg-secondary-800 border-b border-secondary-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -299,6 +302,10 @@
 import { ref, reactive, onMounted, useId } from 'vue'
 import { profileApi, type UserProfile } from '@/services/api/profileApi'
 import { AvatarUploader, PasswordChangeForm } from '@/components/profile'
+import DashboardNav from '@/components/dashboard/DashboardNav.vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const pseudoId = useId()
 const pseudoErrorId = useId()
@@ -404,6 +411,9 @@ const handleProfileUpdate = async () => {
 const handleAvatarUpdate = (newAvatar: string | null) => {
   if (profile.value) {
     profile.value.avatar = newAvatar
+  }
+  if (authStore.user) {
+    authStore.user.avatar = newAvatar
   }
 }
 

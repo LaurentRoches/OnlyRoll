@@ -72,7 +72,9 @@
       "Bash(npm run type-check:*)",
       "Bash(npm run format:check:*)",
       "Bash(npm install:*)",
-      "Bash(npm run test:unit:coverage:*)"
+      "Bash(npm run test:unit:coverage:*)",
+      "Bash(npm run:*)",
+      "Bash(npx prettier:*)"
     ]
   }
 }
