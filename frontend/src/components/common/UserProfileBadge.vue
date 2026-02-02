@@ -13,7 +13,10 @@
           :alt="`Avatar de ${user?.pseudo}`"
           class="w-full h-full object-cover"
         />
-        <span v-else class="w-full h-full bg-primary-500 flex items-center justify-center text-white text-sm font-medium">
+        <span
+          v-else
+          class="w-full h-full bg-primary-500 flex items-center justify-center text-white text-sm font-medium"
+        >
           {{ userInitials }}
         </span>
       </div>
