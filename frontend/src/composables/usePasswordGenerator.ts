@@ -9,7 +9,6 @@ import {
  * Composable pour la génération et l'évaluation de mots de passe sécurisés
  */
 export const usePasswordGenerator = () => {
-  // États
   const isGenerating = ref(false)
   const isEvaluating = ref(false)
   const generatedPassword = ref<string | null>(null)
@@ -17,7 +16,6 @@ export const usePasswordGenerator = () => {
   const strengthResult = ref<PasswordStrengthResult | null>(null)
   const error = ref<string | null>(null)
 
-  // Options par défaut
   const defaultOptions: GeneratePasswordOptions = {
     length: 16,
     includeLowercase: true,
@@ -139,7 +137,6 @@ export const usePasswordGenerator = () => {
     }
   }
 
-  // Computed pour l'UI
   const strengthColor = computed(() => {
     if (!strengthResult.value) return 'bg-secondary-600'
 
@@ -167,7 +164,6 @@ export const usePasswordGenerator = () => {
   })
 
   return {
-    // États
     isGenerating,
     isEvaluating,
     generatedPassword,
@@ -176,14 +172,12 @@ export const usePasswordGenerator = () => {
     error,
     options,
 
-    // Actions
     generate,
     generateMultiple,
     evaluate,
     reset,
     copyToClipboard,
 
-    // Computed pour l'UI
     strengthColor,
     strengthTextColor,
     strengthPercentage,

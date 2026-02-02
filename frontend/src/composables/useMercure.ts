@@ -30,7 +30,6 @@ export function useMercure() {
   const isConnected = ref(false)
   const connectionState = ref<'connecting' | 'open' | 'closed'>('closed')
 
-  // Map pour suivre les callbacks enregistrés par ce composable
   const registeredCallbacks = new Map<EventType, Set<EventCallback>>()
 
   /**
@@ -46,7 +45,6 @@ export function useMercure() {
    * Se déconnecter de Mercure
    */
   const disconnect = (): void => {
-    // Retirer tous les listeners enregistrés par ce composable
     registeredCallbacks.forEach((callbacks, eventType) => {
       callbacks.forEach((callback) => {
         mercureService.off(eventType, callback)
@@ -66,13 +64,11 @@ export function useMercure() {
    * @param callback - Fonction appelée lors de la réception
    */
   const on = <T = unknown>(eventType: EventType, callback: EventCallback<T>): void => {
-    // Enregistrer le callback pour le nettoyage automatique
     if (!registeredCallbacks.has(eventType)) {
       registeredCallbacks.set(eventType, new Set())
     }
     registeredCallbacks.get(eventType)!.add(callback as EventCallback)
 
-    // Ajouter le listener au service
     mercureService.on(eventType, callback)
   }
 
@@ -109,9 +105,7 @@ export function useMercure() {
     return isConnected.value
   }
 
-  // Nettoyage automatique lors du démontage du composant
   onUnmounted(() => {
-    // Retirer tous les listeners enregistrés
     registeredCallbacks.forEach((callbacks, eventType) => {
       callbacks.forEach((callback) => {
         mercureService.off(eventType, callback)
@@ -121,11 +115,9 @@ export function useMercure() {
   })
 
   return {
-    // États réactifs
     isConnected,
     connectionState,
 
-    // Actions
     connect,
     disconnect,
     on,

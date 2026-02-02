@@ -21,13 +21,11 @@ import type {
  * Tous les types d'événements possibles dans le système
  */
 export enum MercureEventType {
-  // Événements de carte
   MAP_CREATED = 'map.created',
   MAP_UPDATED = 'map.updated',
   MAP_ACTIVATED = 'map.activated',
   MAP_DELETED = 'map.deleted',
 
-  // Événements de token
   TOKEN_CREATED = 'token.created',
   TOKEN_UPDATED = 'token.updated',
   TOKEN_MOVED = 'token.moved',
@@ -36,22 +34,18 @@ export enum MercureEventType {
   TOKEN_LOCKED = 'token.locked',
   TOKEN_UNLOCKED = 'token.unlocked',
 
-  // Événements de message/chat
   MESSAGE_SENT = 'message.sent',
   MESSAGE_DELETED = 'message.deleted',
 
-  // Événements de joueur
   PLAYER_JOINED = 'player.joined',
   PLAYER_LEFT = 'player.left',
   PLAYER_KICKED = 'player.kicked',
   PLAYER_ROLE_CHANGED = 'player.role_changed',
 
-  // Événements de présence
   PRESENCE_JOIN = 'presence.join',
   PRESENCE_LEAVE = 'presence.leave',
   PRESENCE_HEARTBEAT = 'presence.heartbeat',
 
-  // Événements de jeu
   GAME_UPDATED = 'game.updated',
   GAME_STARTED = 'game.started',
   GAME_PAUSED = 'game.paused',
@@ -111,7 +105,7 @@ export interface MercureMessageDeletedData {
  */
 export interface MercureTokenEventData {
   type?: 'created' | 'updated' | 'moved' | 'deleted'
-  action?: 'created' | 'updated' | 'moved' | 'deleted' // Compatibilité backend
+  action?: 'created' | 'updated' | 'moved' | 'deleted'
   token: GameToken
   mapId?: number
   gameId?: number
@@ -359,8 +353,8 @@ export interface MercureConfig {
   topics: string[]
   jwt?: string
   withCredentials?: boolean
-  reconnectInterval?: number // en ms, par défaut 3000
-  maxReconnectAttempts?: number // par défaut 10
+  reconnectInterval?: number
+  maxReconnectAttempts?: number
 }
 
 /**

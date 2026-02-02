@@ -10,7 +10,6 @@ import { nextTick } from 'vue'
 import RegisterForm from '@/components/auth/RegisterForm.vue'
 import { useAuth } from '@/composables/useAuth'
 
-// Mock du composable useAuth
 vi.mock('@/composables/useAuth', () => ({
   useAuth: vi.fn(),
 }))
@@ -74,7 +73,6 @@ describe('RegisterForm.vue', () => {
 
   it('should toggle password visibility', async () => {
     const passwordInput = wrapper.find('#password')
-    // Le bouton toggle est dans le div.relative après le champ password (index 1, car index 0 est "Générer un mot de passe")
     const toggleButton = wrapper.findAll('button[type="button"]')[1]
 
     expect((passwordInput.element as HTMLInputElement).type).toBe('password')
@@ -92,7 +90,6 @@ describe('RegisterForm.vue', () => {
 
   it('should toggle confirm password visibility', async () => {
     const confirmPasswordInput = wrapper.find('#confirmPassword')
-    // Index 2 car : 0 = Générer mdp, 1 = toggle password, 2 = toggle confirm password
     const toggleButton = wrapper.findAll('button[type="button"]')[2]
 
     expect((confirmPasswordInput.element as HTMLInputElement).type).toBe('password')
@@ -108,22 +105,18 @@ describe('RegisterForm.vue', () => {
   it('should calculate password strength correctly', async () => {
     const passwordInput = wrapper.find('#password')
 
-    // Weak password (score <= 2)
     await passwordInput.setValue('weak')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe faible')
 
-    // Medium password (score <= 4)
     await passwordInput.setValue('Medium1test')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe moyen')
 
-    // Strong password (score = 5) - 12+ chars, all rules but < 16 chars
     await passwordInput.setValue('Strong1Pass!')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe fort')
 
-    // Excellent password (score = 6) - 16+ chars with all rules
     await passwordInput.setValue('Strong1Password!')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe excellent')
@@ -146,16 +139,14 @@ describe('RegisterForm.vue', () => {
   it('should validate password rules individually', async () => {
     const passwordInput = wrapper.find('#password')
 
-    // Test minlength
     await passwordInput.setValue('Short1A')
     await nextTick()
     expect(wrapper.html()).toContain('text-success')
 
-    // Test lowercase
     await passwordInput.setValue('PASSWORD123')
     await nextTick()
     const html = wrapper.html()
-    expect(html).toContain('○') // Some rules not met
+    expect(html).toContain('○')
   })
 
   // ========== VALIDATION ==========
@@ -201,7 +192,6 @@ describe('RegisterForm.vue', () => {
   })
 
   it('should not submit form when passwords do not match', async () => {
-    // Utiliser des mots de passe valides pour s'assurer que seul le mismatch est testé
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
     await wrapper.find('#password').setValue('Password123!')
@@ -216,7 +206,6 @@ describe('RegisterForm.vue', () => {
   })
 
   it('should not submit form without accepting terms', async () => {
-    // Utiliser un mot de passe valide pour s'assurer que seul l'acceptation des termes est testée
     const validPassword = 'Password123!'
 
     await wrapper.find('#pseudo').setValue('TestUser')
@@ -249,7 +238,6 @@ describe('RegisterForm.vue', () => {
   it('should submit form with valid data', async () => {
     mockAuth.register.mockResolvedValueOnce(undefined)
 
-    // Mot de passe respectant les nouvelles règles : 12+ chars, minuscule, majuscule, chiffre, spécial
     const validPassword = 'Password123!'
 
     await wrapper.find('#pseudo').setValue('TestUser')
@@ -274,7 +262,6 @@ describe('RegisterForm.vue', () => {
   it('should display error from store', async () => {
     mockAuth.error = 'Email already exists'
 
-    // Remount the component to pick up the new error value
     wrapper = mount(RegisterForm, {
       global: {
         stubs: {
@@ -350,14 +337,12 @@ describe('RegisterForm.vue', () => {
   it('should validate email format', async () => {
     const emailInput = wrapper.find('#email')
 
-    // Invalid email
     await emailInput.setValue('notanemail')
     await emailInput.trigger('blur')
     await nextTick()
 
     expect(wrapper.text()).toContain("L'email n'est pas valide")
 
-    // Valid email
     await emailInput.setValue('valid@example.com')
     await emailInput.trigger('blur')
     await nextTick()
@@ -370,14 +355,12 @@ describe('RegisterForm.vue', () => {
   it('should validate pseudo length', async () => {
     const pseudoInput = wrapper.find('#pseudo')
 
-    // Too short
     await pseudoInput.setValue('ab')
     await pseudoInput.trigger('blur')
     await nextTick()
 
     expect(wrapper.text()).toContain('Le pseudo doit faire au moins 3 caractères')
 
-    // Valid length
     await pseudoInput.setValue('ValidPseudo')
     await pseudoInput.trigger('blur')
     await nextTick()
@@ -390,12 +373,10 @@ describe('RegisterForm.vue', () => {
   it('should disable submit button when form is invalid', async () => {
     const submitButton = wrapper.find('button[type="submit"]')
 
-    // Form is empty initially
     expect((submitButton.element as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('should enable submit button when form is valid', async () => {
-    // Mot de passe respectant les nouvelles règles : 12+ chars, minuscule, majuscule, chiffre, spécial
     const validPassword = 'Password123!'
 
     await wrapper.find('#pseudo').setValue('TestUser')
@@ -416,7 +397,6 @@ describe('RegisterForm.vue', () => {
     const registerError = new Error('Registration failed')
     mockAuth.register.mockRejectedValueOnce(registerError)
 
-    // Mot de passe respectant les nouvelles règles : 12+ chars, minuscule, majuscule, chiffre, spécial
     const validPassword = 'Password123!'
 
     await wrapper.find('#pseudo').setValue('TestUser')

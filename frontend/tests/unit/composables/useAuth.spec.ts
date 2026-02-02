@@ -11,12 +11,10 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import type { LoginCredentials, RegisterCredentials } from '@/types/auth'
 
-// Mock du router
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(),
 }))
 
-// Mock du store
 vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn(),
 }))

@@ -358,10 +358,10 @@ describe('validators', () => {
     })
 
     it('should fail for weak passwords', () => {
-      expect(validators.isStrongPassword('password')).toBe(false) // no uppercase or digit
-      expect(validators.isStrongPassword('PASSWORD123')).toBe(false) // no lowercase
-      expect(validators.isStrongPassword('Password')).toBe(false) // no digit
-      expect(validators.isStrongPassword('12345678')).toBe(false) // no letters
+      expect(validators.isStrongPassword('password')).toBe(false)
+      expect(validators.isStrongPassword('PASSWORD123')).toBe(false)
+      expect(validators.isStrongPassword('Password')).toBe(false)
+      expect(validators.isStrongPassword('12345678')).toBe(false)
     })
 
     it('should fail for non-string values', () => {

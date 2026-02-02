@@ -15,7 +15,6 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore()
 
-// État du formulaire
 const mapName = ref('')
 const mapDescription = ref('')
 const selectedFile = ref<File | null>(null)
@@ -25,11 +24,9 @@ const gridType = ref<'square' | 'hex' | 'none'>('square')
 const width = ref(20)
 const height = ref(20)
 
-// États de chargement
 const isUploading = ref(false)
 const uploadError = ref<string | null>(null)
 
-// Validation
 const isFormValid = computed(() => {
   return mapName.value.trim().length >= 3 && selectedFile.value !== null
 })
@@ -43,13 +40,11 @@ function handleFileSelect(event: Event) {
 
   if (!file) return
 
-  // Vérifier le type
   if (!file.type.startsWith('image/')) {
     uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
     return
   }
 
-  // Vérifier la taille (10 Mo max)
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
     uploadError.value = "L'image est trop volumineuse (max 10 Mo)"
@@ -59,7 +54,6 @@ function handleFileSelect(event: Event) {
   selectedFile.value = file
   uploadError.value = null
 
-  // Créer un aperçu
   const reader = new FileReader()
   reader.onload = (e) => {
     imagePreview.value = e.target?.result as string
@@ -85,7 +79,6 @@ async function handleUpload() {
   uploadError.value = null
 
   try {
-    // Construire le FormData pour l'upload
     const formData = new FormData()
     formData.append('image', selectedFile.value)
     formData.append('name', mapName.value.trim())
@@ -95,7 +88,6 @@ async function handleUpload() {
     formData.append('width', width.value.toString())
     formData.append('height', height.value.toString())
 
-    // Appeler l'API d'upload
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost/api'
     const response = await fetch(`${apiUrl}/games/${props.gameId}/maps`, {
       method: 'POST',
@@ -110,14 +102,11 @@ async function handleUpload() {
 
     const newMap = await response.json()
 
-    // Mettre à jour le store
     mapStore.activeMap = newMap
     await mapStore.loadMapTokens(newMap.id)
 
-    // Recharger la liste de toutes les cartes pour que le select soit à jour
     await mapStore.loadGameMaps(props.gameId)
 
-    // Succès !
     emit('success')
     emit('close')
     resetForm()

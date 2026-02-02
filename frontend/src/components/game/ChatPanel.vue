@@ -19,13 +19,11 @@ const props = defineProps<{
 const chatStore = useChatStore()
 const authStore = useAuthStore()
 
-// État local
 const messageInput = ref('')
 const isInCharacter = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
 const isAtBottom = ref(true)
 
-// État autocomplétion
 const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(0)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -38,13 +36,10 @@ const visibleMessages = computed(() => {
   if (!currentUserId) return props.messages
 
   return props.messages.filter((msg) => {
-    // Si le message a un destinataire (whisper ou dice_roll privé)
-    // Seuls l'expéditeur et le destinataire peuvent le voir
     if (msg.recipient) {
       return msg.user.id === currentUserId || msg.recipient.id === currentUserId
     }
 
-    // Sinon, tout le monde peut le voir
     return true
   })
 })
@@ -55,20 +50,17 @@ const visibleMessages = computed(() => {
 const filteredPlayers = computed(() => {
   if (!showSuggestions.value) return []
 
-  // Détecter si on est en train de taper /w ou /whisper
   const whisperMatch = messageInput.value.match(/^\/(w|whisper)\s+(\S*)$/)
   if (!whisperMatch) return []
 
   const searchTerm = whisperMatch[2].toLowerCase()
 
-  // Filtrer les joueurs par pseudo (exclure l'utilisateur actuel)
   return props.players
     .filter((p) => p.user.id !== authStore.user?.id)
     .filter((p) => p.user.pseudo.toLowerCase().includes(searchTerm))
     .slice(0, 5) // Limiter à 5 suggestions
 })
 
-// Watcher pour détecter quand afficher l'autocomplétion
 watch(messageInput, (newValue) => {
   const whisperMatch = newValue.match(/^\/(w|whisper)\s+(\S*)$/)
   showSuggestions.value = !!whisperMatch
@@ -126,17 +118,14 @@ async function sendMessage() {
   if (!messageInput.value.trim()) return
 
   try {
-    // Vérifier si c'est une commande de dés (/roll ou /r)
     if (messageInput.value.startsWith('/roll ') || messageInput.value.startsWith('/r ')) {
       const formula = messageInput.value.replace(/^\/(roll|r) /, '').trim()
       await chatStore.rollDice(props.gameId, formula, isInCharacter.value)
       console.log('Dés lancés:', formula)
     }
-    // Commande whisper (/whisper ou /w)
     else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
       const content = messageInput.value.replace(/^\/(whisper|w) /, '').trim()
 
-      // Parser le nom du destinataire et le message
       const firstSpaceIndex = content.indexOf(' ')
       if (firstSpaceIndex === -1) {
         console.error(
@@ -153,7 +142,6 @@ async function sendMessage() {
         return
       }
 
-      // Chercher le joueur par son pseudo
       const recipient = props.players.find(
         (p) => p.user.pseudo.toLowerCase() === recipientPseudo.toLowerCase()
       )
@@ -163,7 +151,6 @@ async function sendMessage() {
         return
       }
 
-      // Vérifier si c'est un jet de dés privé (/w pseudo /r formule)
       if (message.startsWith('/roll ') || message.startsWith('/r ')) {
         const formula = message.replace(/^\/(roll|r) /, '').trim()
         if (!formula) {
@@ -173,19 +160,16 @@ async function sendMessage() {
         await chatStore.rollDice(props.gameId, formula, isInCharacter.value, recipient.user.id)
         console.log('Dés privés lancés à', recipientPseudo, ':', formula)
       }
-      // Sinon, c'est un whisper normal
       else {
         await chatStore.sendWhisper(props.gameId, recipient.user.id, message)
         console.log('Whisper envoyé à', recipientPseudo)
       }
     }
-    // Commande emote
     else if (messageInput.value.startsWith('/me ')) {
       const content = messageInput.value.replace('/me ', '').trim()
       await chatStore.sendEmote(props.gameId, content)
       console.log('Emote envoyée')
     }
-    // Message normal
     else {
       await chatStore.sendMessage(props.gameId, messageInput.value, isInCharacter.value)
       console.log('Message envoyé')
@@ -198,7 +182,6 @@ async function sendMessage() {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
-  // Gestion de l'autocomplétion
   if (showSuggestions.value && filteredPlayers.value.length > 0) {
     if (event.key === 'ArrowDown') {
       event.preventDefault()
@@ -228,7 +211,6 @@ function handleKeyDown(event: KeyboardEvent) {
     }
   }
 
-  // Envoi de message normal
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault()
     sendMessage()
@@ -279,8 +261,6 @@ function getMessageIcon(type: MessageType) {
 function normalizeDiceResult(result: unknown): DiceResult | null {
   if (!result || typeof result !== 'object') return null
 
-  // Type guard pour la nouvelle structure (avec 'rolls' ou 'results')
-  // La nouvelle structure a 'formula' et 'modifier' directement accessibles
   if ('formula' in result && 'modifier' in result) {
     const newResult = result as {
       formula?: string
@@ -298,7 +278,6 @@ function normalizeDiceResult(result: unknown): DiceResult | null {
     }
   }
 
-  // Type guard pour l'ancienne structure (fixtures avec config.dice)
   if (
     'results' in result &&
     'config' in result &&

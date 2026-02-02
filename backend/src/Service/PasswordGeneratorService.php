@@ -113,7 +113,6 @@ final class PasswordGeneratorService
         $score = 0;
         $feedback = [];
 
-        // Longueur
         $length = mb_strlen($password);
         if ($length >= 12) {
             ++$score;

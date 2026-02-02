@@ -12,7 +12,6 @@ export const useAuth = () => {
   const authStore = useAuthStore()
   const router = useRouter()
 
-  // États réactifs du store
   const user = computed(() => authStore.user)
   const isAuthenticated = computed(() => authStore.isAuthenticated)
   const isLoading = computed(() => authStore.isLoading)
@@ -29,7 +28,6 @@ export const useAuth = () => {
       const destination = redirectTo || { name: 'dashboard' }
       await router.push(destination)
     } catch (err) {
-      // L'erreur est déjà gérée par le store, on la propage
       throw err
     }
   }
@@ -60,7 +58,6 @@ export const useAuth = () => {
       const destination = redirectTo || { name: 'home' }
       await router.push(destination)
     } catch (err) {
-      // Même si logout échoue, on redirige quand même
       console.error('Erreur lors de la déconnexion:', err)
       const destination = redirectTo || { name: 'home' }
       await router.push(destination)
@@ -142,32 +139,26 @@ export const useAuth = () => {
    * @returns Message d'erreur formaté
    */
   const getErrorMessage = (error: unknown): string => {
-    // Erreur de type string directe
     if (typeof error === 'string') {
       return error
     }
 
-    // Erreur de type ApiError (notre format personnalisé)
     if (error && typeof error === 'object') {
       const apiError = error as ApiError
 
-      // Priorité au message de l'ApiError
       if ('message' in apiError && typeof apiError.message === 'string') {
         return apiError.message
       }
 
-      // Fallback sur la propriété error
       if ('error' in apiError && typeof apiError.error === 'string') {
         return apiError.error
       }
     }
 
-    // Erreur native JavaScript
     if (error instanceof Error) {
       return error.message
     }
 
-    // Message par défaut si aucun format reconnu
     return "Une erreur inattendue s'est produite"
   }
 
@@ -217,27 +208,22 @@ export const useAuth = () => {
   }
 
   return {
-    // États
     user,
     isAuthenticated,
     isLoading,
     error,
 
-    // Actions d'authentification
     login,
     register,
     logout,
 
-    // Vérifications de permissions
     hasRole,
     hasAnyRole,
     hasAllRoles,
 
-    // Guards de navigation
     requireAuth,
     requireGuest,
 
-    // Gestion des erreurs
     clearError,
     setError,
     getErrorMessage,

@@ -60,7 +60,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $this->applyFilters($qb, $filter);
 
-        // Tri
         $sortField = match ($filter->sortBy) {
             'id' => 'u.id',
             'email' => 'u.email',

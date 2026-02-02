@@ -17,7 +17,6 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore()
 
-// État du formulaire
 const mapName = ref('')
 const mapDescription = ref('')
 const selectedFile = ref<File | null>(null)
@@ -27,7 +26,6 @@ const gridType = ref<'square' | 'hex' | 'none'>('square')
 const width = ref(20)
 const height = ref(20)
 
-// États de chargement
 const isUploading = ref(false)
 const uploadError = ref<string | null>(null)
 
@@ -48,7 +46,6 @@ function prefillForm() {
   }
 }
 
-// Pré-remplir les champs quand la modal s'ouvre
 watch(
   () => props.show,
   (isShown) => {
@@ -59,7 +56,6 @@ watch(
   { immediate: true }
 )
 
-// Aussi pré-remplir si la carte change
 watch(
   () => props.map,
   () => {
@@ -82,13 +78,11 @@ function handleFileSelect(event: Event) {
 
   if (!file) return
 
-  // Vérifier le type
   if (!file.type.startsWith('image/')) {
     uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
     return
   }
 
-  // Vérifier la taille (10 Mo max)
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
     uploadError.value = "L'image est trop volumineuse (max 10 Mo)"
@@ -123,10 +117,8 @@ async function handleUpdate() {
   uploadError.value = null
 
   try {
-    // Construire le FormData pour l'upload
     const formData = new FormData()
 
-    // Ajouter l'image seulement si une nouvelle a été sélectionnée
     if (selectedFile.value) {
       formData.append('image', selectedFile.value)
       console.log('Image ajoutée au FormData:', selectedFile.value.name)
@@ -149,7 +141,6 @@ async function handleUpdate() {
       hasNewImage: !!selectedFile.value,
     })
 
-    // Appeler l'API d'update (PUT)
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost/api'
     const response = await fetch(`${apiUrl}/games/${props.gameId}/maps/${props.map.id}`, {
       method: 'PUT',
@@ -168,12 +159,10 @@ async function handleUpdate() {
     const updatedMap = await response.json()
     console.log('Carte mise à jour:', updatedMap)
 
-    // Mettre à jour le store
     if (mapStore.activeMap?.id === updatedMap.id) {
       mapStore.activeMap = updatedMap
     }
 
-    // Recharger la liste de toutes les cartes pour que le select soit à jour
     await mapStore.loadGameMaps(props.gameId)
 
     emit('success')

@@ -20,7 +20,6 @@ const props = defineProps<{
 const mapStore = useMapStore()
 const authStore = useAuthStore()
 
-// État local
 const selectedTokenId = ref<number | null>(null)
 const draggingToken = ref<number | null>(null)
 const dragStartPos = ref({ x: 0, y: 0 })
@@ -29,37 +28,29 @@ const permissionsTokenId = ref<number | null>(null)
 const showEditTokenModal = ref(false)
 const editingToken = ref<GameToken | null>(null)
 
-// Ref pour le conteneur scrollable et pour le div de la carte
 const mapContainer = ref<HTMLElement | null>(null)
 const mapElement = ref<HTMLElement | null>(null)
 
-// Dimensions de la grille
 const gridSize = computed(() => props.map?.gridSize || 50)
 const mapWidth = computed(() => (props.map?.width || 20) * gridSize.value)
 const mapHeight = computed(() => (props.map?.height || 20) * gridSize.value)
 
-// Paramètres de grille
 const gridColor = computed(() => props.map?.settings?.gridColor || '#ffffff')
 const gridOpacity = computed(() => props.map?.settings?.gridOpacity ?? 0.1)
 const showGrid = computed(() => props.map?.settings?.showGrid ?? true)
 
-// URL complète de l'image de la carte
 const mapImageUrl = computed(() => {
   if (!props.map?.imageUrl) return null
 
-  // Si l'URL commence par http:// ou https://, la retourner telle quelle
   if (props.map.imageUrl.startsWith('http://') || props.map.imageUrl.startsWith('https://')) {
     return props.map.imageUrl
   }
 
-  // Sinon, ajouter l'URL du backend (sans /api car les uploads sont servis directement)
-  // On extrait le domaine de VITE_API_URL en retirant /api
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
   const baseUrl = apiUrl.replace(/\/api$/, '')
   return `${baseUrl}${props.map.imageUrl}`
 })
 
-// Calculer le scale du zoom (100% = 1.0, 50% = 0.5, 200% = 2.0)
 const zoomScale = computed(() => props.zoom / 100)
 
 // ============================================
@@ -72,16 +63,13 @@ const zoomScale = computed(() => props.zoom / 100)
  */
 const visibleTokens = computed(() => {
   return props.tokens.filter((token) => {
-    // Si le token est visible, tout le monde le voit
     if (token.isVisible) return true
 
-    // Si le token est invisible, seul le MJ ou les joueurs avec contrôle peuvent le voir
     const canControl = canControlToken(token)
     return props.isGameMaster || canControl
   })
 })
 
-// Émettre un événement pour demander la création d'un token
 const emit = defineEmits<{
   createToken: [position: { x: number; y: number }]
 }>()
@@ -97,7 +85,6 @@ function selectToken(tokenId: number) {
 function handleTokenMouseDown(event: MouseEvent, token: GameToken) {
   if (!props.editable || token.isLocked || props.selectedTool !== 'select') return
 
-  // Vérifier si l'utilisateur peut contrôler ce token
   if (!canControlToken(token)) {
     console.log("Vous n'avez pas la permission de contrôler ce token")
     return
@@ -112,22 +99,17 @@ function handleTokenMouseDown(event: MouseEvent, token: GameToken) {
 function handleMouseMove(event: MouseEvent) {
   if (!draggingToken.value || !props.editable || !mapElement.value || !mapContainer.value) return
 
-  // Récupérer les rectangles du conteneur scrollable et de la carte
   const mapRect = mapElement.value.getBoundingClientRect()
 
-  // Calculer la position de la souris relative à la carte, en tenant compte du zoom
   const mouseX = (event.clientX - mapRect.left) / zoomScale.value
   const mouseY = (event.clientY - mapRect.top) / zoomScale.value
 
-  // Convertir en coordonnées de grille
   const x = Math.floor(mouseX / gridSize.value)
   const y = Math.floor(mouseY / gridSize.value)
 
-  // Contraindre aux limites de la carte
   const constrainedX = Math.max(0, Math.min(x, (props.map?.width || 20) - 1))
   const constrainedY = Math.max(0, Math.min(y, (props.map?.height || 20) - 1))
 
-  // Mettre à jour la position visuellement
   const tokenElement = document.querySelector(
     `[data-token-id="${draggingToken.value}"]`
   ) as HTMLElement
@@ -147,15 +129,12 @@ async function handleMouseUp() {
     const x = Math.floor(parseInt(tokenElement.style.left) / gridSize.value)
     const y = Math.floor(parseInt(tokenElement.style.top) / gridSize.value)
 
-    // Vérifier si la position a changé
     if (x !== dragStartPos.value.x || y !== dragStartPos.value.y) {
       try {
-        // Utilise la fonction moveToken du mapStore
         await mapStore.moveToken(draggingToken.value, x, y)
         console.log('Token déplacé:', { id: draggingToken.value, x, y })
       } catch (error) {
         console.error('Erreur déplacement token:', error)
-        // Restaurer la position originale
         tokenElement.style.left = `${dragStartPos.value.x * gridSize.value}px`
         tokenElement.style.top = `${dragStartPos.value.y * gridSize.value}px`
       }
@@ -229,7 +208,6 @@ function closeEditModal() {
 
 function handleTokenUpdated() {
   closeEditModal()
-  // La modal recharge déjà les tokens via mapStore.loadMapTokens()
 }
 
 async function togglePlayerPermission(tokenId: number, userId: number, hasPermission: boolean) {
@@ -242,7 +220,6 @@ async function togglePlayerPermission(tokenId: number, userId: number, hasPermis
   }
 }
 
-// Obtenir les permissions actuelles d'un token
 const currentPermissions = computed(() => {
   if (!permissionsTokenId.value) return []
   const token = props.tokens.find((t) => t.id === permissionsTokenId.value)
@@ -253,30 +230,24 @@ const currentPermissions = computed(() => {
 // Création de token par clic
 // ============================================
 function handleMapClick(event: MouseEvent) {
-  // Ne rien faire si ce n'est pas le bon outil ou si pas éditable
   if (!props.editable || props.selectedTool !== 'token' || !mapElement.value) return
 
-  // Ignorer si on clique sur un token existant
   const target = event.target as HTMLElement
   if (target.closest('[data-token-id]')) return
 
   const mapRect = mapElement.value.getBoundingClientRect()
 
-  // Calculer la position de la souris relative à la carte, en tenant compte du zoom
   const mouseX = (event.clientX - mapRect.left) / zoomScale.value
   const mouseY = (event.clientY - mapRect.top) / zoomScale.value
 
-  // Convertir en coordonnées de grille
   const x = Math.floor(mouseX / gridSize.value)
   const y = Math.floor(mouseY / gridSize.value)
 
-  // Contraindre aux limites de la carte
   const constrainedX = Math.max(0, Math.min(x, (props.map?.width || 20) - 1))
   const constrainedY = Math.max(0, Math.min(y, (props.map?.height || 20) - 1))
 
   console.log('Clic pour créer token à:', { x: constrainedX, y: constrainedY })
 
-  // Émettre l'événement vers le parent
   emit('createToken', { x: constrainedX, y: constrainedY })
 }
 
@@ -300,12 +271,10 @@ function getTokenSize(token: GameToken): number {
 function getTokenImageUrl(imageUrl: string | undefined): string | null {
   if (!imageUrl) return null
 
-  // Si l'URL commence par http:// ou https://, la retourner telle quelle
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl
   }
 
-  // Sinon, ajouter l'URL du backend
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
   const baseUrl = apiUrl.replace(/\/api$/, '')
   return `${baseUrl}${imageUrl}`
@@ -320,10 +289,8 @@ function getTokenImageUrl(imageUrl: string | undefined): string | null {
  * Le MJ peut toujours contrôler. Les joueurs peuvent contrôler si leur userId est dans token.settings.controllableBy
  */
 function canControlToken(token: GameToken): boolean {
-  // Le MJ peut toujours contrôler tous les tokens
   if (props.isGameMaster) return true
 
-  // Vérifier si l'utilisateur est dans la liste des contrôleurs
   const userId = authStore.user?.id
   if (!userId) return false
 
@@ -340,19 +307,16 @@ async function moveTokenByKey(direction: 'up' | 'down' | 'left' | 'right') {
   const token = props.tokens.find((t) => t.id === selectedTokenId.value)
   if (!token) return
 
-  // Vérifier si l'utilisateur peut contrôler ce token
   if (!canControlToken(token)) {
     console.log("Vous n'avez pas la permission de contrôler ce token")
     return
   }
 
-  // Vérifier si le token est verrouillé
   if (token.isLocked) {
     console.log('Ce token est verrouillé')
     return
   }
 
-  // Calculer la nouvelle position
   let newX = token.x
   let newY = token.y
 
@@ -371,14 +335,11 @@ async function moveTokenByKey(direction: 'up' | 'down' | 'left' | 'right') {
       break
   }
 
-  // Contraindre aux limites de la carte
   newX = Math.max(0, Math.min(newX, props.map.width - 1))
   newY = Math.max(0, Math.min(newY, props.map.height - 1))
 
-  // Si la position n'a pas changé (limite atteinte), ne rien faire
   if (newX === token.x && newY === token.y) return
 
-  // Déplacer le token
   try {
     await mapStore.moveToken(token.id, newX, newY)
     console.log('Token déplacé:', { id: token.id, x: newX, y: newY })
@@ -391,11 +352,9 @@ async function moveTokenByKey(direction: 'up' | 'down' | 'left' | 'right') {
  * Gestionnaire d'événement clavier
  */
 function handleKeyDown(event: KeyboardEvent) {
-  // Ignorer si on est dans un champ de saisie
   const target = event.target as HTMLElement
   if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
 
-  // Gérer les flèches directionnelles
   switch (event.key) {
     case 'ArrowUp':
       event.preventDefault()
@@ -416,7 +375,6 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-// Ajouter/retirer l'event listener au montage/démontage
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown)
 })
@@ -434,30 +392,24 @@ function centerView() {
   let targetX = 0
   let targetY = 0
 
-  // Si un token est sélectionné, centrer sur lui
   if (selectedTokenId.value) {
     const token = props.tokens.find((t) => t.id === selectedTokenId.value)
     if (token) {
-      // Position du centre du token en pixels
       const tokenCenterX = (token.x + (token.size || 1) / 2) * gridSize.value
       const tokenCenterY = (token.y + (token.size || 1) / 2) * gridSize.value
 
-      // Appliquer le zoom
       targetX = tokenCenterX * zoomScale.value
       targetY = tokenCenterY * zoomScale.value
     }
   } else {
-    // Sinon, centrer sur le centre de la carte
     targetX = (mapWidth.value / 2) * zoomScale.value
     targetY = (mapHeight.value / 2) * zoomScale.value
   }
 
-  // Calculer la position de scroll pour centrer
   const container = mapContainer.value
   const scrollLeft = targetX - container.clientWidth / 2
   const scrollTop = targetY - container.clientHeight / 2
 
-  // Animer le scroll
   container.scrollTo({
     left: scrollLeft,
     top: scrollTop,
@@ -465,7 +417,6 @@ function centerView() {
   })
 }
 
-// Exposer la fonction pour l'utiliser depuis le parent
 defineExpose({
   centerView,
   selectedTokenId,

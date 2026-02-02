@@ -9,7 +9,6 @@ import { ref, type Ref } from 'vue'
 import { usePagination, createPagination } from '@/composables/usePagination'
 import type { PaginationMeta } from '@/types/game'
 
-// Mock window.scrollTo
 global.scrollTo = vi.fn()
 
 describe('usePagination', () => {
@@ -225,11 +224,11 @@ describe('usePagination', () => {
 
     const range = pagination.paginationRange.value
 
-    expect(range).toContain(8) // current - 2
-    expect(range).toContain(9) // current - 1
-    expect(range).toContain(10) // current
-    expect(range).toContain(11) // current + 1
-    expect(range).toContain(12) // current + 2
+    expect(range).toContain(8)
+    expect(range).toContain(9)
+    expect(range).toContain(10)
+    expect(range).toContain(11)
+    expect(range).toContain(12)
   })
 
   it('should handle single page', () => {

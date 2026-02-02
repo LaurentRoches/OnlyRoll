@@ -10,11 +10,9 @@ import { securityApi } from './securityApi'
 import { adminApi } from './adminApi'
 import { profileApi } from './profileApi'
 
-// Export du client HTTP de base
 export { apiClient } from './apiClient'
 export type { ApiError } from './apiClient'
 
-// Export des services
 export { authApi } from './authApi'
 export { gameApi } from './gameApi'
 export { mapApi } from './mapApi'
@@ -36,7 +34,6 @@ export type {
   RollDiceDTO,
 } from '@/types/game'
 
-// Export des types admin
 export type {
   UserStats,
   AuditStats,
@@ -51,7 +48,6 @@ export type {
   AuditActionInfo,
 } from './adminApi'
 
-// Export des types profile
 export type { UserProfile, ProfileUpdateData, PasswordChangeData } from './profileApi'
 
 /**

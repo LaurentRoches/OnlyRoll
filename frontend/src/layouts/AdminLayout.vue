@@ -1,0 +1,275 @@
+<template>
+  <div class="admin-layout min-h-screen bg-secondary-900">
+    <!-- Skip links - RGAA 12.7 -->
+    <nav aria-label="Liens d'accès rapide" class="skip-links">
+      <a href="#main-nav" class="skip-link">Aller à la navigation</a>
+      <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    </nav>
+
+    <!-- Header avec role banner - RGAA 12.6 -->
+    <header role="banner" class="bg-secondary-800 border-b border-secondary-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Logo et titre -->
+          <div class="flex items-center space-x-4">
+            <RouterLink
+              to="/dashboard"
+              class="text-secondary-400 hover:text-secondary-200 transition-colors"
+              aria-label="Retour au tableau de bord utilisateur"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+            </RouterLink>
+            <div>
+              <h1 class="sr-only">Administration OnlyRoll</h1>
+              <span class="text-xl font-bold text-secondary-50" aria-hidden="true">
+                Administration
+              </span>
+            </div>
+          </div>
+
+          <!-- User info -->
+          <div class="flex items-center space-x-4">
+            <span class="text-secondary-400 text-sm">
+              Connecté en tant que
+              <strong class="text-secondary-200">{{ currentUser?.pseudo }}</strong>
+            </span>
+            <button
+              type="button"
+              class="px-3 py-1.5 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors text-sm"
+              @click="handleLogout"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex">
+      <!-- Navigation principale - RGAA 12.1, 12.2 -->
+      <nav
+        id="main-nav"
+        role="navigation"
+        aria-label="Navigation administration"
+        class="w-64 bg-secondary-800 border-r border-secondary-700 min-h-[calc(100vh-65px)]"
+      >
+        <ul role="list" class="py-4">
+          <li v-for="item in navigationItems" :key="item.to">
+            <RouterLink
+              :to="item.to"
+              class="flex items-center px-4 py-3 text-secondary-300 hover:bg-secondary-700 hover:text-secondary-100 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              :aria-current="isCurrentRoute(item.to) ? 'page' : undefined"
+              :class="{ 'bg-secondary-700 text-secondary-100': isCurrentRoute(item.to) }"
+            >
+              <component :is="item.icon" class="w-5 h-5 mr-3" aria-hidden="true" />
+              <span>{{ item.label }}</span>
+            </RouterLink>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Contenu principal - RGAA 12.6 -->
+      <main id="main-content" role="main" tabindex="-1" class="flex-1">
+        <!-- Fil d'Ariane - RGAA 12.8 -->
+        <nav
+          v-if="breadcrumbs.length > 1"
+          aria-label="Fil d'Ariane"
+          class="bg-secondary-850 border-b border-secondary-700 px-6 py-3"
+        >
+          <ol role="list" class="flex items-center space-x-2 text-sm">
+            <li v-for="(crumb, index) in breadcrumbs" :key="crumb.path" class="flex items-center">
+              <svg
+                v-if="index > 0"
+                class="w-4 h-4 text-secondary-500 mx-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              <RouterLink
+                v-if="index < breadcrumbs.length - 1"
+                :to="crumb.path"
+                class="text-secondary-400 hover:text-secondary-200 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded px-1"
+              >
+                {{ crumb.name }}
+              </RouterLink>
+              <span
+                v-else
+                aria-current="page"
+                class="text-secondary-200 font-medium px-1"
+              >
+                {{ crumb.name }}
+              </span>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Contenu de la page -->
+        <div class="p-6">
+          <slot />
+        </div>
+      </main>
+    </div>
+
+    <!-- Live region pour les annonces - RGAA 7.5 -->
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      class="sr-only"
+    >
+      {{ announcement }}
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, watch, h, type FunctionalComponent } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const DashboardIcon: FunctionalComponent = () =>
+  h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+    h('path', {
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      'stroke-width': '2',
+      d: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
+    }),
+  ])
+
+const UsersIcon: FunctionalComponent = () =>
+  h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+    h('path', {
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      'stroke-width': '2',
+      d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    }),
+  ])
+
+const AuditIcon: FunctionalComponent = () =>
+  h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+    h('path', {
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      'stroke-width': '2',
+      d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    }),
+  ])
+
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+
+const announcement = ref('')
+
+const currentUser = computed(() => authStore.user)
+
+const navigationItems = [
+  { to: '/admin', label: 'Tableau de bord', icon: DashboardIcon },
+  { to: '/admin/users', label: 'Utilisateurs', icon: UsersIcon },
+  { to: '/admin/audit-logs', label: "Logs d'audit", icon: AuditIcon },
+]
+
+const breadcrumbsMap: Record<string, string> = {
+  '/admin': 'Tableau de bord',
+  '/admin/users': 'Utilisateurs',
+  '/admin/audit-logs': "Logs d'audit",
+}
+
+const breadcrumbs = computed(() => {
+  const crumbs = [{ path: '/admin', name: 'Administration' }]
+  const currentPath = route.path
+
+  if (currentPath !== '/admin') {
+    const name = breadcrumbsMap[currentPath] || route.meta.title || 'Page'
+    crumbs.push({ path: currentPath, name: String(name) })
+  }
+
+  return crumbs
+})
+
+const isCurrentRoute = (path: string): boolean => {
+  return route.path === path
+}
+
+const handleLogout = async () => {
+  announcement.value = 'Déconnexion en cours...'
+  await authStore.logout()
+  router.push({ name: 'home' })
+}
+
+watch(
+  () => route.path,
+  () => {
+    const pageName = breadcrumbsMap[route.path] || 'Page'
+    announcement.value = `Navigation vers ${pageName}`
+    setTimeout(() => {
+      announcement.value = ''
+    }, 1000)
+  }
+)
+</script>
+
+<style scoped>
+/* Skip links - visibles uniquement au focus */
+.skip-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  padding: 0.75rem 1rem;
+  background-color: theme('colors.primary.600');
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid theme('colors.primary.400');
+  outline-offset: 2px;
+}
+
+/* Focus visible pour tous les éléments interactifs */
+:deep(a:focus-visible),
+:deep(button:focus-visible),
+:deep(input:focus-visible),
+:deep(select:focus-visible) {
+  outline: 2px solid theme('colors.primary.500');
+  outline-offset: 2px;
+}
+
+/* Couleur de fond intermédiaire */
+.bg-secondary-850 {
+  background-color: #1e2330;
+}
+</style>

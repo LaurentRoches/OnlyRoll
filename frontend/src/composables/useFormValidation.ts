@@ -35,10 +35,8 @@ export function useFormValidation() {
    * Valide un champ avec des règles données.
    */
   const validateField = (field: string, value: unknown, rules: ValidationRule[]): boolean => {
-    // Supprimer les erreurs existantes pour ce champ
     validationErrors.value = validationErrors.value.filter((err) => err.field !== field)
 
-    // Appliquer les règles de validation
     for (const rule of rules) {
       if (!rule.validator(value)) {
         validationErrors.value.push({

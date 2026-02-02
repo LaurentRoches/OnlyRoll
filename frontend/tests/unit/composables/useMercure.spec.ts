@@ -8,7 +8,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useMercure } from '@/composables/useMercure'
 import { mercureService } from '@/services/mercure'
 
-// Mock du service Mercure
 vi.mock('@/services/mercure', () => ({
   mercureService: {
     connect: vi.fn(),
@@ -151,7 +150,6 @@ describe('useMercure', () => {
     on('chat', callback)
     off('chat', callback)
     
-    // Second off should still work
     off('chat', callback)
 
     expect(mercureService.off).toHaveBeenCalledTimes(2)

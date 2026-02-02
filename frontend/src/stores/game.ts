@@ -226,7 +226,6 @@ export const useGameStore = defineStore('game', () => {
     try {
       const updatedGame = await gameApi.start(id)
 
-      // Mise à jour
       if (currentGame.value?.id === id) {
         currentGame.value = updatedGame
       }
@@ -251,7 +250,6 @@ export const useGameStore = defineStore('game', () => {
   }
 
   return {
-    // State
     games,
     currentGame,
     myGames,
@@ -259,14 +257,12 @@ export const useGameStore = defineStore('game', () => {
     error,
     pagination,
 
-    // Getters
     publicGames,
     isGameMaster,
     isPlayerInGame,
     canStartGame,
     canModifyGame,
 
-    // Actions
     fetchPublicGames,
     fetchMyGames,
     fetchGameById,

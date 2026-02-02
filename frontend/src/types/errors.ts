@@ -17,21 +17,16 @@ export interface ValidationError {
  * Consolidation de tous les formats d'erreurs possibles du backend
  */
 export interface ApiError {
-  // Format principal
   error?: string
   message?: string
 
-  // Codes d'erreur
   code?: string
   statusCode?: number
 
-  // Erreurs de validation (Symfony)
   violations?: ValidationError[]
 
-  // Erreurs par champ
   errors?: Record<string, string[]>
 
-  // Format Axios
   response?: {
     data?: {
       error?: string
@@ -62,7 +57,6 @@ export function getErrorMessage(error: unknown): string {
     return 'Une erreur inattendue est survenue'
   }
 
-  // Essayer différents formats
   if (error.response?.data?.error) {
     return error.response.data.error
   }

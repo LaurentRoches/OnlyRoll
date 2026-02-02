@@ -6,10 +6,8 @@ import { ref, triggerRef } from 'vue'
  */
 export const usePresenceStore = defineStore('presence', () => {
   // ========== State ==========
-  // Map de gameId -> Set de userId connectés
   const connectedUsers = ref<Map<number, Set<number>>>(new Map())
 
-  // Timestamp de la dernière mise à jour de présence
   const lastHeartbeat = ref<number>(Date.now())
 
   // ========== Getters ==========
@@ -46,7 +44,7 @@ export const usePresenceStore = defineStore('presence', () => {
       connectedUsers.value.set(gameId, new Set())
     }
     connectedUsers.value.get(gameId)!.add(userId)
-    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
+    triggerRef(connectedUsers)
     console.log(`User ${userId} is now online in game ${gameId}`)
   }
 
@@ -57,7 +55,7 @@ export const usePresenceStore = defineStore('presence', () => {
     const gameUsers = connectedUsers.value.get(gameId)
     if (gameUsers) {
       gameUsers.delete(userId)
-      triggerRef(connectedUsers) // Forcer Vue à détecter le changement
+      triggerRef(connectedUsers)
       console.log(`User ${userId} is now offline in game ${gameId}`)
     }
   }
@@ -67,7 +65,7 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function setOnlineUsers(gameId: number, userIds: number[]) {
     connectedUsers.value.set(gameId, new Set(userIds))
-    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
+    triggerRef(connectedUsers)
     console.log(`Updated online users for game ${gameId}:`, userIds)
   }
 
@@ -82,12 +80,9 @@ export const usePresenceStore = defineStore('presence', () => {
   }) {
     const { gameId, userId, type, onlineUsers } = data
 
-    // Si on a la liste complète des utilisateurs en ligne, toujours l'utiliser
-    // Cela garantit la synchronisation entre tous les clients
     if (onlineUsers) {
       setOnlineUsers(gameId, onlineUsers)
     } else {
-      // Fallback : mise à jour individuelle si la liste n'est pas fournie
       if (type === 'join') {
         setUserOnline(gameId, userId)
       } else if (type === 'leave') {
@@ -103,7 +98,7 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function clearGamePresence(gameId: number) {
     connectedUsers.value.delete(gameId)
-    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
+    triggerRef(connectedUsers)
   }
 
   /**
@@ -111,21 +106,18 @@ export const usePresenceStore = defineStore('presence', () => {
    */
   function $reset() {
     connectedUsers.value.clear()
-    triggerRef(connectedUsers) // Forcer Vue à détecter le changement
+    triggerRef(connectedUsers)
     lastHeartbeat.value = Date.now()
   }
 
   return {
-    // State
     connectedUsers,
     lastHeartbeat,
 
-    // Getters
     isUserOnline,
     getOnlineUsers,
     getOnlineCount,
 
-    // Actions
     setUserOnline,
     setUserOffline,
     setOnlineUsers,

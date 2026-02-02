@@ -131,7 +131,7 @@ class AdminAuditLogControllerTest extends WebTestCase
         $response = json_decode($this->client->getResponse()->getContent(), true);
 
         $this->assertIsArray($response);
-        $this->assertGreaterThanOrEqual(2, \count($response)); // LOGIN_SUCCESS and PASSWORD_CHANGE
+        $this->assertGreaterThanOrEqual(2, \count($response));
     }
 
     public function testStatisticsReturnsAuditStats(): void

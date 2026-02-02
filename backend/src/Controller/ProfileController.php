@@ -9,6 +9,7 @@ use App\DTO\Profile\ProfileUpdateDTO;
 use App\Exception\Profile\InvalidPasswordException;
 use App\Service\FileUploader;
 use App\Service\ProfileService;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -67,14 +68,27 @@ final class ProfileController extends AbstractController
 
             $errors = $this->validator->validate($dto);
             if (\count($errors) > 0) {
-                return $this->json(['errors' => (string) $errors], Response::HTTP_BAD_REQUEST);
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+
+                return $this->json([
+                    'error' => 'Validation failed',
+                    'violations' => $errorMessages,
+                ], Response::HTTP_BAD_REQUEST);
             }
 
             $updatedUser = $this->profileService->updateProfile($user, $dto);
 
             return $this->json($updatedUser, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        } catch (UniqueConstraintViolationException $e) {
+            return $this->json([
+                'error' => 'Validation failed',
+                'violations' => ['pseudo' => 'Ce pseudo est déjà utilisé'],
+            ], Response::HTTP_CONFLICT);
         } catch (Exception $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Une erreur est survenue'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
