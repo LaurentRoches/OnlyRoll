@@ -138,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue'
+import { ref, useId } from 'vue'
 
 export interface TableColumn {
   key: string

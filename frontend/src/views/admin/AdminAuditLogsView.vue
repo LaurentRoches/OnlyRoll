@@ -342,7 +342,7 @@ const goToPage = (page: number) => {
 }
 
 const showDetails = (log: Record<string, unknown>) => {
-  selectedLog.value = log as AuditLogEntry
+  selectedLog.value = log as unknown as AuditLogEntry
   showDetailsModal.value = true
 }
 

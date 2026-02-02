@@ -303,7 +303,7 @@ const goToPage = (page: number) => {
 }
 
 const confirmDelete = (user: Record<string, unknown>) => {
-  userToDelete.value = user as AdminUser
+  userToDelete.value = user as unknown as AdminUser
   showDeleteModal.value = true
 }
 
