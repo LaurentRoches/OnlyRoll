@@ -135,6 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
         lastLogin: response.lastLogin,
         createdAt: response.createdAt || new Date().toISOString(),
         updatedAt: response.updatedAt || new Date().toISOString(),
+        avatar: response.avatar,
       }
 
       setUser(userData)

@@ -6,8 +6,14 @@
       class="flex items-center space-x-3 hover:bg-secondary-700/50 rounded-lg p-2 transition-colors"
     >
       <!-- Avatar -->
-      <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-        <span class="text-white text-sm font-medium">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          :alt="`Avatar de ${user?.pseudo}`"
+          class="w-full h-full object-cover"
+        />
+        <span v-else class="w-full h-full bg-primary-500 flex items-center justify-center text-white text-sm font-medium">
           {{ userInitials }}
         </span>
       </div>
@@ -132,6 +138,19 @@ const userInitials = computed(() => {
     return (names[0][0] + names[1][0]).toUpperCase()
   }
   return user.value.pseudo.slice(0, 2).toUpperCase()
+})
+
+const avatarUrl = computed((): string | undefined => {
+  if (!user.value?.avatar) return undefined
+  if (user.value.avatar.startsWith('http')) return user.value.avatar
+
+  const apiUrl = import.meta.env.VITE_API_URL || ''
+  const baseUrl = apiUrl.replace(/\/api$/, '')
+
+  if (user.value.avatar.startsWith('/uploads/')) {
+    return `${baseUrl}${user.value.avatar}`
+  }
+  return `${baseUrl}/uploads/avatars/${user.value.avatar}`
 })
 
 const toggleMenu = () => {
