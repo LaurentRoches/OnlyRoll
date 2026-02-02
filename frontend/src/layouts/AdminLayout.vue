@@ -113,11 +113,7 @@
               >
                 {{ crumb.name }}
               </RouterLink>
-              <span
-                v-else
-                aria-current="page"
-                class="text-secondary-200 font-medium px-1"
-              >
+              <span v-else aria-current="page" class="text-secondary-200 font-medium px-1">
                 {{ crumb.name }}
               </span>
             </li>
@@ -132,12 +128,7 @@
     </div>
 
     <!-- Live region pour les annonces - RGAA 7.5 -->
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      class="sr-only"
-    >
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>
   </div>

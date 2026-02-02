@@ -1,7 +1,10 @@
 <template>
   <div class="profile-view min-h-screen bg-secondary-900">
     <!-- Skip link -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:p-4 focus:bg-primary-600 focus:text-white focus:z-50">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:p-4 focus:bg-primary-600 focus:text-white focus:z-50"
+    >
       Aller au contenu principal
     </a>
 
@@ -17,8 +20,19 @@
             to="/dashboard"
             class="flex items-center px-4 py-2 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              class="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             Retour au dashboard
           </RouterLink>
@@ -27,10 +41,23 @@
     </header>
 
     <!-- Main content -->
-    <main id="main-content" role="main" tabindex="-1" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main
+      id="main-content"
+      role="main"
+      tabindex="-1"
+      class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+    >
       <!-- Loading state -->
-      <div v-if="isLoading" class="flex justify-center py-12" role="status" aria-label="Chargement en cours">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" aria-hidden="true"></div>
+      <div
+        v-if="isLoading"
+        class="flex justify-center py-12"
+        role="status"
+        aria-label="Chargement en cours"
+      >
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
+          aria-hidden="true"
+        ></div>
         <span class="sr-only">Chargement du profil...</span>
       </div>
 
@@ -108,9 +135,7 @@
 
             <!-- Email (lecture seule) -->
             <div class="form-group">
-              <label :for="emailId" class="form-label">
-                Adresse email
-              </label>
+              <label :for="emailId" class="form-label"> Adresse email </label>
               <input
                 :id="emailId"
                 :value="profile.email"
@@ -127,14 +152,8 @@
 
             <!-- Fuseau horaire -->
             <div class="form-group">
-              <label :for="timezoneId" class="form-label">
-                Fuseau horaire
-              </label>
-              <select
-                :id="timezoneId"
-                v-model="editForm.timezone"
-                class="form-input"
-              >
+              <label :for="timezoneId" class="form-label"> Fuseau horaire </label>
+              <select :id="timezoneId" v-model="editForm.timezone" class="form-input">
                 <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
                 <option value="Europe/London">Europe/London (UTC+0/+1)</option>
                 <option value="America/New_York">America/New_York (UTC-5/-4)</option>
@@ -146,14 +165,8 @@
 
             <!-- Langue -->
             <div class="form-group">
-              <label :for="languageId" class="form-label">
-                Langue préférée
-              </label>
-              <select
-                :id="languageId"
-                v-model="editForm.language"
-                class="form-input"
-              >
+              <label :for="languageId" class="form-label"> Langue préférée </label>
+              <select :id="languageId" v-model="editForm.language" class="form-input">
                 <option value="fr">Français</option>
                 <option value="en">English</option>
               </select>
@@ -187,7 +200,10 @@
                 class="px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="isUpdating" class="flex items-center">
-                  <span class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" aria-hidden="true"></span>
+                  <span
+                    class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+                    aria-hidden="true"
+                  ></span>
                   Enregistrement...
                 </span>
                 <span v-else>Enregistrer les modifications</span>
@@ -231,8 +247,19 @@
                   v-if="profile.isVerified"
                   class="inline-flex items-center px-2 py-1 text-xs rounded bg-green-500/20 text-green-400"
                 >
-                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  <svg
+                    class="w-3 h-3 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Vérifié
                 </span>
@@ -355,7 +382,9 @@ const handleProfileUpdate = async () => {
     }, 5000)
   } catch (err: unknown) {
     if (err && typeof err === 'object' && 'response' in err) {
-      const response = (err as { response?: { data?: { error?: string; violations?: Record<string, string> } } }).response
+      const response = (
+        err as { response?: { data?: { error?: string; violations?: Record<string, string> } } }
+      ).response
 
       if (response?.data?.violations) {
         Object.assign(profileErrors, response.data.violations)

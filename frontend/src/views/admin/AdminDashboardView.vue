@@ -7,8 +7,16 @@
     </header>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex justify-center py-12" role="status" aria-label="Chargement en cours">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" aria-hidden="true"></div>
+    <div
+      v-if="isLoading"
+      class="flex justify-center py-12"
+      role="status"
+      aria-label="Chargement en cours"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
+        aria-hidden="true"
+      ></div>
       <span class="sr-only">Chargement des données...</span>
     </div>
 
@@ -48,7 +56,9 @@
               {{ stats.users.newThisWeek }}
             </div>
             <div class="text-secondary-400 text-sm">Cette semaine</div>
-            <span class="sr-only">{{ stats.users.newThisWeek }} nouveaux utilisateurs cette semaine</span>
+            <span class="sr-only"
+              >{{ stats.users.newThisWeek }} nouveaux utilisateurs cette semaine</span
+            >
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-blue-500" aria-hidden="true">
@@ -62,9 +72,7 @@
 
       <!-- Audit Stats Section -->
       <section aria-labelledby="audit-stats-heading">
-        <h3 id="audit-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">
-          Audit
-        </h3>
+        <h3 id="audit-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">Audit</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <article class="stats-card">
             <div class="text-3xl font-bold text-primary-500" aria-hidden="true">
@@ -92,7 +100,9 @@
               {{ stats.audit.failedLoginsToday }}
             </div>
             <div class="text-secondary-400 text-sm">Échecs login</div>
-            <span class="sr-only">{{ stats.audit.failedLoginsToday }} échecs de connexion aujourd'hui</span>
+            <span class="sr-only"
+              >{{ stats.audit.failedLoginsToday }} échecs de connexion aujourd'hui</span
+            >
           </article>
         </div>
       </section>

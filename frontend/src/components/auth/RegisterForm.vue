@@ -620,7 +620,6 @@ const handleSubmit = async () => {
       password: form.value.password,
       confirmPassword: form.value.confirmPassword,
     })
-
   } catch (err) {
     logger.error("Erreur d'inscription:", err)
   }

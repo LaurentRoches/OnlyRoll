@@ -8,7 +8,12 @@
 
     <!-- Filters - RGAA 11.1, 11.2 -->
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
-      <form @submit.prevent class="flex flex-wrap gap-4" role="search" aria-label="Filtrer les logs d'audit">
+      <form
+        @submit.prevent
+        class="flex flex-wrap gap-4"
+        role="search"
+        aria-label="Filtrer les logs d'audit"
+      >
         <!-- Action -->
         <div class="flex flex-col">
           <label for="filter-action" class="text-xs text-secondary-400 mb-1">Action</label>
@@ -43,7 +48,9 @@
 
         <!-- Date de début -->
         <div class="flex flex-col">
-          <label for="filter-date-from" class="text-xs text-secondary-400 mb-1">Date de début</label>
+          <label for="filter-date-from" class="text-xs text-secondary-400 mb-1"
+            >Date de début</label
+          >
           <input
             id="filter-date-from"
             v-model="filters.dateFrom"
@@ -79,8 +86,16 @@
     </div>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex justify-center py-12" role="status" aria-label="Chargement en cours">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" aria-hidden="true"></div>
+    <div
+      v-if="isLoading"
+      class="flex justify-center py-12"
+      role="status"
+      aria-label="Chargement en cours"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
+        aria-hidden="true"
+      ></div>
       <span class="sr-only">Chargement des logs...</span>
     </div>
 
@@ -210,7 +225,9 @@
 
         <div v-if="selectedLog.details && Object.keys(selectedLog.details).length > 0">
           <h4 class="text-secondary-400 text-sm mb-2">Détails</h4>
-          <pre class="bg-secondary-900 rounded p-3 text-xs text-secondary-300 overflow-x-auto">{{ JSON.stringify(selectedLog.details, null, 2) }}</pre>
+          <pre class="bg-secondary-900 rounded p-3 text-xs text-secondary-300 overflow-x-auto">{{
+            JSON.stringify(selectedLog.details, null, 2)
+          }}</pre>
         </div>
 
         <div v-if="selectedLog.userAgent">
@@ -240,7 +257,12 @@ import {
   type AuditLogFilterParams,
   type AuditActionInfo,
 } from '@/services/api/adminApi'
-import { AccessibleTable, AccessibleModal, AccessiblePagination, type TableColumn } from '@/components/a11y'
+import {
+  AccessibleTable,
+  AccessibleModal,
+  AccessiblePagination,
+  type TableColumn,
+} from '@/components/a11y'
 
 const isLoading = ref(true)
 const error = ref<string | null>(null)

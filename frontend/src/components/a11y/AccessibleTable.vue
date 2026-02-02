@@ -1,9 +1,15 @@
 <template>
-  <div class="accessible-table-container" role="region" :aria-label="caption || 'Tableau de données'">
+  <div
+    class="accessible-table-container"
+    role="region"
+    :aria-label="caption || 'Tableau de données'"
+  >
     <table class="w-full" :aria-describedby="descriptionId">
       <!-- Caption pour décrire le tableau - RGAA 5.1 -->
       <caption v-if="caption" class="sr-only">
-        {{ caption }}
+        {{
+          caption
+        }}
       </caption>
 
       <!-- En-têtes de colonnes - RGAA 5.6, 5.7 -->
@@ -17,7 +23,9 @@
             :class="[
               column.align === 'center' && 'text-center',
               column.align === 'right' && 'text-right',
-              sortable && column.sortable !== false && 'cursor-pointer hover:bg-secondary-600 select-none',
+              sortable &&
+                column.sortable !== false &&
+                'cursor-pointer hover:bg-secondary-600 select-none',
             ]"
             :aria-sort="getSortDirection(column.key)"
             @click="sortable && column.sortable !== false && handleSort(column.key)"
@@ -60,7 +68,13 @@
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
-                <svg v-else class="w-4 h-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  v-else
+                  class="w-4 h-4 opacity-40"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -70,7 +84,11 @@
                 </svg>
               </span>
               <span v-if="sortColumn === column.key" class="sr-only">
-                {{ sortDirection === 'ASC' ? 'trié par ordre croissant' : 'trié par ordre décroissant' }}
+                {{
+                  sortDirection === 'ASC'
+                    ? 'trié par ordre croissant'
+                    : 'trié par ordre décroissant'
+                }}
               </span>
             </span>
           </th>
@@ -81,10 +99,7 @@
       <tbody class="divide-y divide-secondary-700">
         <!-- État vide -->
         <tr v-if="data.length === 0">
-          <td
-            :colspan="columns.length"
-            class="px-4 py-8 text-center text-secondary-400"
-          >
+          <td :colspan="columns.length" class="px-4 py-8 text-center text-secondary-400">
             <slot name="empty">
               {{ emptyMessage }}
             </slot>
@@ -126,12 +141,7 @@
     </p>
 
     <!-- Annonce pour les lecteurs d'écran -->
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      class="sr-only"
-    >
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>
   </div>

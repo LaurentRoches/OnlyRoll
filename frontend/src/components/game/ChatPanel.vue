@@ -122,8 +122,7 @@ async function sendMessage() {
       const formula = messageInput.value.replace(/^\/(roll|r) /, '').trim()
       await chatStore.rollDice(props.gameId, formula, isInCharacter.value)
       console.log('Dés lancés:', formula)
-    }
-    else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
+    } else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
       const content = messageInput.value.replace(/^\/(whisper|w) /, '').trim()
 
       const firstSpaceIndex = content.indexOf(' ')
@@ -159,18 +158,15 @@ async function sendMessage() {
         }
         await chatStore.rollDice(props.gameId, formula, isInCharacter.value, recipient.user.id)
         console.log('Dés privés lancés à', recipientPseudo, ':', formula)
-      }
-      else {
+      } else {
         await chatStore.sendWhisper(props.gameId, recipient.user.id, message)
         console.log('Whisper envoyé à', recipientPseudo)
       }
-    }
-    else if (messageInput.value.startsWith('/me ')) {
+    } else if (messageInput.value.startsWith('/me ')) {
       const content = messageInput.value.replace('/me ', '').trim()
       await chatStore.sendEmote(props.gameId, content)
       console.log('Emote envoyée')
-    }
-    else {
+    } else {
       await chatStore.sendMessage(props.gameId, messageInput.value, isInCharacter.value)
       console.log('Message envoyé')
     }

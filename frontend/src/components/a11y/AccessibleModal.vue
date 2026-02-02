@@ -8,11 +8,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-50 overflow-y-auto"
-        role="presentation"
-      >
+      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" role="presentation">
         <!-- Overlay -->
         <div
           class="fixed inset-0 bg-black/60 backdrop-blur-sm"
@@ -35,10 +31,7 @@
           >
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-secondary-700">
-              <h2
-                :id="titleId"
-                class="text-lg font-semibold text-secondary-50"
-              >
+              <h2 :id="titleId" class="text-lg font-semibold text-secondary-50">
                 {{ title }}
               </h2>
               <button

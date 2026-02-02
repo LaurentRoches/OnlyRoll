@@ -29,7 +29,8 @@ const defaults = {
   siteName: 'OnlyRoll',
   baseTitle: 'OnlyRoll - VTT D&D 5e',
   baseUrl: 'https://onlyroll.fr',
-  defaultDescription: 'OnlyRoll est une table de jeu virtuelle (VTT) gratuite pour jouer à Dungeons & Dragons 5e en ligne avec vos amis.',
+  defaultDescription:
+    'OnlyRoll est une table de jeu virtuelle (VTT) gratuite pour jouer à Dungeons & Dragons 5e en ligne avec vos amis.',
   defaultOgImage: '/og-image.png',
   locale: 'fr_FR',
   twitterSite: '@onlyroll',
@@ -204,10 +205,7 @@ export function getOrganizationStructuredData() {
     name: 'OnlyRoll',
     url: defaults.baseUrl,
     logo: `${defaults.baseUrl}/logo.png`,
-    sameAs: [
-      'https://twitter.com/onlyroll',
-      'https://discord.gg/onlyroll',
-    ],
+    sameAs: ['https://twitter.com/onlyroll', 'https://discord.gg/onlyroll'],
   }
 }
 

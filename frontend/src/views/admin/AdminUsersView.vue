@@ -8,7 +8,12 @@
 
     <!-- Filters - RGAA 11.1, 11.2 -->
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
-      <form @submit.prevent class="flex flex-wrap gap-4" role="search" aria-label="Filtrer les utilisateurs">
+      <form
+        @submit.prevent
+        class="flex flex-wrap gap-4"
+        role="search"
+        aria-label="Filtrer les utilisateurs"
+      >
         <!-- Recherche -->
         <div class="flex flex-col">
           <label for="search-users" class="sr-only">Rechercher un utilisateur</label>
@@ -58,8 +63,16 @@
     </div>
 
     <!-- Loading state -->
-    <div v-if="isLoading" class="flex justify-center py-12" role="status" aria-label="Chargement en cours">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" aria-hidden="true"></div>
+    <div
+      v-if="isLoading"
+      class="flex justify-center py-12"
+      role="status"
+      aria-label="Chargement en cours"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
+        aria-hidden="true"
+      ></div>
       <span class="sr-only">Chargement des utilisateurs...</span>
     </div>
 
@@ -103,7 +116,7 @@
         <!-- Rôles -->
         <template #cell-roles="{ row }">
           <span
-            v-for="role in (row.roles as string[])"
+            v-for="role in row.roles as string[]"
             :key="role"
             class="inline-block px-2 py-1 text-xs rounded mr-1"
             :class="{
@@ -117,10 +130,7 @@
 
         <!-- Statut -->
         <template #cell-status="{ row }">
-          <span
-            class="inline-block px-2 py-1 text-xs rounded"
-            :class="getStatusClass(row)"
-          >
+          <span class="inline-block px-2 py-1 text-xs rounded" :class="getStatusClass(row)">
             {{ getStatusLabel(row) }}
           </span>
         </template>
@@ -177,8 +187,8 @@
       @close="showDeleteModal = false"
     >
       <p class="text-secondary-300">
-        Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est réversible
-        (soft delete).
+        Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est réversible (soft
+        delete).
       </p>
 
       <template #footer="{ close }">
@@ -204,7 +214,12 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { adminApi, type AdminUser, type UserFilterParams } from '@/services/api/adminApi'
-import { AccessibleTable, AccessibleModal, AccessiblePagination, type TableColumn } from '@/components/a11y'
+import {
+  AccessibleTable,
+  AccessibleModal,
+  AccessiblePagination,
+  type TableColumn,
+} from '@/components/a11y'
 
 const isLoading = ref(true)
 const error = ref<string | null>(null)

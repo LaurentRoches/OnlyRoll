@@ -205,11 +205,9 @@ const sortedGamesForAllTab = computed(() => {
   filteredGames.forEach((game) => {
     if (game.gameMaster.id === authStore.user!.id) {
       asMaster.push(game)
-    }
-    else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
+    } else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
       asPlayer.push(game)
-    }
-    else if (game.isPublic) {
+    } else if (game.isPublic) {
       publicGames.push(game)
     }
   })
@@ -266,7 +264,6 @@ watch(displayedGames, () => {
     connectToPresence()
   }
 })
-
 </script>
 
 <template>
