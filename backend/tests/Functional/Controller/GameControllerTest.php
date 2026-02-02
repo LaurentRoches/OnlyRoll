@@ -112,7 +112,6 @@ class GameControllerTest extends WebTestCase
         $game1 = $this->createPublicGame('My Game 1', $this->testUser);
         $game2 = $this->createPublicGame('Other Game', $this->otherUser);
 
-        // Rejoindre une autre partie
         $this->addPlayerToGame($game2, $this->testUser, PlayerRole::PLAYER);
 
         $this->client->loginUser($this->testUser);

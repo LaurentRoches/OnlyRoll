@@ -18,7 +18,6 @@ const presenceStore = usePresenceStore()
 // Computed
 // ============================================
 const sortedPlayers = computed(() => {
-  // Trier : MJ d'abord, puis joueurs actifs, puis inactifs
   return [...props.players].sort((a, b) => {
     if (a.role === PlayerRole.GAME_MASTER) return -1
     if (b.role === PlayerRole.GAME_MASTER) return 1
@@ -28,17 +27,14 @@ const sortedPlayers = computed(() => {
   })
 })
 
-// Joueurs actuellement connectés (présence en temps réel)
 const onlinePlayers = computed(() => {
   return props.players.filter((p) => presenceStore.isUserOnline(gameId.value, p.user.id))
 })
 
-// Joueurs actifs dans la partie (membre)
 const activePlayers = computed(() => {
   return props.players.filter((p) => p.status === PlayerStatus.ACTIVE)
 })
 
-// Vérifier si un joueur est connecté en ce moment
 function isPlayerOnline(player: GamePlayer): boolean {
   return presenceStore.isUserOnline(gameId.value, player.user.id)
 }

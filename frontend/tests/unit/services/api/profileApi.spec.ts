@@ -75,7 +75,7 @@ describe('profileApi', () => {
       const mockError = new Error('Validation failed')
       vi.mocked(apiClient.put).mockRejectedValue(mockError)
 
-      const data = { pseudo: 'ab' } // Too short
+      const data = { pseudo: 'ab' }
       await expect(profileApi.update(data)).rejects.toThrow('Validation failed')
     })
   })

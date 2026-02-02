@@ -10,7 +10,6 @@ import { nextTick } from 'vue'
 import LoginForm from '@/components/auth/LoginForm.vue'
 import { useAuth } from '@/composables/useAuth'
 
-// Mock du composable useAuth
 vi.mock('@/composables/useAuth', () => ({
   useAuth: vi.fn(),
 }))
@@ -95,7 +94,6 @@ describe('LoginForm.vue', () => {
   it('should toggle password visibility', async () => {
     const passwordInput = wrapper.find('#password')
     const passwordButtons = wrapper.findAll('button[type="button"]')
-    // Le premier bouton type="button" est le bouton de visibilité du mot de passe
     const toggleButton = passwordButtons.find(btn =>
       btn.element.parentElement?.classList.contains('absolute') ||
       btn.attributes('class')?.includes('absolute')
@@ -284,8 +282,6 @@ describe('LoginForm.vue', () => {
   it('should have forgot password link', () => {
     const forgotLink = wrapper.findComponent({ name: 'RouterLink' })
     expect(forgotLink.exists()).toBe(true)
-    // Note: RouterLink is stubbed, so we can't check its text content
-    // The actual text "Mot de passe oublié ?" is verified in e2e tests
   })
 
   // ========== ACCESSIBILITY ==========
@@ -319,7 +315,6 @@ describe('LoginForm.vue', () => {
     await wrapper.find('form').trigger('submit')
     await nextTick()
 
-    // Should not crash
     expect(wrapper.exists()).toBe(true)
   })
 

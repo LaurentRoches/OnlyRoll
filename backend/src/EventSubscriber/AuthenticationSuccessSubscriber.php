@@ -43,7 +43,6 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Mettre à jour la date de dernière connexion
         $user = $event->getUser();
         if ($user instanceof User) {
             $user->setLastLogin(new DateTimeImmutable());

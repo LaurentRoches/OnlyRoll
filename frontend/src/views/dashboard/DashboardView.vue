@@ -46,7 +46,7 @@
           description="Paramètres et préférences"
           icon="settings"
           @click="navigateTo('profile')"
-          :coming-soon="true"
+          :coming-soon="false"
         />
 
         <!-- Partie rapide -->

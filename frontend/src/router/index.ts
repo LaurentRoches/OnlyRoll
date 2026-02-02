@@ -47,15 +47,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    // ========== PROFIL UTILISATEUR (PROTÉGÉ) ==========
-    // Décommentez quand vous créerez cette fonctionnalité
-    // {
-    //   path: '/profile',
-    //   name: 'profile',
-    //   component: () => import('@/views/profile/ProfileView.vue'),
-    //   meta: { requiresAuth: true }
-    // },
-
     // ========== GESTION DES PARTIES (PROTÉGÉ) ==========
     {
       path: '/games',
@@ -98,21 +89,36 @@ const router = createRouter({
     // ========== ADMINISTRATION (PROTEGE - ADMIN UNIQUEMENT) ==========
     {
       path: '/admin',
-      name: 'admin',
-      component: () => import('@/views/admin/AdminDashboardView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Administration' },
+      component: () => import('@/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin',
+          component: () => import('@/views/admin/AdminDashboardView.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'Tableau de bord' },
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/AdminUsersView.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestion des utilisateurs' },
+        },
+        {
+          path: 'audit-logs',
+          name: 'admin-audit-logs',
+          component: () => import('@/views/admin/AdminAuditLogsView.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true, title: "Logs d'audit" },
+        },
+      ],
     },
+
+    // ========== PROFIL UTILISATEUR (PROTÉGÉ) ==========
     {
-      path: '/admin/users',
-      name: 'admin-users',
-      component: () => import('@/views/admin/AdminUsersView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestion des utilisateurs' },
-    },
-    {
-      path: '/admin/audit-logs',
-      name: 'admin-audit-logs',
-      component: () => import('@/views/admin/AdminAuditLogsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: "Logs d'audit" },
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/profile/ProfileView.vue'),
+      meta: { requiresAuth: true, title: 'Mon profil' },
     },
 
     // ========== PAGE 404 ==========
@@ -131,8 +137,6 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Attendre que l'initialisation soit terminée
-  // Évite la race condition lors du chargement direct de l'URL
   if (authStore.isLoading) {
     console.log("⏳ Attente de l'initialisation du store auth...")
 
@@ -155,7 +159,6 @@ router.beforeEach(async (to, from, next) => {
 
   // ========== VÉRIFICATION DE L'AUTHENTIFICATION ==========
 
-  // Si la route nécessite une authentification
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return next({
       name: 'login',
@@ -163,17 +166,14 @@ router.beforeEach(async (to, from, next) => {
     })
   }
 
-  // Si la route est réservée aux invités (login/register)
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     return next({ name: 'dashboard' })
   }
 
-  // Si la route nécessite le rôle admin
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return next({ name: 'dashboard' })
   }
 
-  // Continuer la navigation
   next()
 })
 
@@ -182,10 +182,8 @@ router.beforeEach(async (to, from, next) => {
  * Utile pour analytics, scroll reset, etc.
  */
 router.afterEach((to) => {
-  // Scroll en haut de la page après navigation
   window.scrollTo(0, 0)
 
-  // Mettre à jour le titre de la page
   const baseTitle = 'OnlyRoll'
   document.title = to.meta.title ? `${to.meta.title} - ${baseTitle}` : baseTitle
 })

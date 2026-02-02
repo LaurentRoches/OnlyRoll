@@ -31,7 +31,6 @@ const mockUser: User = {
   email: 'test@example.com',
 }
 
-// Helper pour créer des messages de test
 const createMockMessage = (
   overrides: Partial<GameMessage> = {}
 ): GameMessage => ({
@@ -163,7 +162,6 @@ describe('chatStore', () => {
 
     await store.loadMessagesSince(1, '2024-01-01')
 
-    // Should not throw and messages should remain unchanged
     expect(store.messages).toHaveLength(1)
   })
 
@@ -382,7 +380,7 @@ describe('chatStore', () => {
 
     await expect(store.deleteMessage(1)).rejects.toBeDefined()
     expect(store.error).toBe('Delete failed')
-    expect(store.messages).toHaveLength(1) // Message not deleted on error
+    expect(store.messages).toHaveLength(1)
   })
 
   it('should handle deleteMessage error without message property', async () => {

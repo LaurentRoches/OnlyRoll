@@ -20,7 +20,6 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore()
 
-// État local
 const selectedTool = ref('select')
 const zoomLevel = ref(100)
 const mapSearchQuery = ref('')
@@ -28,17 +27,14 @@ const showMapDropdown = ref(false)
 const isEditingZoom = ref(false)
 const zoomInputValue = ref('100')
 
-// Paramètres de grille
 const showGrid = ref(true)
 const gridColor = ref('#ffffff')
 const gridOpacity = ref(0.1)
 const showGridSettings = ref(false)
 
-// Gestion de la deuxième barre
 type SecondaryBarSection = 'maps' | 'tools' | null
 const openSecondaryBar = ref<SecondaryBarSection>(null)
 
-// Outils disponibles
 const tools = [
   { id: 'select', icon: '🖱️', label: 'Sélection', gmOnly: false },
   { id: 'token', icon: '🎭', label: 'Ajouter Token', gmOnly: true },
@@ -48,12 +44,10 @@ const tools = [
   { id: 'ping', icon: '📍', label: 'Ping', gmOnly: false },
 ]
 
-// Filtrer les outils selon le rôle
 const availableTools = computed(() => {
   return tools.filter((tool) => !tool.gmOnly || props.isGameMaster)
 })
 
-// Computed pour les cartes filtrées
 const filteredMaps = computed(() => {
   const query = mapSearchQuery.value.toLowerCase().trim()
 
@@ -61,8 +55,6 @@ const filteredMaps = computed(() => {
     return mapStore.allMaps
   }
 
-  // Filtrage avancé : on recherche si tous les caractères de la query
-  // apparaissent dans le nom de la carte dans l'ordre
   return mapStore.allMaps.filter((map) => {
     const mapName = map.name.toLowerCase()
     let queryIndex = 0
@@ -77,7 +69,6 @@ const filteredMaps = computed(() => {
   })
 })
 
-// Carte active
 const activeMapId = computed(() => mapStore.activeMap?.id)
 
 // ============================================
@@ -85,14 +76,12 @@ const activeMapId = computed(() => mapStore.activeMap?.id)
 // ============================================
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
-  // Vérifier si le clic est à l'extérieur du dropdown
   if (!target.closest('.map-selector-container')) {
     showMapDropdown.value = false
     mapSearchQuery.value = ''
   }
 }
 
-// ============================================
 // ============================================
 // Gestion de la barre secondaire
 // ============================================
@@ -124,7 +113,6 @@ function toggleShowGrid() {
   updateGridSettings()
 }
 
-// Synchroniser les paramètres de grille avec la carte active
 function syncGridSettings() {
   if (mapStore.activeMap?.settings) {
     const settings = mapStore.activeMap.settings
@@ -138,7 +126,6 @@ function syncGridSettings() {
 // Lifecycle
 // ============================================
 onMounted(async () => {
-  // Charger toutes les cartes du jeu si nécessaire
   if (props.isGameMaster && mapStore.allMaps.length === 0) {
     try {
       await mapStore.loadGameMaps(props.gameId)
@@ -147,10 +134,8 @@ onMounted(async () => {
     }
   }
 
-  // Synchroniser les paramètres de grille
   syncGridSettings()
 
-  // Fermer le dropdown si on clique à l'extérieur
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -158,7 +143,6 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-// Watcher pour synchroniser les paramètres de grille quand la carte active change
 watch(
   () => mapStore.activeMap,
   () => {
@@ -183,7 +167,6 @@ function adjustZoom(delta: number) {
 function startEditingZoom() {
   isEditingZoom.value = true
   zoomInputValue.value = zoomLevel.value.toString()
-  // Focus sur l'input après le rendu
   setTimeout(() => {
     const input = document.getElementById('zoom-input')
     if (input) {
@@ -200,7 +183,6 @@ function applyZoomValue() {
     zoomInputValue.value = clampedValue.toString()
     emit('zoomChanged', zoomLevel.value)
   } else {
-    // Si invalide, remettre la valeur actuelle
     zoomInputValue.value = zoomLevel.value.toString()
   }
   isEditingZoom.value = false
@@ -241,7 +223,6 @@ function openUploadModal() {
 function toggleMapDropdown() {
   showMapDropdown.value = !showMapDropdown.value
   if (showMapDropdown.value) {
-    // Focus sur l'input de recherche
     setTimeout(() => {
       const input = document.getElementById('map-search-input')
       input?.focus()
@@ -250,12 +231,12 @@ function toggleMapDropdown() {
 }
 
 function editMapConfirm(map: GameMap, event: Event) {
-  event.stopPropagation() // Empêcher l'activation de la carte
+  event.stopPropagation()
   emit('openEditModal', map)
 }
 
 async function deleteMapConfirm(map: GameMap, event: Event) {
-  event.stopPropagation() // Empêcher l'activation de la carte
+  event.stopPropagation()
 
   if (!confirm(`Êtes-vous sûr de vouloir supprimer la carte "${map.name}" ?`)) {
     return

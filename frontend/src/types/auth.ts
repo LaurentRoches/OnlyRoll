@@ -36,7 +36,6 @@ export interface AuthState {
   error: string | null
 }
 
-// Réponses API spécifiques selon mon controller
 export interface RegisterResponse {
   message: string
   user: {

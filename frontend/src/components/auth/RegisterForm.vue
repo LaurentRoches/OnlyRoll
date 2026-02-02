@@ -394,12 +394,10 @@ import { usePasswordGenerator } from '@/composables/usePasswordGenerator'
 import type { RegisterCredentials } from '@/types/auth'
 import { logger } from '@/utils/logger'
 
-// Composables
 const { register, isLoading, error, clearError } = useAuth()
 const { validationErrors, validateFields, clearErrors } = useFormValidation()
 const { generate: generatePassword, isGenerating } = usePasswordGenerator()
 
-// État du formulaire
 const form = ref<RegisterCredentials & { acceptTerms: boolean }>({
   pseudo: '',
   email: '',
@@ -408,12 +406,10 @@ const form = ref<RegisterCredentials & { acceptTerms: boolean }>({
   acceptTerms: false,
 })
 
-// État de l'interface
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 const touchedFields = ref<Set<string>>(new Set())
 
-// Watcher pour effacer les erreurs globales lors de la saisie
 watch(
   () => [form.value.pseudo, form.value.email, form.value.password, form.value.confirmPassword],
   () => {
@@ -421,7 +417,6 @@ watch(
   }
 )
 
-// Règles de mot de passe pour l'indicateur de force (NIST SP 800-63B)
 const passwordRules = computed(() => ({
   minlength: form.value.password.length >= 12,
   lowercase: /[a-z]/.test(form.value.password),
@@ -443,7 +438,6 @@ const passwordStrength = computed(() => {
   if (passwordRules.value.uppercase) score++
   if (passwordRules.value.number) score++
   if (passwordRules.value.special) score++
-  // Bonus pour longueur > 16
   if (form.value.password.length >= 16) score++
 
   return score
@@ -481,7 +475,6 @@ const isFormValid = computed(() => {
   )
 })
 
-// Erreurs par champ pour validation au blur
 const fieldErrors = computed(() => {
   const errors: Record<string, string> = {}
 
@@ -506,7 +499,6 @@ const fieldErrors = computed(() => {
   return errors
 })
 
-// Utilitaires
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
@@ -515,7 +507,6 @@ const toggleConfirmPasswordVisibility = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
-// Génération de mot de passe sécurisé
 const handleGeneratePassword = async () => {
   const password = await generatePassword({
     length: 16,
@@ -538,7 +529,6 @@ const markFieldAsTouched = (fieldName: string) => {
   touchedFields.value.add(fieldName)
 }
 
-// Validation côté client complète avec useFormValidation
 const validateForm = (): boolean => {
   return validateFields([
     {
@@ -615,7 +605,6 @@ const validateForm = (): boolean => {
   ])
 }
 
-// Soumission du formulaire
 const handleSubmit = async () => {
   clearError()
   clearErrors()
@@ -631,8 +620,6 @@ const handleSubmit = async () => {
       password: form.value.password,
       confirmPassword: form.value.confirmPassword,
     })
-
-    // La redirection est gérée par le composable useAuth
   } catch (err) {
     logger.error("Erreur d'inscription:", err)
   }

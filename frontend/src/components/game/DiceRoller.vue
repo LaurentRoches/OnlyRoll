@@ -8,7 +8,6 @@ const props = defineProps<{
 
 const chatStore = useChatStore()
 
-// État local
 const formula = ref('')
 const modifier = ref(0)
 const isInCharacter = ref(true)
@@ -67,7 +66,6 @@ async function rollDice() {
 
     const result = await chatStore.rollDice(props.gameId, fullFormula.value, isInCharacter.value)
 
-    // Sauvegarder le résultat pour l'affichage
     if (result.diceResult) {
       lastResult.value = {
         formula: fullFormula.value,
@@ -78,7 +76,6 @@ async function rollDice() {
       console.log('✅ Résultat:', lastResult.value)
     }
 
-    // Réinitialiser le formulaire
     formula.value = ''
     modifier.value = 0
   } catch (error) {

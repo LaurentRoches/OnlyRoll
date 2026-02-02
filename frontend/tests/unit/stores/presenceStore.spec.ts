@@ -253,7 +253,6 @@ describe('presenceStore', () => {
       const store = usePresenceStore()
       const before = store.lastHeartbeat
 
-      // Attendre un peu pour s'assurer que le timestamp change
       setTimeout(() => {
         store.handlePresenceEvent({
           gameId: 1,

@@ -191,7 +191,6 @@ final class AdminUserService
         if ($minutes > 0) {
             $lockUntil = (new DateTimeImmutable())->add(new DateInterval("PT{$minutes}M"));
         } else {
-            // Verrouillage pour 1 an si 0 = indéfini
             $lockUntil = (new DateTimeImmutable())->add(new DateInterval('P1Y'));
         }
 

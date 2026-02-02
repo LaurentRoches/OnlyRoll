@@ -87,7 +87,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       await authApi.register(credentials)
-      // Pas de connexion automatique après inscription
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err, "Erreur lors de l'inscription")
       error.value = errorMessage
@@ -105,12 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      // L'API /api/login place automatiquement le JWT dans un cookie HttpOnly
-      // Le backend renvoie maintenant juste { success: true, message: '...' }
       await authApi.login(credentials)
 
-      // Le cookie est automatiquement stocké par le navigateur
-      // On récupère juste les infos utilisateur
       await fetchMe()
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err, 'Erreur lors de la connexion')
@@ -144,7 +139,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       setUser(userData)
     } catch (err: unknown) {
-      // Si la récupération échoue (cookie invalide/expiré), on déconnecte
       await logout()
       const errorMessage = getErrorMessage(err, 'Session expirée')
       error.value = errorMessage
@@ -160,12 +154,10 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const logout = async (): Promise<void> => {
     try {
-      // L'API /api/logout supprime le cookie HttpOnly
       await authApi.logout()
     } catch (err) {
       logger.error('Erreur lors de la déconnexion:', err)
     } finally {
-      // Nettoyage de l'état local
       setUser(null)
       clearError()
     }
@@ -176,10 +168,8 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const initialize = async (): Promise<void> => {
     try {
-      // Si un cookie JWT valide existe, cette requête réussira
       await fetchMe()
     } catch (err: unknown) {
-      // Si ça échoue, c'est qu'il n'y a pas de session valide
       logger.log('No valid session, user not authenticated')
       logger.debug(err)
       clearError()
@@ -230,18 +220,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ========== RETURN ==========
   return {
-    // State
     user,
     isLoading,
     error,
 
-    // Getters
     isAuthenticated,
     currentUser,
     isGameMaster,
     isAdmin,
 
-    // Actions
     register,
     login,
     logout,
@@ -249,12 +236,10 @@ export const useAuthStore = defineStore('auth', () => {
     initialize,
     reset,
 
-    // Permissions
     hasRole,
     hasAnyRole,
     hasAllRoles,
 
-    // Utilities
     setError,
     clearError,
     setUser,

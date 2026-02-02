@@ -11,7 +11,6 @@
 import { useKonamiCode } from '@/composables/useKonamiCode'
 import KonamiVictory from '@/components/common/KonamiVictory.vue'
 
-// Détection du Konami Code
 const { isActivated: konamiActivated, reset: resetKonami } = useKonamiCode()
 </script>
 

@@ -22,8 +22,8 @@ final class PasswordChangeDTO
         minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères'
     )]
     #[Assert\Regex(
-        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
-        message: 'Le mot de passe doit contenir majuscule, minuscule, chiffre et caractère spécial (@$!%*?&)'
+        pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*()_+\-=\[\]{}|;:,.<>?])/',
+        message: 'Le mot de passe doit contenir majuscule, minuscule, chiffre et caractère spécial (!@#$%&*()_+-=[]{}|;:,.<>?)'
     )]
     #[NotCommonPassword]
     public string $newPassword = '';

@@ -23,21 +23,18 @@ final class UserChecker implements UserCheckerInterface
             return;
         }
 
-        // Vérifier si le compte est supprimé (soft delete)
         if ($user->isDeleted()) {
             throw new CustomUserMessageAccountStatusException(
                 'Ce compte a été supprimé.'
             );
         }
 
-        // Vérifier si le compte est actif
         if (!$user->isActive()) {
             throw new CustomUserMessageAccountStatusException(
                 'Ce compte est désactivé.'
             );
         }
 
-        // Vérifier si le compte est verrouillé
         if ($user->isLocked()) {
             throw new CustomUserMessageAccountStatusException(
                 'Ce compte est temporairement verrouillé. Veuillez réessayer plus tard.'

@@ -16,29 +16,24 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
 })
 
-// Intercepteur de réponse pour gérer les erreurs globalement
 apiClient.interceptors.response.use(
   (response) => {
     return response
   },
   async (error: AxiosError<ApiError>) => {
-    // Gestion des erreurs 401 (Unauthorized)
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
 
-      // Si l'utilisateur était authentifié, le déconnecter
       if (authStore.isAuthenticated) {
         console.warn('Session expirée, déconnexion automatique')
         await authStore.logout()
 
-        // Rediriger vers la page de login
         if (typeof window !== 'undefined') {
           window.location.href = '/auth/login'
         }
       }
     }
 
-    // Formater l'erreur pour la rendre plus exploitable
     const apiError: ApiError = {
       message: error.response?.data?.message || error.message || 'Une erreur est survenue',
       statusCode: error.response?.status,

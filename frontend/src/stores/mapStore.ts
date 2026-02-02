@@ -113,13 +113,11 @@ export const useMapStore = defineStore('map', () => {
         activeMap.value = map
         await loadMapTokens(map.id)
       } else {
-        // Aucune carte active
         activeMap.value = null
         tokens.value = []
         logger.log('ℹAucune carte active pour cette partie')
       }
     } catch (e: unknown) {
-      // En cas d'erreur, réinitialiser
       activeMap.value = null
       tokens.value = []
 
@@ -208,13 +206,11 @@ export const useMapStore = defineStore('map', () => {
     try {
       await mapApi.delete(currentGameId.value, mapId)
 
-      // Retirer la carte de la liste
       const index = allMaps.value.findIndex((m) => m.id === mapId)
       if (index !== -1) {
         allMaps.value.splice(index, 1)
       }
 
-      // Si c'était la carte active, la désactiver
       if (activeMap.value && activeMap.value.id === mapId) {
         activeMap.value = null
         tokens.value = []
@@ -287,7 +283,6 @@ export const useMapStore = defineStore('map', () => {
       tokens.value = await tokenApi.listVisible(currentGameId.value, mapId)
       logger.log('Tokens chargés:', tokens.value.length)
     } catch (e: unknown) {
-      // En cas d'erreur, vider les tokens plutôt que de crasher
       tokens.value = []
 
       if (e && typeof e === 'object' && 'message' in e) {
@@ -296,7 +291,6 @@ export const useMapStore = defineStore('map', () => {
         error.value = 'Erreur lors du chargement des tokens'
       }
       logger.error('Erreur loadMapTokens:', e)
-      // Ne pas throw ici, car c'est un problème non-bloquant
     }
   }
 
@@ -307,15 +301,12 @@ export const useMapStore = defineStore('map', () => {
   function buildCreateTokenDTO(
     data: Partial<CreateTokenDTO> & { name: string; type: TokenType; x: number; y: number }
   ): CreateTokenDTO {
-    // Construction d'un objet avec toutes les propriétés nécessaires
     const dto: CreateTokenDTO = {
-      // Champs obligatoires
       name: data.name,
       type: data.type,
       x: data.x,
       y: data.y,
 
-      // Champs optionnels avec valeurs par défaut si non fournis
       size: data.size ?? 1.0,
       rotation: data.rotation ?? 0,
       isVisible: data.isVisible ?? true,
@@ -323,7 +314,6 @@ export const useMapStore = defineStore('map', () => {
       layer: data.layer ?? LayerType.TOKENS,
     }
 
-    // Ajouter les champs vraiment optionnels seulement s'ils sont fournis
     if (data.imageUrl !== undefined) {
       dto.imageUrl = data.imageUrl
     }
@@ -338,7 +328,7 @@ export const useMapStore = defineStore('map', () => {
 
   /**
    * Créer un nouveau token
-   * CORRECTION: Type correctement les données avec CreateTokenDTO
+   * Type correctement les données avec CreateTokenDTO
    */
   async function createToken(
     mapId: number,
@@ -352,7 +342,6 @@ export const useMapStore = defineStore('map', () => {
     error.value = null
 
     try {
-      // Construction d'un DTO valide avec toutes les propriétés nécessaires
       const dto = buildCreateTokenDTO(tokenData)
 
       logger.log('📤 Envoi de la requête de création de token:', {
@@ -493,7 +482,6 @@ export const useMapStore = defineStore('map', () => {
         updatedToken = await tokenApi.show(currentGameId.value, activeMap.value.id, tokenId)
       }
 
-      // Mettre à jour avec la réponse complète de l'API (qui contient settings)
       updateTokenInList(updatedToken)
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
@@ -526,7 +514,6 @@ export const useMapStore = defineStore('map', () => {
         updatedToken = await tokenApi.lock(currentGameId.value, activeMap.value.id, tokenId)
       }
 
-      // Mettre à jour avec la réponse complète de l'API (qui contient settings)
       updateTokenInList(updatedToken)
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
@@ -557,7 +544,6 @@ export const useMapStore = defineStore('map', () => {
         userId
       )
 
-      // Utiliser updateTokenInList pour garantir la réactivité
       updateTokenInList(updatedToken)
 
       logger.log(`Permission ${action} pour l'utilisateur ${userId} sur le token ${tokenId}`)
@@ -583,9 +569,6 @@ export const useMapStore = defineStore('map', () => {
   function handleTokenEvent(data: MercureTokenEventData) {
     logger.log('Token event reçu:', data)
 
-    // Structure attendue depuis le backend :
-    // { type: 'created' | 'updated' | 'moved' | 'deleted', token: GameToken }
-    // Note: Le backend envoie 'action' au lieu de 'type' pour certains événements
     const eventType = data.type || data.action
 
     switch (eventType) {
@@ -617,7 +600,6 @@ export const useMapStore = defineStore('map', () => {
       case 'activated':
         if (data.map) {
           activeMap.value = data.map
-          // Recharger les tokens de la nouvelle carte active
           if (data.map.id) {
             loadMapTokens(data.map.id).catch((err) => {
               logger.error('Erreur lors du rechargement des tokens:', err)
@@ -627,11 +609,9 @@ export const useMapStore = defineStore('map', () => {
         break
 
       case 'updated':
-        // Mettre à jour la carte active si c'est celle qui a été modifiée
         if (activeMap.value && data.map.id === activeMap.value.id) {
           activeMap.value = data.map
         }
-        // Mettre à jour la carte dans la liste de toutes les cartes
         const mapIndex = allMaps.value.findIndex((m) => m.id === data.map.id)
         if (mapIndex !== -1) {
           allMaps.value[mapIndex] = data.map
@@ -663,10 +643,8 @@ export const useMapStore = defineStore('map', () => {
   function updateTokenInList(updatedToken: GameToken) {
     const index = tokens.value.findIndex((t) => t.id === updatedToken.id)
     if (index !== -1) {
-      // Utiliser splice pour garantir la réactivité Vue
       tokens.value.splice(index, 1, updatedToken)
     } else {
-      // Si le token n'existe pas, l'ajouter
       tokens.value.push(updatedToken)
     }
   }
@@ -698,7 +676,6 @@ export const useMapStore = defineStore('map', () => {
   // ===========================
 
   return {
-    // État
     activeMap,
     allMaps,
     tokens,
@@ -706,7 +683,6 @@ export const useMapStore = defineStore('map', () => {
     isLoading,
     error,
 
-    // Getters
     visibleTokens,
     tokensByType,
     getTokenById,
@@ -714,7 +690,6 @@ export const useMapStore = defineStore('map', () => {
     tokensCount,
     mapDimensions,
 
-    // Actions - Cartes
     loadGameMaps,
     loadActiveMap,
     loadMap,
@@ -722,7 +697,6 @@ export const useMapStore = defineStore('map', () => {
     deleteMap,
     updateMapSettings,
 
-    // Actions - Tokens
     loadMapTokens,
     createToken,
     moveToken,
@@ -732,11 +706,9 @@ export const useMapStore = defineStore('map', () => {
     toggleTokenLock,
     manageTokenPermissions,
 
-    // Actions - Mercure
     handleTokenEvent,
     handleMapEvent,
 
-    // Utils
     $reset,
   }
 })
