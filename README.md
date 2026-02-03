@@ -26,7 +26,7 @@ Projet de table de jeu virtuelle (VTT) spécialisée pour Donjons & Dragons 5e, 
 
 ### Stack Backend
 - **PHP 8.3** / **Symfony 7.1+**
-- **MySQL 9.0** + **Redis** (cache)
+- **MySQL 8.0** + **Redis** (cache)
 - **API Platform** (REST API)
 - **Mercure** (WebSocket temps réel)
 
@@ -44,8 +44,8 @@ Projet de table de jeu virtuelle (VTT) spécialisée pour Donjons & Dragons 5e, 
 
 ## Couverture de Tests
 
-- Backend (PHPUnit): **82%**
-- Frontend (Vitest): **75%**
+- Backend (PHPUnit): **88%**
+- Frontend (Vitest): **83%**
 - E2E (Playwright): Scénarios critiques couverts
 
 ## Installation
