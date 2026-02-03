@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Service\MercureTokenService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\UnencryptedToken;
 use PHPUnit\Framework\TestCase;
 
 class MercureTokenServiceTest extends TestCase
@@ -22,27 +23,23 @@ class MercureTokenServiceTest extends TestCase
 
     public function testGenerateTokenForGame(): void
     {
-        // Arrange
         $user = new User();
         $user->setEmail('test@example.com');
         $user->setPseudo('testuser');
         $gameId = 123;
 
-        // Act
         $token = $this->mercureTokenService->generateTokenForGame($user, $gameId);
 
-        // Assert
         $this->assertNotEmpty($token);
         $this->assertIsString($token);
 
-        // Vérifier que le token est un JWT valide
         $parser = new Parser(new JoseEncoder());
+        /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
         $this->assertTrue($parsedToken->hasBeenIssuedBefore(new \DateTimeImmutable('+1 minute')));
         $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
 
-        // Vérifier les topics Mercure
         $mercureClaim = $parsedToken->claims()->get('mercure');
         $this->assertIsArray($mercureClaim);
         $this->assertArrayHasKey('subscribe', $mercureClaim);
@@ -61,27 +58,23 @@ class MercureTokenServiceTest extends TestCase
 
     public function testGenerateTokenForPresence(): void
     {
-        // Arrange
         $user = new User();
         $user->setEmail('test@example.com');
         $user->setPseudo('testuser');
         $gameIds = [1, 2, 3, 42];
 
-        // Act
         $token = $this->mercureTokenService->generateTokenForPresence($user, $gameIds);
 
-        // Assert
         $this->assertNotEmpty($token);
         $this->assertIsString($token);
 
-        // Vérifier que le token est un JWT valide
         $parser = new Parser(new JoseEncoder());
+        /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
         $this->assertTrue($parsedToken->hasBeenIssuedBefore(new \DateTimeImmutable('+1 minute')));
         $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
 
-        // Vérifier les topics Mercure pour la présence
         $mercureClaim = $parsedToken->claims()->get('mercure');
         $this->assertIsArray($mercureClaim);
         $this->assertArrayHasKey('subscribe', $mercureClaim);
@@ -97,18 +90,16 @@ class MercureTokenServiceTest extends TestCase
 
     public function testGenerateTokenForPresenceWithEmptyGameIds(): void
     {
-        // Arrange
         $user = new User();
         $user->setEmail('test@example.com');
         $user->setPseudo('testuser');
         $gameIds = [];
 
-        // Act
         $token = $this->mercureTokenService->generateTokenForPresence($user, $gameIds);
 
-        // Assert
         $this->assertNotEmpty($token);
         $parser = new Parser(new JoseEncoder());
+        /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
         $mercureClaim = $parsedToken->claims()->get('mercure');
@@ -118,23 +109,19 @@ class MercureTokenServiceTest extends TestCase
 
     public function testTokenExpiresAfterOneHour(): void
     {
-        // Arrange
         $user = new User();
         $user->setEmail('test@example.com');
         $user->setPseudo('testuser');
         $gameId = 1;
 
-        // Act
         $token = $this->mercureTokenService->generateTokenForGame($user, $gameId);
 
-        // Assert
         $parser = new Parser(new JoseEncoder());
+        /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
-        // Le token ne doit pas être expiré maintenant
         $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
 
-        // Le token devrait être expiré dans plus d'une heure
         $this->assertTrue($parsedToken->isExpired(new \DateTimeImmutable('+2 hours')));
     }
 }

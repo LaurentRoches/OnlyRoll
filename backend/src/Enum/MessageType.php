@@ -7,11 +7,11 @@ namespace App\Enum;
  */
 enum MessageType: string
 {
-    case CHAT = 'chat';           // Message de discussion standard
-    case EMOTE = 'emote';         // Message d'action/émotion
-    case WHISPER = 'whisper';     // Message privé/chuchoté
-    case SYSTEM = 'system';       // Message système
-    case DICE_ROLL = 'dice_roll'; // Résultat de jet de dés
+    case CHAT = 'chat';
+    case EMOTE = 'emote';
+    case WHISPER = 'whisper';
+    case SYSTEM = 'system';
+    case DICE_ROLL = 'dice_roll';
 
     /**
      * Retourne le label français du type de message.

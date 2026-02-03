@@ -125,22 +125,17 @@ export function usePagination(
     const total = paginationMeta.value.totalPages
 
     if (total <= 7) {
-      // Afficher toutes les pages si <= 7
       return Array.from({ length: total }, (_, i) => i + 1)
     }
 
-    // Logique avec ellipses
     const range: (number | string)[] = []
 
-    // Toujours afficher la première page
     range.push(1)
 
-    // Ajouter une ellipse si nécessaire avant les pages du milieu
     if (current > delta + 2) {
       range.push('...')
     }
 
-    // Pages autour de la page courante
     const start = Math.max(2, current - delta)
     const end = Math.min(total - 1, current + delta)
 
@@ -148,12 +143,10 @@ export function usePagination(
       range.push(i)
     }
 
-    // Ajouter une ellipse si nécessaire après les pages du milieu
     if (current < total - delta - 1) {
       range.push('...')
     }
 
-    // Toujours afficher la dernière page
     if (total > 1) {
       range.push(total)
     }
@@ -191,20 +184,17 @@ export function usePagination(
   })
 
   return {
-    // Navigation
     goToPage,
     nextPage,
     prevPage,
     goToFirstPage,
     goToLastPage,
 
-    // État
     canGoNext,
     canGoPrev,
     hasResults,
     hasMultiplePages,
 
-    // Affichage
     paginationRange,
     startIndex,
     endIndex,

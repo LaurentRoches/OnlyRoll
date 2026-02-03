@@ -25,7 +25,6 @@ class GameMessageTest extends TestCase
         $this->sender = new User();
         $this->recipient = new User();
 
-        // Simuler des IDs via reflection pour les tests
         $this->setPrivateProperty($this->sender, 'id', 1);
         $this->setPrivateProperty($this->recipient, 'id', 2);
     }

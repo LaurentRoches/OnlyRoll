@@ -179,13 +179,11 @@ class GameTokenTest extends TestCase
         $this->token->setY(10);
         $this->token->setSize(2.0);
 
-        // Les 4 cellules occupées: (5,10), (6,10), (5,11), (6,11)
         $this->assertTrue($this->token->occupiesCell(5, 10));
         $this->assertTrue($this->token->occupiesCell(6, 10));
         $this->assertTrue($this->token->occupiesCell(5, 11));
         $this->assertTrue($this->token->occupiesCell(6, 11));
 
-        // Cellules non occupées
         $this->assertFalse($this->token->occupiesCell(4, 10));
         $this->assertFalse($this->token->occupiesCell(7, 10));
         $this->assertFalse($this->token->occupiesCell(5, 9));
@@ -198,7 +196,6 @@ class GameTokenTest extends TestCase
         $this->token->setY(10);
         $this->token->setSize(1.5);
 
-        // ceil(1.5) = 2, donc occupe 2x2 cellules
         $this->assertTrue($this->token->occupiesCell(5, 10));
         $this->assertTrue($this->token->occupiesCell(6, 10));
         $this->assertTrue($this->token->occupiesCell(5, 11));
@@ -232,8 +229,7 @@ class GameTokenTest extends TestCase
     private function setPrivateProperty(object $object, string $property, mixed $value): void
     {
         $reflection = new ReflectionClass($object);
-        $property = $reflection->getProperty($property);
-        $property->setAccessible(true);
-        $property->setValue($object, $value);
+        $prop = $reflection->getProperty($property);
+        $prop->setValue($object, $value);
     }
 }

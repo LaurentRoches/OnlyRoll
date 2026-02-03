@@ -6,14 +6,12 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
-// Mock console methods
 const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
 const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 const mockConsoleDebug = vi.spyOn(console, 'debug').mockImplementation(() => {})
 const mockConsoleInfo = vi.spyOn(console, 'info').mockImplementation(() => {})
 
-// Store original env
 const originalEnv = import.meta.env.DEV
 
 describe('logger', () => {
@@ -22,16 +20,13 @@ describe('logger', () => {
   })
 
   afterEach(() => {
-    // Restore original env
     import.meta.env.DEV = originalEnv
   })
 
   describe('in development mode', () => {
     beforeEach(async () => {
-      // Set DEV mode to true
       import.meta.env.DEV = true
 
-      // Clear module cache to force reimport
       vi.resetModules()
     })
 
@@ -70,10 +65,8 @@ describe('logger', () => {
 
   describe('in production mode', () => {
     beforeEach(async () => {
-      // Set DEV mode to false
       import.meta.env.DEV = false
 
-      // Clear module cache to force reimport
       vi.resetModules()
     })
 

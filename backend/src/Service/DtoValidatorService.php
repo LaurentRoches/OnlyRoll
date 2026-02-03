@@ -33,14 +33,12 @@ final class DtoValidatorService
     public function validateDto(string $content, string $dtoClass): array
     {
         try {
-            // Désérialisation
             $dto = $this->serializer->deserialize(
                 $content,
                 $dtoClass,
                 'json',
             );
 
-            // Validation
             $errors = $this->validator->validate($dto);
 
             if (\count($errors) > 0) {

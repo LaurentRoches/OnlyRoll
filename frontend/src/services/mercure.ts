@@ -39,24 +39,18 @@ export class MercureService {
    * @param gameIds - IDs des parties à écouter
    */
   connectToPresence(gameIds: number[]): void {
-    // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
     }
 
-    // Construction de l'URL avec uniquement les topics de présence
     const url = new URL(MERCURE_URL)
 
     gameIds.forEach((gameId) => {
       url.searchParams.append('topic', `game/${gameId}/presence`)
     })
 
-    // Note: Le token JWT est automatiquement envoyé via le cookie mercureAuthorization
-    // défini par le backend lors de l'appel à getMercurePresenceToken()
-
     console.log('Connexion à Mercure (présence uniquement)...', url.toString())
 
-    // Création de la connexion EventSource avec credentials pour envoyer les cookies
     this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
@@ -67,12 +61,10 @@ export class MercureService {
    * @param gameId - ID de la partie
    */
   connect(gameId: number): void {
-    // Fermer la connexion existante si présente
     if (this.eventSource) {
       this.disconnect()
     }
 
-    // Construction de l'URL avec les topics à écouter
     const topics: EventType[] = ['chat', 'token', 'map', 'dice', 'player', 'presence', 'system']
     const url = new URL(MERCURE_URL)
 
@@ -80,12 +72,8 @@ export class MercureService {
       url.searchParams.append('topic', `game/${gameId}/${topic}`)
     })
 
-    // Note: Le token JWT est automatiquement envoyé via le cookie mercureAuthorization
-    // défini par le backend lors de l'appel à getMercureToken()
-
     console.log('Connexion à Mercure...', url.toString())
 
-    // Création de la connexion EventSource avec credentials pour envoyer les cookies
     this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
@@ -98,35 +86,28 @@ export class MercureService {
   private setupEventHandlers(): void {
     if (!this.eventSource) return
 
-    // Gestion des messages entrants
     this.eventSource.onmessage = (event: MessageEvent) => {
       try {
         const mercureEvent: MercureEvent = JSON.parse(event.data)
 
         console.log('Événement Mercure reçu:', mercureEvent)
 
-        // Notifier tous les listeners du type d'événement
-        // On passe l'événement complet pour que gameId soit accessible
         this.notifyListeners(mercureEvent.type, mercureEvent)
 
-        // Réinitialiser le compteur de reconnexions après un message réussi
         this.reconnectAttempts = 0
       } catch (error) {
         console.error('Erreur parsing événement Mercure:', error)
       }
     }
 
-    // Gestion de l'ouverture de connexion
     this.eventSource.onopen = () => {
       console.log('Connecté à Mercure')
       this.reconnectAttempts = 0
     }
 
-    // Gestion des erreurs
     this.eventSource.onerror = (error) => {
       console.error('Erreur connexion Mercure:', error)
 
-      // EventSource reconnecte automatiquement
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++
         console.log(
@@ -222,5 +203,4 @@ export class MercureService {
   }
 }
 
-// Instance singleton pour toute l'application
 export const mercureService = new MercureService()

@@ -71,6 +71,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private ?DateTimeImmutable $lastLogin = null;
 
+    #[ORM\Column(name: 'user_is_active', type: Types::BOOLEAN)]
+    #[Groups(['user:read', 'admin:user:read'])]
+    private bool $isActive = true;
+
+    #[ORM\Column(name: 'user_deleted_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups(['admin:user:read'])]
+    private ?DateTimeImmutable $deletedAt = null;
+
+    #[ORM\Column(name: 'user_failed_login_attempts', type: Types::INTEGER)]
+    private int $failedLoginAttempts = 0;
+
+    #[ORM\Column(name: 'user_locked_until', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $lockedUntil = null;
+
     public function __construct()
     {
         $this->roles = ['ROLE_USER'];
@@ -131,7 +145,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_values(array_unique($roles));
@@ -260,5 +273,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function getFailedLoginAttempts(): int
+    {
+        return $this->failedLoginAttempts;
+    }
+
+    public function setFailedLoginAttempts(int $failedLoginAttempts): static
+    {
+        $this->failedLoginAttempts = $failedLoginAttempts;
+
+        return $this;
+    }
+
+    public function incrementFailedLoginAttempts(): static
+    {
+        ++$this->failedLoginAttempts;
+
+        return $this;
+    }
+
+    public function resetFailedLoginAttempts(): static
+    {
+        $this->failedLoginAttempts = 0;
+
+        return $this;
+    }
+
+    public function getLockedUntil(): ?DateTimeImmutable
+    {
+        return $this->lockedUntil;
+    }
+
+    public function setLockedUntil(?DateTimeImmutable $lockedUntil): static
+    {
+        $this->lockedUntil = $lockedUntil;
+
+        return $this;
+    }
+
+    public function isLocked(): bool
+    {
+        return null !== $this->lockedUntil && $this->lockedUntil > new DateTimeImmutable();
+    }
+
+    public function isDeleted(): bool
+    {
+        return null !== $this->deletedAt;
     }
 }

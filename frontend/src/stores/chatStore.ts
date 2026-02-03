@@ -24,7 +24,6 @@ export const useChatStore = defineStore('chat', () => {
   const isSending = ref(false)
   const error = ref<string | null>(null)
 
-  // Pagination
   const hasMore = ref(true)
   const oldestMessageId = ref<number | null>(null)
 
@@ -37,7 +36,6 @@ export const useChatStore = defineStore('chat', () => {
    * Protection contre messages undefined/null
    */
   const sortedMessages = computed(() => {
-    // Protection supplémentaire pour garantir que messages.value est un tableau
     if (!Array.isArray(messages.value)) {
       logger.error('messages.value is not an array:', messages.value)
       messages.value = []
@@ -119,12 +117,10 @@ export const useChatStore = defineStore('chat', () => {
 
       messages.value = Array.isArray(loadedMessages) ? loadedMessages : []
 
-      // Mettre à jour l'ID du plus ancien message pour la pagination
       if (messages.value.length > 0) {
         oldestMessageId.value = messages.value[0].id
       }
 
-      // Si on a moins de messages que demandé, il n'y en a plus
       hasMore.value = messages.value.length === limit
 
       logger.log('Messages chargés:', messages.value.length)
@@ -489,14 +485,12 @@ export const useChatStore = defineStore('chat', () => {
   // ===========================
 
   return {
-    // État
     messages,
     isLoading,
     isSending,
     error,
     hasMore,
 
-    // Getters
     sortedMessages,
     messagesByType,
     chatMessages,
@@ -505,12 +499,10 @@ export const useChatStore = defineStore('chat', () => {
     messagesCount,
     lastMessage,
 
-    // Actions - Chargement
     loadRecentMessages,
     loadMoreMessages,
     loadMessagesSince,
 
-    // Actions - Envoi
     sendMessage,
     sendEmote,
     sendWhisper,
@@ -518,12 +510,10 @@ export const useChatStore = defineStore('chat', () => {
     rollDice,
     deleteMessage,
 
-    // Actions - Mercure
     handleChatMessage,
     handleDiceRoll,
     handleMessageDeleted,
 
-    // Utils
     clearMessages,
     $reset,
   }

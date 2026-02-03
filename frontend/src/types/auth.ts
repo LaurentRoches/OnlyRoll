@@ -7,6 +7,7 @@ export interface User {
   lastLogin?: string
   createdAt: string
   updatedAt: string
+  avatar?: string | null
 }
 
 export interface LoginCredentials {
@@ -36,7 +37,6 @@ export interface AuthState {
   error: string | null
 }
 
-// Réponses API spécifiques selon mon controller
 export interface RegisterResponse {
   message: string
   user: {
@@ -55,6 +55,7 @@ export interface MeResponse {
   createdAt: string
   updatedAt: string
   lastLogin?: string
+  avatar?: string | null
 }
 
 export interface DebugLoginResponse {

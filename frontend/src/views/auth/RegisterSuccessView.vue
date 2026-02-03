@@ -92,7 +92,6 @@ const isResending = ref(false)
 const cooldown = ref(0)
 let cooldownTimer: ReturnType<typeof setInterval> | null = null
 
-// Fonction pour renvoyer l'email (à implémenter plus tard)
 const resendEmail = async () => {
   if (isResending.value || cooldown.value > 0) return
 
@@ -110,7 +109,7 @@ const resendEmail = async () => {
 }
 
 const startCooldown = () => {
-  cooldown.value = 60 // 60 secondes
+  cooldown.value = 60
 
   cooldownTimer = setInterval(() => {
     cooldown.value--

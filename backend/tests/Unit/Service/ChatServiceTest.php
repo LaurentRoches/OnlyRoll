@@ -224,8 +224,9 @@ class ChatServiceTest extends TestCase
 
         $this->expectException(TypeError::class);
 
-        /** @phpstan-ignore-next-line */
-        $this->chatService->getMessagesByType($game, 'invalid_type');
+        /** @var mixed $invalidType */
+        $invalidType = 'invalid_type';
+        $this->chatService->getMessagesByType($game, $invalidType);
     }
 
     public function testCreateSystemMessage(): void

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Entity\User;
 use DateTime;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -18,6 +21,7 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -39,7 +43,13 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Récupérer le paramètre rememberMe depuis la requête
+        $user = $event->getUser();
+        if ($user instanceof User) {
+            $user->setLastLogin(new DateTimeImmutable());
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
+
         $request = $this->requestStack->getCurrentRequest();
         $rememberMe = false;
 
@@ -48,12 +58,8 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
             $rememberMe = $requestData['rememberMe'] ?? false;
         }
 
-        // Définir l'expiration du cookie selon rememberMe
-        // Si rememberMe est true : 30 jours, sinon : 1 heure
-        $expirationTime = $rememberMe ? '+30 days' : '+1 hour';
+        $expirationTime = $rememberMe ? '+30 days' : '+2 hours';
 
-        // En production, utiliser secure=true uniquement si on a HTTPS
-        // Pour l'instant, on désactive secure car on est en HTTP
         $isProduction = ($_ENV['APP_ENV'] ?? 'dev') === 'prod';
         $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
 
@@ -62,11 +68,35 @@ final class AuthenticationSuccessSubscriber implements EventSubscriberInterface
             ->withExpires(new DateTime($expirationTime))
             ->withPath('/')
             ->withDomain(null)
-            ->withSecure($isProduction && $isHttps) // Secure uniquement si prod ET HTTPS
+            ->withSecure($isProduction && $isHttps)
             ->withHttpOnly(true)
             ->withSameSite(Cookie::SAMESITE_LAX);
 
         $response->headers->setCookie($cookie);
+
+        if ($rememberMe) {
+            $rememberMeCookie = Cookie::create('remember_me')
+                ->withValue('1')
+                ->withExpires(new DateTime('+30 days'))
+                ->withPath('/')
+                ->withDomain(null)
+                ->withSecure($isProduction && $isHttps)
+                ->withHttpOnly(true)
+                ->withSameSite(Cookie::SAMESITE_LAX);
+
+            $response->headers->setCookie($rememberMeCookie);
+        }
+
+        $lastActivityCookie = Cookie::create('last_activity')
+            ->withValue((string) time())
+            ->withExpires(new DateTime($expirationTime))
+            ->withPath('/')
+            ->withDomain(null)
+            ->withSecure($isProduction && $isHttps)
+            ->withHttpOnly(true)
+            ->withSameSite(Cookie::SAMESITE_LAX);
+
+        $response->headers->setCookie($lastActivityCookie);
 
         $event->setData([
             'success' => true,

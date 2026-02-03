@@ -1,0 +1,26 @@
+# Configuration du rate limiting pour la sécurité OWASP
+# A06: Insecure Design - Rate limiting pour protéger contre les attaques par force brute
+# A07: Authentication Failures - Lockout après échecs répétés
+
+framework:
+    rate_limiter:
+        # Rate limiter pour les tentatives de connexion
+        # 5 tentatives par fenêtre de 15 minutes
+        login_limiter:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '15 minutes'
+
+        # Rate limiter pour les changements de mot de passe
+        # 3 tentatives par heure pour éviter les abus
+        password_change_limiter:
+            policy: 'fixed_window'
+            limit: 3
+            interval: '1 hour'
+
+        # Rate limiter pour les actions admin
+        # 100 actions par heure par utilisateur admin
+        admin_action_limiter:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '1 hour'

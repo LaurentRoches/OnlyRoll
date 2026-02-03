@@ -76,7 +76,6 @@ const triggerConfetti = () => {
 
     const particleCount = 50 * (timeLeft / duration)
 
-    // Confettis depuis la gauche
     confetti({
       ...defaults,
       particleCount,
@@ -84,7 +83,6 @@ const triggerConfetti = () => {
       colors: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'],
     })
 
-    // Confettis depuis la droite
     confetti({
       ...defaults,
       particleCount,
@@ -139,7 +137,6 @@ const close = () => {
   emit('close')
 }
 
-// Observe les changements de la prop isActive
 watch(
   () => props.isActive,
   (newValue) => {

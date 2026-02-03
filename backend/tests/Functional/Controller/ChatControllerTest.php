@@ -32,10 +32,8 @@ class ChatControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
 
-        // Nettoyer la base de données avant chaque test
         $this->cleanDatabase();
 
-        // Créer les utilisateurs de test
         $this->gameMaster = new User();
         $this->gameMaster->setPseudo('gamemaster');
         $this->gameMaster->setEmail('gm@test.com');
@@ -49,7 +47,6 @@ class ChatControllerTest extends WebTestCase
         $this->entityManager->persist($this->gameMaster);
         $this->entityManager->persist($this->player);
 
-        // Créer une partie de test
         $this->game = new Game();
         $this->game->setName('Test Game');
         $this->game->setGameMaster($this->gameMaster);
@@ -74,7 +71,6 @@ class ChatControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        // Supprimer toutes les données de test
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
 
@@ -118,7 +114,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testGetMessagesSuccess(): void
     {
-        // Créer quelques messages
         for ($i = 0; $i < 3; ++$i) {
             $message = new GameMessage();
             $message->setGame($this->game);
@@ -420,7 +415,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testGetDiceRollsWithCustomLimit(): void
     {
-        // Clean messages to ensure we have exactly 5
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('DELETE FROM game_message WHERE game_id = :gameId', [
             'gameId' => $this->game->getId()
@@ -634,7 +628,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testRollDiceWithValidRecipient(): void
     {
-        // Create a second player and add them to the game
         $player2 = new User();
         $player2->setPseudo('player2');
         $player2->setEmail('player2@test.com');

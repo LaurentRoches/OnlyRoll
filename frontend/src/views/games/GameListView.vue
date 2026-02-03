@@ -22,9 +22,8 @@ const showJoinModal = ref(false)
 const selectedGame = ref<Game | null>(null)
 const activeTab = ref<'public' | 'my-games'>('public')
 const showFilters = ref(true)
-const connectedGameIds = ref<number[]>([]) // Garder trace des parties écoutées
+const connectedGameIds = ref<number[]>([])
 
-// Filtres
 const filters = ref<GameFilters>({
   search: '',
   title: '',
@@ -34,7 +33,6 @@ const filters = ref<GameFilters>({
   limit: 12,
 })
 
-// Handler pour les événements de présence
 function handlePresenceEvent(data: unknown) {
   const event = data as {
     gameId: number
@@ -51,7 +49,6 @@ function handlePresenceEvent(data: unknown) {
   presenceStore.handlePresenceEvent(presenceData)
 }
 
-// Connecter aux événements de présence pour les parties affichées
 async function connectToPresence() {
   const gameIds = displayedGames.value.map((game) => game.id)
 
@@ -60,7 +57,6 @@ async function connectToPresence() {
     return
   }
 
-  // Vérifier si les IDs ont changé
   const idsChanged =
     gameIds.length !== connectedGameIds.value.length ||
     !gameIds.every((id) => connectedGameIds.value.includes(id))
@@ -73,11 +69,9 @@ async function connectToPresence() {
   console.log('Connexion aux événements de présence pour les parties:', gameIds)
 
   try {
-    // Récupérer le token JWT Mercure pour la présence (défini en cookie)
     await gameApi.getMercurePresenceToken(gameIds)
     console.log('Token Mercure de présence obtenu')
 
-    // Charger l'état initial des utilisateurs en ligne pour chaque partie
     for (const gameId of gameIds) {
       try {
         const response = await presenceApi.getOnlineUsers(gameId)
@@ -93,10 +87,8 @@ async function connectToPresence() {
       }
     }
 
-    // Se connecter aux événements de présence (le cookie mercureAuthorization est envoyé automatiquement)
     mercureService.connectToPresence(gameIds)
 
-    // Mémoriser les IDs connectés
     connectedGameIds.value = [...gameIds]
   } catch (error) {
     console.error('Erreur lors de la récupération du token Mercure de présence:', error)
@@ -104,34 +96,27 @@ async function connectToPresence() {
 }
 
 onMounted(async () => {
-  // Enregistrer le listener une seule fois
   mercureService.on('presence', handlePresenceEvent)
 
   await loadGames()
-  // Connecter aux événements de présence après le chargement des parties
   connectToPresence()
 })
 
 onUnmounted(() => {
-  // Se déconnecter de Mercure
   mercureService.off('presence', handlePresenceEvent)
   mercureService.disconnect()
 })
 
 async function loadGames() {
   if (activeTab.value === 'public') {
-    // Pour l'onglet "Toutes", charger à la fois myGames et les parties publiques
-    // Les filtres sont appliqués côté client via les computed
     await Promise.all([gameStore.fetchMyGames(), gameStore.fetchPublicGames()])
   } else {
-    // Pour l'onglet "M.J.", charger uniquement myGames
     await gameStore.fetchMyGames()
   }
 }
 
 function handleTabChange(tab: 'public' | 'my-games') {
   activeTab.value = tab
-  // Réinitialiser les filtres sans recharger
   filters.value = {
     search: '',
     title: '',
@@ -140,7 +125,6 @@ function handleTabChange(tab: 'public' | 'my-games') {
     page: 1,
     limit: 12,
   }
-  // Charger les données appropriées pour l'onglet
   loadGames()
 }
 
@@ -173,27 +157,22 @@ function handleJoinSuccess() {
 const sortedGamesForAllTab = computed(() => {
   if (!authStore.user) return []
 
-  // Combiner myGames et games publics
   const allGames: Game[] = []
   const seenIds = new Set<number>()
 
-  // D'abord ajouter myGames (pour éviter les doublons)
   gameStore.myGames.forEach((game) => {
     allGames.push(game)
     seenIds.add(game.id)
   })
 
-  // Ajouter les parties publiques qui ne sont pas déjà dans myGames
   gameStore.games.forEach((game) => {
     if (!seenIds.has(game.id)) {
       allGames.push(game)
     }
   })
 
-  // Appliquer les filtres
   let filteredGames = allGames
 
-  // Filtre par recherche globale (titre ou nom de campagne)
   if (filters.value.search) {
     const searchTerm = filters.value.search.toLowerCase()
     filteredGames = filteredGames.filter((game) =>
@@ -201,7 +180,6 @@ const sortedGamesForAllTab = computed(() => {
     )
   }
 
-  // Filtre par titre
   if (filters.value.title) {
     const titleFilter = filters.value.title.toLowerCase()
     filteredGames = filteredGames.filter((game) =>
@@ -209,7 +187,6 @@ const sortedGamesForAllTab = computed(() => {
     )
   }
 
-  // Filtre par maître du jeu
   if (filters.value.gameMaster) {
     const gmFilter = filters.value.gameMaster.toLowerCase()
     filteredGames = filteredGames.filter((game) =>
@@ -217,32 +194,24 @@ const sortedGamesForAllTab = computed(() => {
     )
   }
 
-  // Filtre par statut
   if (filters.value.status) {
     filteredGames = filteredGames.filter((game) => game.status === filters.value.status)
   }
 
-  // Catégoriser les parties filtrées
   const asMaster: Game[] = []
   const asPlayer: Game[] = []
   const publicGames: Game[] = []
 
   filteredGames.forEach((game) => {
-    // Vérifier si l'utilisateur est le MJ
     if (game.gameMaster.id === authStore.user!.id) {
       asMaster.push(game)
-    }
-    // Vérifier si l'utilisateur est un joueur (mais pas MJ)
-    else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
+    } else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
       asPlayer.push(game)
-    }
-    // Sinon c'est une partie publique
-    else if (game.isPublic) {
+    } else if (game.isPublic) {
       publicGames.push(game)
     }
   })
 
-  // Trier chaque catégorie par ordre alphabétique du titre
   const sortByTitle = (a: Game, b: Game) => {
     const titleA = (a.title || a.name).toLowerCase()
     const titleB = (b.title || b.name).toLowerCase()
@@ -253,19 +222,15 @@ const sortedGamesForAllTab = computed(() => {
   asPlayer.sort(sortByTitle)
   publicGames.sort(sortByTitle)
 
-  // Combiner dans l'ordre : MJ > Joueur > Public
   return [...asMaster, ...asPlayer, ...publicGames]
 })
 
-// Computed pour les parties à afficher selon l'onglet
 const displayedGames = computed(() => {
   if (!authStore.user) return []
 
   if (activeTab.value === 'my-games') {
-    // Onglet "M.J." : uniquement les parties où l'utilisateur est MJ
     let gmGames = gameStore.myGames.filter((game) => game.gameMaster.id === authStore.user!.id)
 
-    // Appliquer les filtres côté client
     if (filters.value.search) {
       const searchTerm = filters.value.search.toLowerCase()
       gmGames = gmGames.filter((game) =>
@@ -284,26 +249,21 @@ const displayedGames = computed(() => {
       gmGames = gmGames.filter((game) => game.status === filters.value.status)
     }
 
-    // Trier par ordre alphabétique
     return gmGames.sort((a, b) => {
       const titleA = (a.title || a.name).toLowerCase()
       const titleB = (b.title || b.name).toLowerCase()
       return titleA.localeCompare(titleB)
     })
   } else {
-    // Onglet "Toutes" : tri personnalisé
     return sortedGamesForAllTab.value
   }
 })
 
-// Reconnecter quand les parties affichées changent
 watch(displayedGames, () => {
   if (displayedGames.value.length > 0) {
     connectToPresence()
   }
 })
-
-// Pagination désactivée - pas d'alias nécessaires
 </script>
 
 <template>

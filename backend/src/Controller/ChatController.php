@@ -64,7 +64,6 @@ final class ChatController extends AbstractController
         $limit = (int) $request->query->get('limit', 50);
         $limit = max(1, min($limit, 200)); // Entre 1 et 200
 
-        // Récupérer uniquement les messages visibles pour l'utilisateur
         $messages = $this->chatService->getVisibleMessagesForUser($game, $user, $limit);
 
         return $this->json(
@@ -296,7 +295,6 @@ final class ChatController extends AbstractController
                 );
             }
 
-            // Lancer les dés
             $results = [];
             $total = $modifier;
 
@@ -306,7 +304,6 @@ final class ChatController extends AbstractController
                 $total += $roll;
             }
 
-            // Récupérer le destinataire si c'est un jet privé
             $recipient = null;
             if (null !== $recipientId) {
                 $recipient = $this->userRepository->find($recipientId);
@@ -317,7 +314,6 @@ final class ChatController extends AbstractController
                     );
                 }
 
-                // Vérifier que le destinataire fait partie de la partie
                 if (!$game->hasPlayer($recipient)) {
                     return $this->json(
                         ['error' => 'Le destinataire doit faire partie de la partie'],
@@ -326,7 +322,6 @@ final class ChatController extends AbstractController
                 }
             }
 
-            // Créer le message de lancer de dés
             $message = $this->chatService->createDiceRollMessage(
                 $game,
                 $user,

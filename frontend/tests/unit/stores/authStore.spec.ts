@@ -9,7 +9,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/services/api/authApi'
 
-// Mock de l'API
 vi.mock('@/services/api/authApi', () => ({
   authApi: {
     register: vi.fn(),
@@ -184,7 +183,6 @@ describe('authStore', () => {
   it('should logout successfully', async () => {
     const store = useAuthStore()
     
-    // Set initial user
     store.setUser({
       id: 1,
       email: 'test@example.com',
@@ -262,7 +260,7 @@ describe('authStore', () => {
 
     expect(store.user).toBeNull()
     expect(store.isAuthenticated).toBe(false)
-    expect(store.error).toBeNull() // Error should be cleared
+    expect(store.error).toBeNull()
   })
 
   // ========== RESET ==========
@@ -378,7 +376,7 @@ describe('authStore', () => {
     })
 
     expect(store.isAdmin).toBe(true)
-    expect(store.isGameMaster).toBe(true) // Admin is also GM
+    expect(store.isGameMaster).toBe(true)
   })
 
   // ========== ERROR HANDLING ==========
@@ -396,7 +394,6 @@ describe('authStore', () => {
   it('should handle different error formats', async () => {
     const store = useAuthStore()
 
-    // String error
     vi.mocked(authApi.register).mockRejectedValueOnce('String error')
     await expect(store.register({
       email: 'test@example.com',
@@ -405,7 +402,6 @@ describe('authStore', () => {
       confirmPassword: 'Password123!',
     })).rejects.toThrow('String error')
 
-    // Error object with message
     vi.mocked(authApi.register).mockRejectedValueOnce({
       message: 'Error message',
     })
@@ -416,7 +412,6 @@ describe('authStore', () => {
       confirmPassword: 'Password123!',
     })).rejects.toThrow('Error message')
 
-    // Error object with error property
     vi.mocked(authApi.register).mockRejectedValueOnce({
       error: 'Error property',
     })
@@ -427,7 +422,6 @@ describe('authStore', () => {
       confirmPassword: 'Password123!',
     })).rejects.toThrow('Error property')
 
-    // Error instance
     vi.mocked(authApi.register).mockRejectedValueOnce(
       new Error('Error instance')
     )
@@ -438,7 +432,6 @@ describe('authStore', () => {
       confirmPassword: 'Password123!',
     })).rejects.toThrow('Error instance')
 
-    // Unknown error format - fallback to default
     vi.mocked(authApi.register).mockRejectedValueOnce(123)
     await expect(store.register({
       email: 'test@example.com',
