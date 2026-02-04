@@ -7,7 +7,7 @@
           <div
             class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center"
           >
-            <img style="width: 100%; height: 100%" src="/logo.png" />
+            <img style="width: 100%; height: 100%" src="/images/logo.png" />
           </div>
           <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
         </RouterLink>

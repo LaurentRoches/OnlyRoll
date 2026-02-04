@@ -10,7 +10,7 @@
             class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
             <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center">
-              <img style="width: 100%; height: 100%" src="/logo.png" alt="Logo OnlyRoll" />
+              <img style="width: 100%; height: 100%" src="/images/logo.png" alt="Logo OnlyRoll" />
             </div>
             <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
           </RouterLink>
@@ -66,7 +66,7 @@
       <!-- Background Image avec overlay - optimisé pour visibilité tout en maintenant contraste WCAG -->
       <div class="absolute inset-0 z-0">
         <img
-          src="/hero_banner_onlyroll.jpg"
+          src="/images/hero_banner_onlyroll.jpg"
           alt=""
           class="w-full h-full object-cover opacity-40"
           aria-hidden="true"
@@ -229,19 +229,8 @@
           <!-- Logo et description -->
           <div class="md:col-span-2">
             <div class="flex items-center space-x-3 mb-4">
-              <div
-                class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center"
-              >
-                <svg
-                  class="w-5 h-5 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 16.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zm5 0c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                  />
-                </svg>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img class="w-full h-full" src="/images/logo.png" alt="Logo OnlyRoll" />
               </div>
               <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
             </div>
