@@ -1,9 +1,19 @@
 <template>
   <div class="admin-layout min-h-screen bg-secondary-900">
     <!-- Skip links - RGAA 12.7 -->
-    <nav aria-label="Liens d'accès rapide" class="skip-links">
-      <a href="#main-nav" class="skip-link">Aller à la navigation</a>
-      <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    <nav aria-label="Liens d'accès rapide" class="absolute top-0 left-0 z-50">
+      <a
+        href="#main-nav"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:px-4 focus:py-3 focus:bg-primary-600 focus:text-white focus:font-semibold focus:no-underline focus:outline-2 focus:outline-primary-400"
+      >
+        Aller à la navigation
+      </a>
+      <a
+        href="#main-content"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:px-4 focus:py-3 focus:bg-primary-600 focus:text-white focus:font-semibold focus:no-underline focus:outline-2 focus:outline-primary-400"
+      >
+        Aller au contenu principal
+      </a>
     </nav>
 
     <!-- Header avec role banner - RGAA 12.6 -->
@@ -122,7 +132,7 @@
 
         <!-- Contenu de la page -->
         <div class="p-6">
-          <slot />
+          <router-view />
         </div>
       </main>
     </div>
@@ -224,41 +234,6 @@ watch(
 </script>
 
 <style scoped>
-/* Skip links - visibles uniquement au focus */
-.skip-links {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 100;
-}
-
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 0;
-  padding: 0.75rem 1rem;
-  background-color: theme('colors.primary.600');
-  color: white;
-  font-weight: 600;
-  text-decoration: none;
-  transition: top 0.2s ease;
-}
-
-.skip-link:focus {
-  top: 0;
-  outline: 2px solid theme('colors.primary.400');
-  outline-offset: 2px;
-}
-
-/* Focus visible pour tous les éléments interactifs */
-:deep(a:focus-visible),
-:deep(button:focus-visible),
-:deep(input:focus-visible),
-:deep(select:focus-visible) {
-  outline: 2px solid theme('colors.primary.500');
-  outline-offset: 2px;
-}
-
 /* Couleur de fond intermédiaire */
 .bg-secondary-850 {
   background-color: #1e2330;
