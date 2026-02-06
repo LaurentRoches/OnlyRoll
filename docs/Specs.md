@@ -13,7 +13,7 @@
 ### **Stack Technique Exacte**
 - **Backend** : 
   - PHP 8.1+ / Symfony 7.1+
-  - MySQL 9.0+
+  - MySQL 8.0+
   - API Platform 3.2+
   - Lexik JWT Authentication Bundle
 - **Frontend** : 
