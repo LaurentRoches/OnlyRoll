@@ -52,107 +52,107 @@ docker/
 
 ```
 backend/
-├── Dockerfile                      # Multi-stage build (5 stages)
-├── composer.json                   # Dépendances PHP
+├── Dockerfile                                  # Multi-stage build (5 stages)
+├── composer.json                               # Dépendances PHP
 │
 ├── config/
 │   ├── packages/
-│   │   ├── api_platform.yaml       # Configuration API Platform
-│   │   ├── doctrine.yaml           # ORM Doctrine
-│   │   ├── security.yaml           # Authentification & firewalls
-│   │   ├── lexik_jwt_authentication.yaml  # JWT
-│   │   ├── mercure.yaml            # WebSocket
-│   │   ├── nelmio_cors.yaml        # CORS
-│   │   └── rate_limiter.yaml       # Rate limiting (OWASP A06)
-│   ├── jwt/                        # Clés JWT (private.pem, public.pem)
-│   └── routes/                     # Définitions des routes
+│   │   ├── api_platform.yaml                   # Configuration API Platform
+│   │   ├── doctrine.yaml                       # ORM Doctrine
+│   │   ├── security.yaml                       # Authentification & firewalls
+│   │   ├── lexik_jwt_authentication.yaml       # JWT
+│   │   ├── mercure.yaml                        # WebSocket
+│   │   ├── nelmio_cors.yaml                    # CORS
+│   │   └── rate_limiter.yaml                   # Rate limiting (OWASP A06)
+│   ├── jwt/                                    # Clés JWT (private.pem, public.pem)
+│   └── routes/                                 # Définitions des routes
 │
 ├── src/
-│   ├── Controller/                 # Endpoints API
-│   │   ├── AuthController.php      # Authentification
-│   │   ├── GameController.php      # Gestion des parties
-│   │   ├── ChatController.php      # Chat temps réel
-│   │   ├── MapController.php       # Cartes de jeu
-│   │   ├── TokenController.php     # Tokens (personnages)
-│   │   ├── PresenceController.php  # Présence utilisateurs
-│   │   ├── SecurityController.php  # Génération mots de passe (OWASP)
-│   │   ├── ProfileController.php   # Gestion profil utilisateur
-│   │   └── Admin/                  # Administration (ROLE_ADMIN)
-│   │       ├── AdminDashboardController.php  # Dashboard admin
-│   │       ├── AdminUserController.php       # CRUD utilisateurs
-│   │       └── AdminAuditLogController.php   # Logs d'audit
+│   ├── Controller/                             # Endpoints API
+│   │   ├── AuthController.php                  # Authentification
+│   │   ├── GameController.php                  # Gestion des parties
+│   │   ├── ChatController.php                  # Chat temps réel
+│   │   ├── MapController.php                   # Cartes de jeu
+│   │   ├── TokenController.php                 # Tokens (personnages)
+│   │   ├── PresenceController.php              # Présence utilisateurs
+│   │   ├── SecurityController.php              # Génération mots de passe (OWASP)
+│   │   ├── ProfileController.php               # Gestion profil utilisateur
+│   │   └── Admin/                              # Administration (ROLE_ADMIN)
+│   │       ├── AdminDashboardController.php    # Dashboard admin
+│   │       ├── AdminUserController.php         # CRUD utilisateurs
+│   │       └── AdminAuditLogController.php     # Logs d'audit
 │   │
-│   ├── Entity/                     # Entités Doctrine
-│   │   ├── User.php                # Utilisateur (+ sécurité: lockout, soft delete)
-│   │   ├── Game.php                # Partie
-│   │   ├── GamePlayer.php          # Joueur dans une partie
-│   │   ├── GameMap.php             # Carte
-│   │   ├── GameToken.php           # Token sur la carte
-│   │   ├── GameMessage.php         # Message chat
-│   │   └── AuditLog.php            # Logs de sécurité (OWASP A09)
+│   ├── Entity/                                 # Entités Doctrine
+│   │   ├── User.php                            # Utilisateur (+ sécurité: lockout, soft delete)
+│   │   ├── Game.php                            # Partie
+│   │   ├── GamePlayer.php                      # Joueur dans une partie
+│   │   ├── GameMap.php                         # Carte
+│   │   ├── GameToken.php                       # Token sur la carte
+│   │   ├── GameMessage.php                     # Message chat
+│   │   └── AuditLog.php                        # Logs de sécurité (OWASP A09)
 │   │
-│   ├── Service/                    # Logique métier
-│   │   ├── GameService.php         # Logique de jeu
-│   │   ├── ChatService.php         # Gestion du chat
-│   │   ├── MapService.php          # Manipulation des cartes
-│   │   ├── TokenService.php        # Gestion des tokens
-│   │   ├── MercurePublisher.php    # Publication WebSocket
-│   │   ├── FileUploader.php        # Upload de fichiers
-│   │   ├── PasswordGeneratorService.php  # Génération mots de passe sécurisés
-│   │   ├── AuditLogService.php     # Logging sécurisé (RGPD: hash IP)
-│   │   ├── ProfileService.php      # Gestion profil & changement MDP
-│   │   └── Admin/                  # Services administration
-│   │       └── AdminUserService.php  # CRUD users, soft delete, lock/unlock
+│   ├── Service/                                # Logique métier
+│   │   ├── GameService.php                     # Logique de jeu
+│   │   ├── ChatService.php                     # Gestion du chat
+│   │   ├── MapService.php                      # Manipulation des cartes
+│   │   ├── TokenService.php                    # Gestion des tokens
+│   │   ├── MercurePublisher.php                # Publication WebSocket
+│   │   ├── FileUploader.php                    # Upload de fichiers
+│   │   ├── PasswordGeneratorService.php        # Génération mots de passe sécurisés
+│   │   ├── AuditLogService.php                 # Logging sécurisé (RGPD: hash IP)
+│   │   ├── ProfileService.php                  # Gestion profil & changement MDP
+│   │   └── Admin/                              # Services administration
+│   │       └── AdminUserService.php            # CRUD users, soft delete, lock/unlock
 │   │
-│   ├── DTO/                        # Data Transfer Objects
-│   │   ├── Auth/                   # DTOs authentification
-│   │   ├── Game/                   # DTOs partie
-│   │   ├── Chat/                   # DTOs chat
-│   │   ├── Map/                    # DTOs carte
-│   │   ├── Token/                  # DTOs token
-│   │   ├── Security/               # DTOs sécurité (génération MDP)
-│   │   ├── Profile/                # DTOs profil utilisateur
-│   │   │   ├── PasswordChangeDTO.php   # Changement de mot de passe
-│   │   │   └── ProfileUpdateDTO.php    # Mise à jour profil
-│   │   └── Admin/                  # DTOs administration
-│   │       ├── UserFilterDTO.php       # Filtres liste utilisateurs
-│   │       ├── UserUpdateDTO.php       # Mise à jour utilisateur
-│   │       └── AuditLogFilterDTO.php   # Filtres logs d'audit
+│   ├── DTO/                                    # Data Transfer Objects
+│   │   ├── Auth/                               # DTOs authentification
+│   │   ├── Game/                               # DTOs partie
+│   │   ├── Chat/                               # DTOs chat
+│   │   ├── Map/                                # DTOs carte
+│   │   ├── Token/                              # DTOs token
+│   │   ├── Security/                           # DTOs sécurité (génération MDP)
+│   │   ├── Profile/                            # DTOs profil utilisateur
+│   │   │   ├── PasswordChangeDTO.php           # Changement de mot de passe
+│   │   │   └── ProfileUpdateDTO.php            # Mise à jour profil
+│   │   └── Admin/                              # DTOs administration
+│   │       ├── UserFilterDTO.php               # Filtres liste utilisateurs
+│   │       ├── UserUpdateDTO.php               # Mise à jour utilisateur
+│   │       └── AuditLogFilterDTO.php           # Filtres logs d'audit
 │   │
-│   ├── Enum/                       # Énumérations
-│   │   ├── GameStatus.php          # Statut partie (waiting, active, finished)
-│   │   ├── PlayerRole.php          # Rôle (gm, player)
-│   │   ├── TokenType.php           # Type token (character, monster, npc)
-│   │   ├── MessageType.php         # Type message (text, roll, system)
-│   │   └── AuditAction.php         # Actions auditables (OWASP A09)
+│   ├── Enum/                                   # Énumérations
+│   │   ├── GameStatus.php                      # Statut partie (waiting, active, finished)
+│   │   ├── PlayerRole.php                      # Rôle (gm, player)
+│   │   ├── TokenType.php                       # Type token (character, monster, npc)
+│   │   ├── MessageType.php                     # Type message (text, roll, system)
+│   │   └── AuditAction.php                     # Actions auditables (OWASP A09)
 │   │
-│   ├── Repository/                 # Requêtes Doctrine
+│   ├── Repository/                             # Requêtes Doctrine
 │   │
-│   ├── EventSubscriber/            # Event Subscribers
+│   ├── EventSubscriber/                        # Event Subscribers
 │   │   ├── AuthenticationSuccessSubscriber.php  # Cookie JWT + sliding session
 │   │   ├── JwtCookieRefreshSubscriber.php       # Renouvellement auto cookie
 │   │   └── SecurityHeadersSubscriber.php        # Headers OWASP (CSP, etc.)
 │   │
-│   ├── Validator/                  # Validateurs personnalisés
-│   │   ├── NotCommonPassword.php              # Contrainte NIST
-│   │   └── NotCommonPasswordValidator.php     # Validation wikimedia/common-passwords
+│   ├── Validator/                              # Validateurs personnalisés
+│   │   ├── NotCommonPassword.php               # Contrainte NIST
+│   │   └── NotCommonPasswordValidator.php      # Validation wikimedia/common-passwords
 │   │
-│   ├── Exception/                  # Exceptions personnalisées
-│   │   └── Profile/                # Exceptions profil
-│   │       ├── ProfileException.php           # Exception base profil
-│   │       └── InvalidPasswordException.php   # Mot de passe invalide
+│   ├── Exception/                              # Exceptions personnalisées
+│   │   └── Profile/                            # Exceptions profil
+│   │       ├── ProfileException.php            # Exception base profil
+│   │       └── InvalidPasswordException.php    # Mot de passe invalide
 │   │
-│   └── Security/                   # Authentification JWT
+│   └── Security/                               # Authentification JWT
 │
-├── migrations/                     # Migrations BDD
+├── migrations/                                 # Migrations BDD
 ├── tests/
-│   ├── Unit/                       # Tests unitaires
+│   ├── Unit/                                   # Tests unitaires
 │   │   └── Service/
 │   │       ├── AuditLogServiceTest.php
 │   │       ├── ProfileServiceTest.php
 │   │       └── Admin/
 │   │           └── AdminUserServiceTest.php
-│   └── Functional/                 # Tests d'intégration
+│   └── Functional/                             # Tests d'intégration
 │       └── Controller/
 │           ├── ProfileControllerTest.php
 │           └── Admin/
@@ -161,8 +161,8 @@ backend/
 │               └── AdminAuditLogControllerTest.php
 │
 └── public/
-    └── uploads/                    # Fichiers uploadés
-        └── maps/                   # Images des cartes
+    └── uploads/                                # Fichiers uploadés
+        └── maps/                               # Images des cartes
 ```
 
 ---
@@ -274,7 +274,8 @@ docs/
 │   └── swagger_profile.yaml
 │
 ├── database/
-│   └── OnlyRoll_Database.sql       # Schéma BDD
+│   ├── OnlyRoll_Database.sql       # Schéma BDD
+│   └── MCD.png                     # MCD
 │
 ├── documentation_architecture/
 │   ├── backend_architecture_doc.md
