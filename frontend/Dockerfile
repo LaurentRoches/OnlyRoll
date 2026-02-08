@@ -1,7 +1,7 @@
 # ===========================================
 # STAGE 1: Dependencies
 # ===========================================
-FROM node:20-alpine AS node_dependencies
+FROM node:22-alpine AS node_dependencies
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN npm run build
 # ===========================================
 # STAGE 3: Development
 # ===========================================
-FROM node:20-alpine AS node_dev
+FROM node:22-alpine AS node_dev
 
 WORKDIR /app
 
