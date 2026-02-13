@@ -150,8 +150,8 @@ jobs:
       - name: Run PHPUnit tests with coverage
         working-directory: ./backend
         run: |
-          vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --log-junit=test-results.xml
-      
+          vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml --coverage-html=coverage/html --log-junit=test-results.xml
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         if: matrix.php == '8.3'
@@ -159,7 +159,14 @@ jobs:
           files: ./backend/coverage.xml
           flags: backend
           name: backend-coverage
-      
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage-report-php-${{ matrix.php }}
+          path: ./backend/coverage/html
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
