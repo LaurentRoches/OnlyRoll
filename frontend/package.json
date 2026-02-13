@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
-    "axios": "^1.12.2",
+    "axios": "^1.13.5",
     "canvas-confetti": "^1.9.4",
     "pinia": "^3.0.3",
     "vue": "^3.5.18",
