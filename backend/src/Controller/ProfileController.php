@@ -22,6 +22,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion du profil utilisateur.
@@ -41,6 +42,15 @@ final class ProfileController extends AbstractController
     /**
      * Récupère le profil de l'utilisateur connecté.
      */
+    #[OA\Get(
+        path: '/api/profile',
+        summary: 'Récupère le profil de l\'utilisateur connecté',
+        security: [['BearerAuth' => []]],
+        tags: ['Profil'],
+        responses: [
+            new OA\Response(response: 200, description: 'Profil utilisateur'),
+        ]
+    )]
     #[Route('', name: 'show', methods: ['GET'])]
     public function show(): JsonResponse
     {
@@ -53,6 +63,27 @@ final class ProfileController extends AbstractController
     /**
      * Met à jour le profil de l'utilisateur connecté.
      */
+    #[OA\Put(
+        path: '/api/profile',
+        summary: 'Met à jour le profil de l\'utilisateur connecté',
+        security: [['BearerAuth' => []]],
+        tags: ['Profil'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'pseudo', type: 'string'),
+                    new OA\Property(property: 'timezone', type: 'string'),
+                    new OA\Property(property: 'language', type: 'string'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Profil mis à jour'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 409, description: 'Pseudo déjà utilisé'),
+        ]
+    )]
     #[Route('', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request): JsonResponse
     {
@@ -96,6 +127,27 @@ final class ProfileController extends AbstractController
      * Change le mot de passe de l'utilisateur.
      * Rate limiting: 3 tentatives par heure.
      */
+    #[OA\Put(
+        path: '/api/profile/password',
+        summary: 'Change le mot de passe (limité à 3/heure)',
+        security: [['BearerAuth' => []]],
+        tags: ['Profil'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['currentPassword', 'newPassword'],
+                properties: [
+                    new OA\Property(property: 'currentPassword', type: 'string', format: 'password'),
+                    new OA\Property(property: 'newPassword', type: 'string', format: 'password'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Mot de passe modifié'),
+            new OA\Response(response: 400, description: 'Mot de passe invalide'),
+            new OA\Response(response: 429, description: 'Trop de tentatives'),
+        ]
+    )]
     #[Route('/password', name: 'change_password', methods: ['PUT'])]
     public function changePassword(
         Request $request,
@@ -147,6 +199,27 @@ final class ProfileController extends AbstractController
      * Upload un avatar pour l'utilisateur.
      * Validation: MIME types images, taille max 2MB.
      */
+    #[OA\Post(
+        path: '/api/profile/avatar',
+        summary: 'Upload un avatar (JPEG, PNG, GIF, WebP, max 2 Mo)',
+        security: [['BearerAuth' => []]],
+        tags: ['Profil'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'avatar', type: 'string', format: 'binary'),
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Avatar mis à jour'),
+            new OA\Response(response: 400, description: 'Fichier invalide ou trop volumineux'),
+        ]
+    )]
     #[Route('/avatar', name: 'upload_avatar', methods: ['POST'])]
     public function uploadAvatar(Request $request): JsonResponse
     {
@@ -193,6 +266,15 @@ final class ProfileController extends AbstractController
     /**
      * Supprime l'avatar de l'utilisateur.
      */
+    #[OA\Delete(
+        path: '/api/profile/avatar',
+        summary: 'Supprime l\'avatar de l\'utilisateur',
+        security: [['BearerAuth' => []]],
+        tags: ['Profil'],
+        responses: [
+            new OA\Response(response: 200, description: 'Avatar supprimé'),
+        ]
+    )]
     #[Route('/avatar', name: 'delete_avatar', methods: ['DELETE'])]
     public function deleteAvatar(): JsonResponse
     {

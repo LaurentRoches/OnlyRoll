@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion du chat et des lancers de dés.
@@ -39,6 +40,21 @@ final class ChatController extends AbstractController
     /**
      * Liste les messages récents du chat.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages',
+        summary: 'Liste les messages récents du chat',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50, minimum: 1, maximum: 200)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des messages'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('/messages', name: 'messages', methods: ['GET'])]
     public function getMessages(int $gameId, Request $request): JsonResponse
     {
@@ -77,6 +93,31 @@ final class ChatController extends AbstractController
     /**
      * Envoie un message dans le chat.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/chat/messages',
+        summary: 'Envoie un message dans le chat',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content'],
+                properties: [
+                    new OA\Property(property: 'content', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string'),
+                    new OA\Property(property: 'recipientId', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Message envoyé'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ]
+    )]
     #[Route('/messages', name: 'send_message', methods: ['POST'])]
     public function sendMessage(int $gameId, Request $request): JsonResponse
     {
@@ -142,6 +183,22 @@ final class ChatController extends AbstractController
     /**
      * Récupère les messages par type.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages/type/{type}',
+        summary: 'Récupère les messages par type',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'type', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50, minimum: 1, maximum: 200)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Messages filtrés par type'),
+            new OA\Response(response: 400, description: 'Type invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ]
+    )]
     #[Route('/messages/type/{type}', name: 'messages_by_type', methods: ['GET'])]
     public function getMessagesByType(int $gameId, string $type, Request $request): JsonResponse
     {
@@ -196,6 +253,20 @@ final class ChatController extends AbstractController
     /**
      * Récupère uniquement les lancers de dés.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/dice-rolls',
+        summary: 'Récupère les lancers de dés',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 20, minimum: 1, maximum: 100)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des lancers de dés'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ]
+    )]
     #[Route('/dice-rolls', name: 'dice_rolls', methods: ['GET'])]
     public function getDiceRolls(int $gameId, Request $request): JsonResponse
     {
@@ -234,6 +305,30 @@ final class ChatController extends AbstractController
     /**
      * Lancer des dés et publier le résultat.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/chat/roll-dice',
+        summary: 'Lancer des dés (format XdY ou XdY+Z)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['formula'],
+                properties: [
+                    new OA\Property(property: 'formula', type: 'string', example: '2d6+3'),
+                    new OA\Property(property: 'recipientId', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Résultat du lancer de dés'),
+            new OA\Response(response: 400, description: 'Formule invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ]
+    )]
     #[Route('/roll-dice', name: 'roll_dice', methods: ['POST'])]
     public function rollDice(int $gameId, Request $request): JsonResponse
     {
@@ -349,6 +444,19 @@ final class ChatController extends AbstractController
     /**
      * Récupère les statistiques du chat.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/stats',
+        summary: 'Statistiques du chat (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Statistiques du chat'),
+            new OA\Response(response: 403, description: 'Réservé au maître du jeu'),
+        ]
+    )]
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function getStats(int $gameId): JsonResponse
     {
@@ -382,6 +490,21 @@ final class ChatController extends AbstractController
     /**
      * Récupère les messages depuis une date donnée (polling).
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages/since',
+        summary: 'Messages depuis une date (polling)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'since', in: 'query', required: true, schema: new OA\Schema(type: 'string', format: 'date-time')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Messages depuis la date spécifiée'),
+            new OA\Response(response: 400, description: 'Paramètre since manquant ou invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ]
+    )]
     #[Route('/messages/since', name: 'messages_since', methods: ['GET'])]
     public function getMessagesSince(int $gameId, Request $request): JsonResponse
     {

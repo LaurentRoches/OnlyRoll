@@ -8,6 +8,7 @@ use App\Repository\GameRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur SEO pour la génération du sitemap et robots.txt.
@@ -31,6 +32,14 @@ final class SeoController extends AbstractController
      * - Pages de jeux publics
      * - Futures pages wiki (extensible)
      */
+    #[OA\Get(
+        path: '/sitemap.xml',
+        summary: 'Génère le sitemap.xml dynamique',
+        tags: ['SEO'],
+        responses: [
+            new OA\Response(response: 200, description: 'Sitemap XML généré avec succès'),
+        ]
+    )]
     #[Route('/sitemap.xml', name: 'sitemap', methods: ['GET'])]
     public function sitemap(): Response
     {
@@ -121,6 +130,14 @@ final class SeoController extends AbstractController
      * - Autorise l'indexation des pages publiques
      * - Bloque les sections privées (admin, api, profil)
      */
+    #[OA\Get(
+        path: '/robots.txt',
+        summary: 'Génère le fichier robots.txt',
+        tags: ['SEO'],
+        responses: [
+            new OA\Response(response: 200, description: 'Fichier robots.txt généré avec succès'),
+        ]
+    )]
     #[Route('/robots.txt', name: 'robots', methods: ['GET'])]
     public function robots(): Response
     {

@@ -17,6 +17,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de consultation des logs d'audit pour l'administration.
@@ -35,6 +36,28 @@ final class AdminAuditLogController extends AbstractController
     /**
      * Liste les logs d'audit avec filtres et pagination.
      */
+    #[OA\Get(
+        path: '/api/admin/audit-logs',
+        summary: 'Liste les logs d\'audit avec filtres et pagination',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        parameters: [
+            new OA\Parameter(name: 'userId', in: 'query', required: false, schema: new OA\Schema(type: 'integer'), description: 'Filtrer par ID utilisateur'),
+            new OA\Parameter(name: 'targetUserId', in: 'query', required: false, schema: new OA\Schema(type: 'integer'), description: 'Filtrer par ID utilisateur cible'),
+            new OA\Parameter(name: 'action', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filtrer par type d\'action'),
+            new OA\Parameter(name: 'entityType', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filtrer par type d\'entité'),
+            new OA\Parameter(name: 'dateFrom', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date-time'), description: 'Date de début'),
+            new OA\Parameter(name: 'dateTo', in: 'query', required: false, schema: new OA\Schema(type: 'string', format: 'date-time'), description: 'Date de fin'),
+            new OA\Parameter(name: 'severity', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filtrer par sévérité'),
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1), description: 'Numéro de page'),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50), description: 'Nombre d\'éléments par page'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste paginée des logs d\'audit'),
+            new OA\Response(response: 400, description: 'Paramètres de filtre invalides'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
     {
@@ -91,6 +114,20 @@ final class AdminAuditLogController extends AbstractController
     /**
      * Récupère un log d'audit par son ID.
      */
+    #[OA\Get(
+        path: '/api/admin/audit-logs/{id}',
+        summary: 'Récupère un log d\'audit par son ID',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'), description: 'ID du log d\'audit'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Détails du log d\'audit'),
+            new OA\Response(response: 404, description: 'Log non trouvé'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
     {
@@ -117,6 +154,20 @@ final class AdminAuditLogController extends AbstractController
     /**
      * Récupère les logs d'audit pour un utilisateur spécifique.
      */
+    #[OA\Get(
+        path: '/api/admin/audit-logs/user/{userId}',
+        summary: 'Récupère les logs d\'audit d\'un utilisateur spécifique',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        parameters: [
+            new OA\Parameter(name: 'userId', in: 'path', required: true, schema: new OA\Schema(type: 'integer'), description: 'ID de l\'utilisateur'),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50), description: 'Nombre maximum de résultats'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des logs d\'audit de l\'utilisateur'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('/user/{userId}', name: 'by_user', methods: ['GET'])]
     public function byUser(int $userId, Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
     {
@@ -140,6 +191,16 @@ final class AdminAuditLogController extends AbstractController
     /**
      * Récupère les statistiques des logs d'audit.
      */
+    #[OA\Get(
+        path: '/api/admin/audit-logs/statistics',
+        summary: 'Récupère les statistiques des logs d\'audit',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        responses: [
+            new OA\Response(response: 200, description: 'Statistiques des logs d\'audit'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('/statistics', name: 'statistics', methods: ['GET'], priority: 10)]
     public function statistics(#[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
     {
@@ -162,6 +223,15 @@ final class AdminAuditLogController extends AbstractController
     /**
      * Liste les types d'actions disponibles pour le filtrage.
      */
+    #[OA\Get(
+        path: '/api/admin/audit-logs/actions',
+        summary: 'Liste les types d\'actions disponibles pour le filtrage',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des actions disponibles avec leurs labels et sévérités'),
+        ]
+    )]
     #[Route('/actions', name: 'actions', methods: ['GET'], priority: 10)]
     public function actions(): JsonResponse
     {
