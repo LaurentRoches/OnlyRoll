@@ -86,10 +86,11 @@ docker compose exec frontend npm run test:e2e
 
 ## Documentation
 
-- [Architecture Backend](docs/backend_architecture.md)
-- [Architecture Frontend](docs/frontend_architecture.md)
-- [Docker Infrastructure](docs/docker_architecture.md)
+- [Architecture Backend](docs/documentation_architecture/backend_architecture_doc.md)
+- [Architecture Frontend](docs/documentation_architecture/frontend_architecture_doc.md)
+- [Docker Infrastructure](docs/documentation_architecture/docker_architecture_doc.md)
 - [WebSocket Events](docs/websocket_events.md)
+- **API Swagger UI** : `/api/doc` (disponible en local après démarrage)
 
 ## Auteur
 

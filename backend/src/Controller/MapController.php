@@ -22,6 +22,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion des cartes de jeu.
@@ -91,6 +92,20 @@ final class MapController extends AbstractController
     /**
      * Liste toutes les cartes d'une partie.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps',
+        summary: 'Liste toutes les cartes d\'une partie',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des cartes'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(int $gameId): JsonResponse
     {
@@ -126,6 +141,19 @@ final class MapController extends AbstractController
     /**
      * Récupère la carte active d'une partie.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/active',
+        summary: 'Récupère la carte active d\'une partie',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Carte active'),
+            new OA\Response(response: 404, description: 'Aucune carte active ou partie introuvable'),
+        ]
+    )]
     #[Route('/active', name: 'active', methods: ['GET'])]
     public function getActive(int $gameId): JsonResponse
     {
@@ -163,6 +191,21 @@ final class MapController extends AbstractController
     /**
      * Détails d'une carte.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/{id}',
+        summary: 'Détails d\'une carte',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Détails de la carte'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Carte introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $gameId, int $id): JsonResponse
     {
@@ -207,6 +250,34 @@ final class MapController extends AbstractController
      * Créer une nouvelle carte avec upload d'image.
      * Supporte à la fois JSON et multipart/form-data.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps',
+        summary: 'Créer une nouvelle carte (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'description', type: 'string'),
+                    new OA\Property(property: 'gridSize', type: 'integer', default: 50),
+                    new OA\Property(property: 'gridType', type: 'string', default: 'square'),
+                    new OA\Property(property: 'width', type: 'integer', default: 20),
+                    new OA\Property(property: 'height', type: 'integer', default: 20),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Carte créée'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+        ]
+    )]
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(int $gameId, Request $request): JsonResponse
     {
@@ -310,6 +381,33 @@ final class MapController extends AbstractController
     /**
      * Mettre à jour une carte.
      */
+    #[OA\Put(
+        path: '/api/games/{gameId}/maps/{id}',
+        summary: 'Mettre à jour une carte (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'description', type: 'string'),
+                    new OA\Property(property: 'gridSize', type: 'integer'),
+                    new OA\Property(property: 'gridType', type: 'string'),
+                    new OA\Property(property: 'width', type: 'integer'),
+                    new OA\Property(property: 'height', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Carte mise à jour'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Carte introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(int $gameId, int $id, Request $request): JsonResponse
     {
@@ -437,6 +535,21 @@ final class MapController extends AbstractController
     /**
      * Activer une carte.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{id}/activate',
+        summary: 'Activer une carte (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Carte activée'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Carte introuvable'),
+        ]
+    )]
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(int $gameId, int $id): JsonResponse
     {
@@ -490,6 +603,21 @@ final class MapController extends AbstractController
     /**
      * Supprimer une carte.
      */
+    #[OA\Delete(
+        path: '/api/games/{gameId}/maps/{id}',
+        summary: 'Supprimer une carte (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Carte supprimée'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Carte introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $gameId, int $id): JsonResponse
     {
@@ -545,6 +673,28 @@ final class MapController extends AbstractController
     /**
      * Mettre à jour les paramètres d'une carte (ex: grille).
      */
+    #[OA\Patch(
+        path: '/api/games/{gameId}/maps/{id}/settings',
+        summary: 'Mettre à jour les paramètres d\'une carte (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Cartes'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                type: 'object',
+                description: 'Paramètres à fusionner avec les existants'
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Paramètres mis à jour'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+        ]
+    )]
     #[Route('/{id}/settings', name: 'update_settings', methods: ['PATCH'])]
     public function updateSettings(int $gameId, int $id, Request $request): JsonResponse
     {

@@ -16,6 +16,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur du tableau de bord d'administration.
@@ -36,6 +37,16 @@ final class AdminDashboardController extends AbstractController
     /**
      * Récupère les statistiques globales pour le dashboard.
      */
+    #[OA\Get(
+        path: '/api/admin/dashboard/stats',
+        summary: 'Récupère les statistiques globales du tableau de bord',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        responses: [
+            new OA\Response(response: 200, description: 'Statistiques globales (utilisateurs, audit, parties)'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function stats(
         #[Autowire(service: 'limiter.admin_action_limiter')]
@@ -74,6 +85,16 @@ final class AdminDashboardController extends AbstractController
     /**
      * Récupère les logs d'audit récents pour le dashboard.
      */
+    #[OA\Get(
+        path: '/api/admin/dashboard/recent-activity',
+        summary: 'Récupère les 20 derniers logs d\'audit pour le tableau de bord',
+        security: [['BearerAuth' => []]],
+        tags: ['Administration'],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des activités récentes'),
+            new OA\Response(response: 429, description: 'Trop de requêtes'),
+        ]
+    )]
     #[Route('/recent-activity', name: 'recent_activity', methods: ['GET'])]
     public function recentActivity(
         #[Autowire(service: 'limiter.admin_action_limiter')]

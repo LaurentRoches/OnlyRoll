@@ -17,6 +17,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur d'authentification.
@@ -32,6 +33,27 @@ final class AuthController extends AbstractController
     /**
      * Enregistre un nouvel utilisateur.
      */
+    #[OA\Post(
+        path: '/api/register',
+        summary: 'Inscription d\'un nouvel utilisateur',
+        tags: ['Authentification'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'pseudo', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email'),
+                    new OA\Property(property: 'pseudo', type: 'string'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Utilisateur créé avec succès'),
+            new OA\Response(response: 409, description: 'Email ou pseudo déjà existant'),
+            new OA\Response(response: 422, description: 'Données invalides'),
+        ]
+    )]
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(
         Request $request,
@@ -82,6 +104,16 @@ final class AuthController extends AbstractController
     /**
      * Récupère les informations de l'utilisateur connecté.
      */
+    #[OA\Get(
+        path: '/api/me',
+        summary: 'Récupère les informations de l\'utilisateur connecté',
+        security: [['BearerAuth' => []]],
+        tags: ['Authentification'],
+        responses: [
+            new OA\Response(response: 200, description: 'Informations utilisateur'),
+            new OA\Response(response: 401, description: 'Non authentifié'),
+        ]
+    )]
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
@@ -106,6 +138,14 @@ final class AuthController extends AbstractController
     /**
      * Déconnecte l'utilisateur en supprimant le cookie JWT.
      */
+    #[OA\Post(
+        path: '/api/logout',
+        summary: 'Déconnexion de l\'utilisateur',
+        tags: ['Authentification'],
+        responses: [
+            new OA\Response(response: 200, description: 'Déconnexion réussie'),
+        ]
+    )]
     #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(): JsonResponse
     {

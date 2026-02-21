@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur pour gérer la présence en temps réel des joueurs.
@@ -28,6 +29,20 @@ final class PresenceController extends AbstractController
     /**
      * Notifie que l'utilisateur a rejoint la partie (page chargée).
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/presence/join',
+        summary: 'Notifie l\'arrivée de l\'utilisateur dans la partie',
+        security: [['BearerAuth' => []]],
+        tags: ['Présence'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Présence enregistrée'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('/join', name: 'join', methods: ['POST'])]
     public function join(int $gameId): JsonResponse
     {
@@ -61,6 +76,19 @@ final class PresenceController extends AbstractController
     /**
      * Notifie que l'utilisateur a quitté la partie (page fermée/navigué ailleurs).
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/presence/leave',
+        summary: 'Notifie le départ de l\'utilisateur',
+        security: [['BearerAuth' => []]],
+        tags: ['Présence'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Départ enregistré'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('/leave', name: 'leave', methods: ['POST'])]
     public function leave(int $gameId): JsonResponse
     {
@@ -87,6 +115,20 @@ final class PresenceController extends AbstractController
      * Heartbeat pour indiquer que l'utilisateur est toujours actif.
      * À appeler régulièrement (toutes les 30 secondes).
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/presence/heartbeat',
+        summary: 'Heartbeat de présence (toutes les 30s)',
+        security: [['BearerAuth' => []]],
+        tags: ['Présence'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Heartbeat enregistré avec liste des utilisateurs en ligne'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('/heartbeat', name: 'heartbeat', methods: ['POST'])]
     public function heartbeat(int $gameId): JsonResponse
     {
@@ -121,6 +163,20 @@ final class PresenceController extends AbstractController
     /**
      * Récupère la liste des utilisateurs actuellement en ligne dans la partie.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/presence/online',
+        summary: 'Liste des utilisateurs en ligne dans la partie',
+        security: [['BearerAuth' => []]],
+        tags: ['Présence'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Utilisateurs en ligne'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ]
+    )]
     #[Route('/online', name: 'online', methods: ['GET'])]
     public function getOnlineUsers(int $gameId): JsonResponse
     {

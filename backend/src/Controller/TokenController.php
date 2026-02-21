@@ -23,6 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion des tokens sur les cartes.
@@ -119,6 +120,21 @@ final class TokenController extends AbstractController
     /**
      * Liste tous les tokens d'une carte.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens',
+        summary: 'Liste les tokens d\'une carte',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des tokens'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie ou carte introuvable'),
+        ]
+    )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(int $gameId, int $mapId, Request $request): JsonResponse
     {
@@ -166,6 +182,22 @@ final class TokenController extends AbstractController
     /**
      * Détails d'un token.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Détails d\'un token',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Détails du token'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -217,6 +249,38 @@ final class TokenController extends AbstractController
      * Créer un nouveau token.
      * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens',
+        summary: 'Créer un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string', enum: ['character', 'monster', 'npc', 'object']),
+                    new OA\Property(property: 'x', type: 'integer', default: 0),
+                    new OA\Property(property: 'y', type: 'integer', default: 0),
+                    new OA\Property(property: 'size', type: 'number', default: 1.0),
+                    new OA\Property(property: 'rotation', type: 'integer', default: 0),
+                    new OA\Property(property: 'isVisible', type: 'boolean', default: true),
+                    new OA\Property(property: 'isLocked', type: 'boolean', default: false),
+                    new OA\Property(property: 'layer', type: 'string', enum: ['tokens', 'background', 'foreground']),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Token créé'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+        ]
+    )]
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(int $gameId, int $mapId, Request $request): JsonResponse
     {
@@ -330,6 +394,32 @@ final class TokenController extends AbstractController
     /**
      * Déplacer un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/move',
+        summary: 'Déplacer un token',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['x', 'y'],
+                properties: [
+                    new OA\Property(property: 'x', type: 'integer'),
+                    new OA\Property(property: 'y', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Token déplacé'),
+            new OA\Response(response: 403, description: 'Permission refusée'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}/move', name: 'move', methods: ['POST'])]
     public function move(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -404,6 +494,22 @@ final class TokenController extends AbstractController
     /**
      * Basculer la visibilité d'un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/toggle-visibility',
+        summary: 'Basculer la visibilité d\'un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Visibilité modifiée'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}/toggle-visibility', name: 'toggle_visibility', methods: ['POST'])]
     public function toggleVisibility(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -457,6 +563,22 @@ final class TokenController extends AbstractController
     /**
      * Verrouiller/déverrouiller un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/toggle-lock',
+        summary: 'Verrouiller/déverrouiller un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Verrouillage modifié'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}/toggle-lock', name: 'toggle_lock', methods: ['POST'])]
     public function toggleLock(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -510,6 +632,33 @@ final class TokenController extends AbstractController
     /**
      * Gérer les permissions de contrôle d'un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/permissions',
+        summary: 'Gérer les permissions de contrôle d\'un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['action', 'userId'],
+                properties: [
+                    new OA\Property(property: 'action', type: 'string', enum: ['add', 'remove']),
+                    new OA\Property(property: 'userId', type: 'integer'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Permissions modifiées'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}/permissions', name: 'permissions', methods: ['POST'])]
     public function managePermissions(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -580,6 +729,36 @@ final class TokenController extends AbstractController
      * Mettre à jour un token.
      * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
+    #[OA\Patch(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Mettre à jour un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string', enum: ['character', 'monster', 'npc', 'object']),
+                    new OA\Property(property: 'x', type: 'integer'),
+                    new OA\Property(property: 'y', type: 'integer'),
+                    new OA\Property(property: 'size', type: 'number'),
+                    new OA\Property(property: 'rotation', type: 'integer'),
+                    new OA\Property(property: 'imageUrl', type: 'string'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Token mis à jour'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'update', methods: ['PATCH', 'PUT'])]
     public function update(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -756,6 +935,22 @@ final class TokenController extends AbstractController
     /**
      * Supprimer un token.
      */
+    #[OA\Delete(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Supprimer un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Token supprimé'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ]
+    )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $gameId, int $mapId, int $id): JsonResponse
     {
