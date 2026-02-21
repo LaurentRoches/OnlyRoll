@@ -31,4 +31,5 @@ docker-compose.override.yml
 # Clés JWT (générées localement)
 /backend/config/jwt/*.pem
 
-api_hostinger.json
+# Résultats des testes de charge
+tests/load/results/
