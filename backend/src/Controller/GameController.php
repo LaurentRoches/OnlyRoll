@@ -178,11 +178,15 @@ final class GameController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $dto = $this->serializer->deserialize(
-            $request->getContent(),
-            CreateGameDTO::class,
-            'json',
-        );
+        try {
+            $dto = $this->serializer->deserialize(
+                $request->getContent(),
+                CreateGameDTO::class,
+                'json',
+            );
+        } catch (\Symfony\Component\Serializer\Exception\NotNormalizableValueException $e) {
+            return $this->json(['error' => 'Invalid data: ' . $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
 
         $errors = $this->validator->validate($dto);
         if (\count($errors) > 0) {
