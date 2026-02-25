@@ -114,6 +114,16 @@ readonly class ChatService
     }
 
     /**
+     * Récupère les messages visibles pour un utilisateur antérieurs à un message donné (pagination scroll).
+     *
+     * @return GameMessage[]
+     */
+    public function getVisibleMessagesForUserBefore(Game $game, User $user, int $beforeId, int $limit = 20): array
+    {
+        return $this->messageRepository->findVisibleMessagesForUserBefore($game, $user, $beforeId, $limit);
+    }
+
+    /**
      * Récupère les messages d'un type spécifique.
      *
      * @return GameMessage[]

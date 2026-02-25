@@ -29,17 +29,17 @@ final class PasswordGeneratorService
     /**
      * Génère un mot de passe sécurisé.
      *
-     * @param int  $length              Longueur souhaitée (min: 12, max: 128)
-     * @param bool $includeLowercase    Inclure des minuscules (défaut: true)
-     * @param bool $includeUppercase    Inclure des majuscules (défaut: true)
-     * @param bool $includeDigits       Inclure des chiffres (défaut: true)
-     * @param bool $includeSpecial      Inclure des caractères spéciaux (défaut: true)
-     * @param bool $excludeAmbiguous    Exclure les caractères ambigus (0/O, 1/l/I)
+     * @param int $length Longueur souhaitée (min: 12, max: 128)
+     * @param bool $includeLowercase Inclure des minuscules (défaut: true)
+     * @param bool $includeUppercase Inclure des majuscules (défaut: true)
+     * @param bool $includeDigits Inclure des chiffres (défaut: true)
+     * @param bool $includeSpecial Inclure des caractères spéciaux (défaut: true)
+     * @param bool $excludeAmbiguous Exclure les caractères ambigus (0/O, 1/l/I)
      * @param bool $checkCommonPassword Vérifier contre les mots de passe courants (défaut: true)
      *
-     * @throws InvalidArgumentException Si les paramètres sont invalides
-     *
      * @return string Le mot de passe généré
+     *
+     * @throws InvalidArgumentException Si les paramètres sont invalides
      */
     public function generate(
         int $length = 16,
@@ -58,7 +58,7 @@ final class PasswordGeneratorService
             $includeUppercase,
             $includeDigits,
             $includeSpecial,
-            $excludeAmbiguous
+            $excludeAmbiguous,
         );
 
         $attempts = 0;
@@ -69,7 +69,8 @@ final class PasswordGeneratorService
             if ($attempts >= self::MAX_GENERATION_ATTEMPTS) {
                 break;
             }
-        } while ($checkCommonPassword && CommonPasswords::isCommon($password));
+        }
+        while ($checkCommonPassword && CommonPasswords::isCommon($password));
 
         return $password;
     }
@@ -96,7 +97,7 @@ final class PasswordGeneratorService
                 $includeUppercase,
                 $includeDigits,
                 $includeSpecial,
-                $excludeAmbiguous
+                $excludeAmbiguous,
             );
         }
 
@@ -116,7 +117,8 @@ final class PasswordGeneratorService
         $length = mb_strlen($password);
         if ($length >= 12) {
             ++$score;
-        } else {
+        }
+        else {
             $feedback[] = 'Au moins 12 caractères requis';
         }
 
@@ -126,25 +128,29 @@ final class PasswordGeneratorService
 
         if (preg_match('/[a-z]/', $password)) {
             ++$score;
-        } else {
+        }
+        else {
             $feedback[] = 'Au moins une minuscule requise';
         }
 
         if (preg_match('/[A-Z]/', $password)) {
             ++$score;
-        } else {
+        }
+        else {
             $feedback[] = 'Au moins une majuscule requise';
         }
 
         if (preg_match('/\d/', $password)) {
             ++$score;
-        } else {
+        }
+        else {
             $feedback[] = 'Au moins un chiffre requis';
         }
 
         if (preg_match('/[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/', $password)) {
             ++$score;
-        } else {
+        }
+        else {
             $feedback[] = 'Au moins un caractère spécial requis (!@#$%&*()_+-=[]{}|;:,.<>?)';
         }
 
@@ -183,13 +189,13 @@ final class PasswordGeneratorService
     {
         if ($length < self::MIN_LENGTH) {
             throw new InvalidArgumentException(
-                sprintf('La longueur minimale est de %d caractères', self::MIN_LENGTH)
+                \sprintf('La longueur minimale est de %d caractères', self::MIN_LENGTH),
             );
         }
 
         if ($length > self::MAX_LENGTH) {
             throw new InvalidArgumentException(
-                sprintf('La longueur maximale est de %d caractères', self::MAX_LENGTH)
+                \sprintf('La longueur maximale est de %d caractères', self::MAX_LENGTH),
             );
         }
     }
@@ -202,7 +208,7 @@ final class PasswordGeneratorService
     ): void {
         if (!$includeLowercase && !$includeUppercase && !$includeDigits && !$includeSpecial) {
             throw new InvalidArgumentException(
-                'Au moins un type de caractère doit être sélectionné'
+                'Au moins un type de caractère doit être sélectionné',
             );
         }
     }
@@ -263,14 +269,14 @@ final class PasswordGeneratorService
     {
         $allChars = $charSets['chars'];
         $required = $charSets['required'];
-        $allCharsLength = strlen($allChars);
+        $allCharsLength = \strlen($allChars);
 
         $password = [];
         foreach ($required as $charSet) {
-            $password[] = $charSet[random_int(0, strlen($charSet) - 1)];
+            $password[] = $charSet[random_int(0, \strlen($charSet) - 1)];
         }
 
-        $remainingLength = $length - count($password);
+        $remainingLength = $length - \count($password);
         for ($i = 0; $i < $remainingLength; ++$i) {
             $password[] = $allChars[random_int(0, $allCharsLength - 1)];
         }

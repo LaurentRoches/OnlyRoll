@@ -11,18 +11,18 @@ use App\Service\FileUploader;
 use App\Service\ProfileService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion du profil utilisateur.
@@ -49,7 +49,7 @@ final class ProfileController extends AbstractController
         tags: ['Profil'],
         responses: [
             new OA\Response(response: 200, description: 'Profil utilisateur'),
-        ]
+        ],
     )]
     #[Route('', name: 'show', methods: ['GET'])]
     public function show(): JsonResponse
@@ -75,14 +75,14 @@ final class ProfileController extends AbstractController
                     new OA\Property(property: 'pseudo', type: 'string'),
                     new OA\Property(property: 'timezone', type: 'string'),
                     new OA\Property(property: 'language', type: 'string'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Profil mis à jour'),
             new OA\Response(response: 400, description: 'Données invalides'),
             new OA\Response(response: 409, description: 'Pseudo déjà utilisé'),
-        ]
+        ],
     )]
     #[Route('', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(Request $request): JsonResponse
@@ -113,12 +113,14 @@ final class ProfileController extends AbstractController
             $updatedUser = $this->profileService->updateProfile($user, $dto);
 
             return $this->json($updatedUser, Response::HTTP_OK, [], ['groups' => 'user:read']);
-        } catch (UniqueConstraintViolationException $e) {
+        }
+        catch (UniqueConstraintViolationException $e) {
             return $this->json([
                 'error' => 'Validation failed',
                 'violations' => ['pseudo' => 'Ce pseudo est déjà utilisé'],
             ], Response::HTTP_CONFLICT);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(['error' => 'Une erreur est survenue'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -139,14 +141,14 @@ final class ProfileController extends AbstractController
                 properties: [
                     new OA\Property(property: 'currentPassword', type: 'string', format: 'password'),
                     new OA\Property(property: 'newPassword', type: 'string', format: 'password'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Mot de passe modifié'),
             new OA\Response(response: 400, description: 'Mot de passe invalide'),
             new OA\Response(response: 429, description: 'Trop de tentatives'),
-        ]
+        ],
     )]
     #[Route('/password', name: 'change_password', methods: ['PUT'])]
     public function changePassword(
@@ -188,9 +190,11 @@ final class ProfileController extends AbstractController
             $this->profileService->changePassword($user, $dto);
 
             return $this->json(['message' => 'Mot de passe modifié avec succès']);
-        } catch (InvalidPasswordException $e) {
+        }
+        catch (InvalidPasswordException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(['error' => 'Une erreur est survenue'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -211,14 +215,14 @@ final class ProfileController extends AbstractController
                 schema: new OA\Schema(
                     properties: [
                         new OA\Property(property: 'avatar', type: 'string', format: 'binary'),
-                    ]
-                )
-            )
+                    ],
+                ),
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Avatar mis à jour'),
             new OA\Response(response: 400, description: 'Fichier invalide ou trop volumineux'),
-        ]
+        ],
     )]
     #[Route('/avatar', name: 'upload_avatar', methods: ['POST'])]
     public function uploadAvatar(Request $request): JsonResponse
@@ -258,7 +262,8 @@ final class ProfileController extends AbstractController
                 'message' => 'Avatar mis à jour avec succès',
                 'avatar' => $avatarPath,
             ]);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(['error' => 'Erreur lors de l\'upload de l\'avatar'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -273,7 +278,7 @@ final class ProfileController extends AbstractController
         tags: ['Profil'],
         responses: [
             new OA\Response(response: 200, description: 'Avatar supprimé'),
-        ]
+        ],
     )]
     #[Route('/avatar', name: 'delete_avatar', methods: ['DELETE'])]
     public function deleteAvatar(): JsonResponse
@@ -289,7 +294,8 @@ final class ProfileController extends AbstractController
             $this->profileService->removeAvatar($user);
 
             return $this->json(['message' => 'Avatar supprimé avec succès']);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(['error' => 'Erreur lors de la suppression de l\'avatar'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

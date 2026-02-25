@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\DTO\Admin\UserFilterDTO;
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -115,7 +116,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             case 'locked':
                 $qb->andWhere('u.lockedUntil IS NOT NULL')
                     ->andWhere('u.lockedUntil > :now')
-                    ->setParameter('now', new \DateTimeImmutable());
+                    ->setParameter('now', new DateTimeImmutable());
                 break;
             case 'all':
             default:
@@ -168,7 +169,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->select('COUNT(u.id)')
             ->where('u.lockedUntil IS NOT NULL')
             ->andWhere('u.lockedUntil > :now')
-            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('now', new DateTimeImmutable())
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -179,7 +180,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getSingleScalarResult();
 
-        $oneWeekAgo = new \DateTimeImmutable('-7 days');
+        $oneWeekAgo = new DateTimeImmutable('-7 days');
         $stats['newThisWeek'] = (int) $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.createdAt >= :date')
@@ -187,7 +188,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getSingleScalarResult();
 
-        $oneDayAgo = new \DateTimeImmutable('-24 hours');
+        $oneDayAgo = new DateTimeImmutable('-24 hours');
         $stats['activeToday'] = (int) $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
             ->where('u.lastLogin >= :date')

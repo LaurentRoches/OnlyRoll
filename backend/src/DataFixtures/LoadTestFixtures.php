@@ -142,7 +142,7 @@ class LoadTestFixtures extends Fixture implements FixtureGroupInterface
         for ($i = 1; $i <= 3; ++$i) {
             $game = new Game();
             $game->setName("Spike Test #{$i} — Place Limitée")
-                ->setDescription("Partie spike test avec 1 place disponible")
+                ->setDescription('Partie spike test avec 1 place disponible')
                 ->setGameMaster($users[$i])
                 ->setMaxPlayers(2)
                 ->setIsPublic(true)

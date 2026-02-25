@@ -8,16 +8,17 @@ use App\DTO\Admin\AuditLogFilterDTO;
 use App\Enum\AuditAction;
 use App\Repository\AuditLogRepository;
 use App\Service\AuditLogService;
+use DateTimeImmutable;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de consultation des logs d'audit pour l'administration.
@@ -56,7 +57,7 @@ final class AdminAuditLogController extends AbstractController
             new OA\Response(response: 200, description: 'Liste paginée des logs d\'audit'),
             new OA\Response(response: 400, description: 'Paramètres de filtre invalides'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -82,10 +83,10 @@ final class AdminAuditLogController extends AbstractController
         $filterDTO->entityType = $request->query->getString('entityType') ?: null;
 
         $dateFromString = $request->query->getString('dateFrom');
-        $filterDTO->dateFrom = $dateFromString ? new \DateTimeImmutable($dateFromString) : null;
+        $filterDTO->dateFrom = $dateFromString ? new DateTimeImmutable($dateFromString) : null;
 
         $dateToString = $request->query->getString('dateTo');
-        $filterDTO->dateTo = $dateToString ? new \DateTimeImmutable($dateToString) : null;
+        $filterDTO->dateTo = $dateToString ? new DateTimeImmutable($dateToString) : null;
 
         $filterDTO->severity = $request->query->getString('severity') ?: null;
         $filterDTO->page = (int) $request->query->get('page', 1);
@@ -126,7 +127,7 @@ final class AdminAuditLogController extends AbstractController
             new OA\Response(response: 200, description: 'Détails du log d\'audit'),
             new OA\Response(response: 404, description: 'Log non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -166,7 +167,7 @@ final class AdminAuditLogController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Liste des logs d\'audit de l\'utilisateur'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/user/{userId}', name: 'by_user', methods: ['GET'])]
     public function byUser(int $userId, Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -199,7 +200,7 @@ final class AdminAuditLogController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Statistiques des logs d\'audit'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/statistics', name: 'statistics', methods: ['GET'], priority: 10)]
     public function statistics(#[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -230,7 +231,7 @@ final class AdminAuditLogController extends AbstractController
         tags: ['Administration'],
         responses: [
             new OA\Response(response: 200, description: 'Liste des actions disponibles avec leurs labels et sévérités'),
-        ]
+        ],
     )]
     #[Route('/actions', name: 'actions', methods: ['GET'], priority: 10)]
     public function actions(): JsonResponse

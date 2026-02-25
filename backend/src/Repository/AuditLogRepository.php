@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\DTO\Admin\AuditLogFilterDTO;
 use App\Entity\AuditLog;
 use App\Enum\AuditAction;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -133,7 +134,7 @@ class AuditLogRepository extends ServiceEntityRepository
         if ($filter->severity) {
             $actionsWithSeverity = array_filter(
                 AuditAction::cases(),
-                fn (AuditAction $action) => $action->getSeverity() === $filter->severity
+                fn (AuditAction $action) => $action->getSeverity() === $filter->severity,
             );
 
             if (!empty($actionsWithSeverity)) {
@@ -157,7 +158,7 @@ class AuditLogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
 
-        $today = new \DateTimeImmutable('today');
+        $today = new DateTimeImmutable('today');
         $stats['today'] = (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
             ->where('a.createdAt >= :today')
@@ -165,11 +166,11 @@ class AuditLogRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
 
-        $oneDayAgo = new \DateTimeImmutable('-24 hours');
+        $oneDayAgo = new DateTimeImmutable('-24 hours');
 
         $warningActions = array_filter(
             AuditAction::cases(),
-            fn (AuditAction $action) => $action->getSeverity() === 'warning'
+            fn (AuditAction $action) => $action->getSeverity() === 'warning',
         );
         $stats['warningsToday'] = (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
@@ -182,7 +183,7 @@ class AuditLogRepository extends ServiceEntityRepository
 
         $highActions = array_filter(
             AuditAction::cases(),
-            fn (AuditAction $action) => $action->getSeverity() === 'high'
+            fn (AuditAction $action) => $action->getSeverity() === 'high',
         );
         $stats['highSeverityToday'] = (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')

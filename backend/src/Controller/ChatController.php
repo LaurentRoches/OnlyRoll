@@ -12,6 +12,8 @@ use App\Service\ChatService;
 use App\Service\DiceService;
 use DateTimeImmutable;
 use Exception;
+use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +22,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion du chat et des lancers de dés.
@@ -55,7 +56,7 @@ final class ChatController extends AbstractController
             new OA\Response(response: 200, description: 'Liste des messages'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/messages', name: 'messages', methods: ['GET'])]
     public function getMessages(int $gameId, Request $request): JsonResponse
@@ -82,7 +83,14 @@ final class ChatController extends AbstractController
         $limit = (int) $request->query->get('limit', 50);
         $limit = max(1, min($limit, 200)); // Entre 1 et 200
 
-        $messages = $this->chatService->getVisibleMessagesForUser($game, $user, $limit);
+        $beforeId = (int) $request->query->get('before', 0);
+
+        if ($beforeId > 0) {
+            $messages = $this->chatService->getVisibleMessagesForUserBefore($game, $user, $beforeId, $limit);
+        }
+        else {
+            $messages = $this->chatService->getVisibleMessagesForUser($game, $user, $limit);
+        }
 
         return $this->json(
             $messages,
@@ -111,14 +119,14 @@ final class ChatController extends AbstractController
                     new OA\Property(property: 'content', type: 'string'),
                     new OA\Property(property: 'type', type: 'string'),
                     new OA\Property(property: 'recipientId', type: 'integer'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 201, description: 'Message envoyé'),
             new OA\Response(response: 400, description: 'Données invalides'),
             new OA\Response(response: 403, description: 'Accès refusé'),
-        ]
+        ],
     )]
     #[Route('/messages', name: 'send_message', methods: ['POST'])]
     public function sendMessage(int $gameId, Request $request): JsonResponse
@@ -199,7 +207,7 @@ final class ChatController extends AbstractController
             new OA\Response(response: 200, description: 'Messages filtrés par type'),
             new OA\Response(response: 400, description: 'Type invalide'),
             new OA\Response(response: 403, description: 'Accès refusé'),
-        ]
+        ],
     )]
     #[Route('/messages/type/{type}', name: 'messages_by_type', methods: ['GET'])]
     public function getMessagesByType(int $gameId, string $type, Request $request): JsonResponse
@@ -267,7 +275,7 @@ final class ChatController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Liste des lancers de dés'),
             new OA\Response(response: 403, description: 'Accès refusé'),
-        ]
+        ],
     )]
     #[Route('/dice-rolls', name: 'dice_rolls', methods: ['GET'])]
     public function getDiceRolls(int $gameId, Request $request): JsonResponse
@@ -322,14 +330,14 @@ final class ChatController extends AbstractController
                 properties: [
                     new OA\Property(property: 'formula', type: 'string', example: '2d6+3'),
                     new OA\Property(property: 'recipientId', type: 'integer'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 201, description: 'Résultat du lancer de dés'),
             new OA\Response(response: 400, description: 'Formule invalide'),
             new OA\Response(response: 403, description: 'Accès refusé'),
-        ]
+        ],
     )]
     #[Route('/roll-dice', name: 'roll_dice', methods: ['POST'])]
     public function rollDice(int $gameId, Request $request): JsonResponse
@@ -366,9 +374,9 @@ final class ChatController extends AbstractController
         $recipientId = $data['recipientId'] ?? null;
 
         try {
-            $parsed   = $this->diceService->parseFormula($formula);
+            $parsed = $this->diceService->parseFormula($formula);
             $allRolls = $this->diceService->rollDice($parsed['numberOfDice'], $parsed['sidesPerDie']);
-            $kept     = $this->diceService->applyKeep(
+            $kept = $this->diceService->applyKeep(
                 $allRolls,
                 $parsed['keepType'],
                 $parsed['keepCount'],
@@ -399,14 +407,14 @@ final class ChatController extends AbstractController
                 $user,
                 $formula,
                 [
-                    'rolls'       => $allRolls,
-                    'keptRolls'   => $kept['keptRolls'],
-                    'dropped'     => $kept['dropped'],
-                    'total'       => $kept['total'],
-                    'modifier'    => $parsed['modifier'],
-                    'formula'     => $formula,
-                    'keepType'    => $parsed['keepType'],
-                    'keepCount'   => $parsed['keepCount'],
+                    'rolls' => $allRolls,
+                    'keptRolls' => $kept['keptRolls'],
+                    'dropped' => $kept['dropped'],
+                    'total' => $kept['total'],
+                    'modifier' => $parsed['modifier'],
+                    'formula' => $formula,
+                    'keepType' => $parsed['keepType'],
+                    'keepCount' => $parsed['keepCount'],
                     'sidesPerDie' => $parsed['sidesPerDie'],
                 ],
                 false,
@@ -414,12 +422,14 @@ final class ChatController extends AbstractController
             );
 
             return $this->json($message, Response::HTTP_CREATED, [], ['groups' => 'message:read']);
-        } catch (\InvalidArgumentException $e) {
+        }
+        catch (InvalidArgumentException $e) {
             return $this->json(
                 ['error' => $e->getMessage()],
                 Response::HTTP_BAD_REQUEST,
             );
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(
                 ['error' => $e->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -441,7 +451,7 @@ final class ChatController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Statistiques du chat'),
             new OA\Response(response: 403, description: 'Réservé au maître du jeu'),
-        ]
+        ],
     )]
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function getStats(int $gameId): JsonResponse
@@ -489,7 +499,7 @@ final class ChatController extends AbstractController
             new OA\Response(response: 200, description: 'Messages depuis la date spécifiée'),
             new OA\Response(response: 400, description: 'Paramètre since manquant ou invalide'),
             new OA\Response(response: 403, description: 'Accès refusé'),
-        ]
+        ],
     )]
     #[Route('/messages/since', name: 'messages_since', methods: ['GET'])]
     public function getMessagesSince(int $gameId, Request $request): JsonResponse

@@ -25,7 +25,6 @@ use Doctrine\Persistence\ObjectManager;
  *  - fuzz-gm@test.com / FuzzPass123!       (maître de jeu)
  *  - other-user@test.com / OtherPass123!   (utilisateur étranger pour tests IDOR)
  *  - Une partie avec une carte (pour ChatFuzzTest et TokenFuzzTest)
- *
  */
 class FuzzFixtures extends Fixture implements FixtureGroupInterface
 {
@@ -36,7 +35,7 @@ class FuzzFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
-        $hashedFuzz  = password_hash('FuzzPass123!', \PASSWORD_BCRYPT);
+        $hashedFuzz = password_hash('FuzzPass123!', \PASSWORD_BCRYPT);
         $hashedOther = password_hash('OtherPass123!', \PASSWORD_BCRYPT);
 
         $fuzzUser = (new User())
@@ -76,7 +75,7 @@ class FuzzFixtures extends Fixture implements FixtureGroupInterface
                 ->setGame($game)
                 ->setUser($fuzzGm)
                 ->setRole(PlayerRole::GAME_MASTER)
-                ->setStatus(PlayerStatus::ACTIVE)
+                ->setStatus(PlayerStatus::ACTIVE),
         );
 
         $manager->persist(
@@ -84,7 +83,7 @@ class FuzzFixtures extends Fixture implements FixtureGroupInterface
                 ->setGame($game)
                 ->setUser($fuzzUser)
                 ->setRole(PlayerRole::PLAYER)
-                ->setStatus(PlayerStatus::ACTIVE)
+                ->setStatus(PlayerStatus::ACTIVE),
         );
 
         $map = (new GameMap())

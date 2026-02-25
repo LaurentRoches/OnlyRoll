@@ -41,13 +41,13 @@ class AuditLogService
     /**
      * Enregistre une action dans le log d'audit.
      *
-     * @param AuditAction           $action     Type d'action
-     * @param User|null             $performer  Utilisateur qui effectue l'action
-     * @param User|null             $targetUser Utilisateur cible de l'action
-     * @param string|null           $entityType Type d'entité concernée
-     * @param int|null              $entityId   ID de l'entité concernée
-     * @param array<string, mixed>  $details    Détails supplémentaires (sans données sensibles)
-     * @param Request|null          $request    Requête HTTP (optionnel)
+     * @param AuditAction $action Type d'action
+     * @param User|null $performer Utilisateur qui effectue l'action
+     * @param User|null $targetUser Utilisateur cible de l'action
+     * @param string|null $entityType Type d'entité concernée
+     * @param int|null $entityId ID de l'entité concernée
+     * @param array<string, mixed> $details Détails supplémentaires (sans données sensibles)
+     * @param Request|null $request Requête HTTP (optionnel)
      */
     public function log(
         AuditAction $action,
@@ -135,7 +135,8 @@ class AuditLogService
 
             if (\is_array($value)) {
                 $sanitized[$key] = $this->sanitizeDetails($value);
-            } else {
+            }
+            else {
                 $sanitized[$key] = $value;
             }
         }

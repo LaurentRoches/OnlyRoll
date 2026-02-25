@@ -40,7 +40,7 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
 
         $response->headers->set(
             'Permissions-Policy',
-            'geolocation=(), microphone=(), camera=(), payment=(), usb=()'
+            'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
         );
 
         $csp = $this->buildContentSecurityPolicy();
@@ -49,7 +49,7 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
         if ('prod' === $this->appEnv) {
             $response->headers->set(
                 'Strict-Transport-Security',
-                'max-age=31536000; includeSubDomains; preload'
+                'max-age=31536000; includeSubDomains; preload',
             );
         }
     }

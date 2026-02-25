@@ -107,7 +107,9 @@ export const useChatStore = defineStore('chat', () => {
       messages.value = Array.isArray(loadedMessages) ? loadedMessages : []
 
       if (messages.value.length > 0) {
-        oldestMessageId.value = messages.value[0].id
+        // Le backend retourne les messages DESC (plus récent en premier).
+        // Le dernier élément du tableau est donc le plus ancien → sert de curseur pour loadMoreMessages.
+        oldestMessageId.value = messages.value[messages.value.length - 1].id
       }
 
       hasMore.value = messages.value.length === limit
@@ -146,7 +148,8 @@ export const useChatStore = defineStore('chat', () => {
       if (Array.isArray(olderMessages) && olderMessages.length > 0) {
         messages.value.unshift(...olderMessages)
 
-        oldestMessageId.value = olderMessages[0].id
+        // olderMessages aussi en DESC → le dernier est le plus ancien du lot chargé.
+        oldestMessageId.value = olderMessages[olderMessages.length - 1].id
 
         hasMore.value = olderMessages.length === limit
       } else {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTO\Admin;
 
 use App\Enum\AuditAction;
+use DateTimeImmutable;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -21,9 +22,9 @@ final class AuditLogFilterDTO
     #[Assert\Length(max: 50)]
     public ?string $entityType = null;
 
-    public ?\DateTimeImmutable $dateFrom = null;
+    public ?DateTimeImmutable $dateFrom = null;
 
-    public ?\DateTimeImmutable $dateTo = null;
+    public ?DateTimeImmutable $dateTo = null;
 
     #[Assert\Choice(choices: ['info', 'warning', 'high'], message: 'Sévérité invalide')]
     public ?string $severity = null;

@@ -235,54 +235,93 @@ frontend/
 │   ├── router/
 │   │   └── index.ts                # Définition des routes
 │   │
+│   ├── layouts/
+│   │   ├── AuthLayout.vue          # Layout pages d'auth
+│   │   └── AdminLayout.vue         # Layout administration
+│   │
 │   ├── views/                      # Pages
 │   │   ├── HomeView.vue            # Page d'accueil
 │   │   ├── NotFoundView.vue        # Page 404
 │   │   ├── auth/
 │   │   │   ├── LoginView.vue       # Connexion
-│   │   │   └── RegisterView.vue    # Inscription
+│   │   │   ├── RegisterView.vue    # Inscription
+│   │   │   └── RegisterSuccessView.vue  # Confirmation inscription
 │   │   ├── dashboard/
-│   │   │   ├── DashboardView.vue   # Tableau de bord
+│   │   │   └── DashboardView.vue   # Tableau de bord
+│   │   ├── profile/
 │   │   │   └── ProfileView.vue     # Profil utilisateur
-│   │   └── games/
-│   │       ├── GamesListView.vue   # Liste des parties
-│   │       ├── GameCreateView.vue  # Création de partie
-│   │       └── GameDetailView.vue  # Table de jeu
+│   │   ├── games/
+│   │   │   ├── GameListView.vue    # Liste des parties (scroll infini)
+│   │   │   └── GamePlayView.vue    # Table de jeu (carte + chat + dés)
+│   │   └── admin/
+│   │       ├── AdminDashboardView.vue   # Dashboard admin
+│   │       ├── AdminUsersView.vue       # Gestion utilisateurs
+│   │       └── AdminAuditLogsView.vue   # Logs d'audit
 │   │
 │   ├── components/                 # Composants réutilisables
-│   │   ├── common/                 # Header, Footer, NavBar, Modal
-│   │   ├── auth/                   # LoginForm, RegisterForm
-│   │   ├── dashboard/              # GameCard, UserStats
+│   │   ├── a11y/                   # Accessibilité (RGAA 4.1)
+│   │   │   ├── AccessibleModal.vue      # Dialog avec focus trap
+│   │   │   ├── AccessiblePagination.vue # Pagination accessible
+│   │   │   ├── AccessibleTable.vue      # Tableau paginé accessible
+│   │   │   └── index.ts
+│   │   ├── auth/
+│   │   │   ├── LoginForm.vue       # Formulaire connexion
+│   │   │   └── RegisterForm.vue    # Formulaire inscription
+│   │   ├── common/
+│   │   │   ├── FeatureCard.vue     # Carte fonctionnalité (accueil)
+│   │   │   ├── UserProfileBadge.vue # Avatar + menu profil
+│   │   │   └── KonamiVictory.vue   # Easter egg Konami
+│   │   ├── dashboard/
+│   │   │   ├── DashboardCard.vue   # Carte dashboard
+│   │   │   └── DashboardNav.vue    # Navigation dashboard
+│   │   ├── profile/
+│   │   │   ├── AvatarUploader.vue  # Upload avatar
+│   │   │   └── PasswordChangeForm.vue  # Formulaire changement MDP
 │   │   └── game/
-│   │       ├── MapCanvas.vue       # Grille interactive
-│   │       ├── TokenLayer.vue      # Affichage des tokens
-│   │       ├── ChatPanel.vue       # Chat temps réel
-│   │       ├── DiceRoller.vue      # Lanceur de dés
-│   │       └── PlayersPanel.vue    # Liste des joueurs
+│   │       ├── GameCard.vue             # Carte de partie (liste)
+│   │       ├── GameHeader.vue           # En-tête table de jeu
+│   │       ├── GameMap.vue              # Carte tactique interactive (canvas)
+│   │       ├── ChatPanel.vue            # Chat temps réel (scroll infini ascendant)
+│   │       ├── PlayersList.vue          # Liste des joueurs connectés
+│   │       ├── MapToolbar.vue           # Outils de carte (GM)
+│   │       ├── EmptyMapState.vue        # Placeholder carte vide
+│   │       ├── DiceRoller.vue           # Lanceur de dés (avantage/désavantage/super-avantage)
+│   │       ├── DiceResultDisplay.vue    # Affichage résultat dés (formule, jets, total)
+│   │       ├── SkeletonCard.vue         # Placeholder chargement carte de partie
+│   │       ├── SkeletonMessage.vue      # Placeholder chargement message chat
+│   │       ├── CreateGameModal.vue      # Modale création de partie
+│   │       ├── JoinGameModal.vue        # Modale rejoindre une partie
+│   │       ├── CreateTokenModal.vue     # Modale création token
+│   │       ├── EditTokenModal.vue       # Modale édition token
+│   │       ├── EditMapModal.vue         # Modale édition carte
+│   │       └── UploadMapModal.vue       # Modale upload image de carte
 │   │
 │   ├── stores/                     # État (Pinia)
 │   │   ├── auth.ts                 # Authentification
-│   │   ├── game.ts                 # Partie en cours
-│   │   ├── mapStore.ts             # État de la carte
-│   │   ├── chatStore.ts            # Messages
-│   │   └── presenceStore.ts        # Présence
+│   │   ├── game.ts                 # Parties (liste + partie courante, pagination serveur)
+│   │   ├── mapStore.ts             # État de la carte tactique
+│   │   ├── chatStore.ts            # Messages chat (historique paginé)
+│   │   └── presenceStore.ts        # Présence utilisateurs en ligne
 │   │
 │   ├── composables/                # Logique réutilisable
-│   │   ├── useAuth.ts              # Gestion auth
-│   │   ├── useMercure.ts           # Connexion WebSocket
-│   │   ├── useFormValidation.ts    # Validation formulaires
-│   │   ├── usePagination.ts        # Pagination
-│   │   └── usePasswordGenerator.ts # Génération mots de passe
+│   │   ├── useAuth.ts              # Gestion auth (wrapper store + utilitaires erreurs)
+│   │   ├── useMercure.ts           # Abonnement WebSocket/SSE
+│   │   ├── useFormValidation.ts    # Validation de formulaires
+│   │   ├── usePagination.ts        # Pagination classique (page/totalPages)
+│   │   ├── useInfiniteScroll.ts    # Scroll infini (IntersectionObserver, réutilisable wiki)
+│   │   ├── usePasswordGenerator.ts # Génération + évaluation mots de passe
+│   │   ├── useSeo.ts               # Gestion balises meta (OG, Twitter, JSON-LD)
+│   │   └── useKonamiCode.ts        # Détection séquence Konami (easter egg)
 │   │
 │   ├── services/                   # Appels API
-│   │   ├── mercure.ts              # Service WebSocket
+│   │   ├── mercure.ts              # Service WebSocket/SSE (Mercure)
 │   │   └── api/
-│   │       ├── apiClient.ts        # Client HTTP Axios
+│   │       ├── apiClient.ts        # Client HTTP Axios (intercepteurs JWT)
 │   │       ├── authApi.ts          # API authentification
-│   │       ├── gameApi.ts          # API parties
+│   │       ├── gameApi.ts          # API parties (pagination serveur)
 │   │       ├── mapApi.ts           # API cartes
-│   │       ├── chatApi.ts          # API chat
-│   │       ├── tokenApi.ts         # API tokens
+│   │       ├── chatApi.ts          # API chat (options before/after pour historique)
+│   │       ├── tokenApi.ts         # API tokens (personnages sur carte)
 │   │       ├── presenceApi.ts      # API présence
 │   │       ├── securityApi.ts      # API sécurité (génération MDP)
 │   │       ├── profileApi.ts       # API profil utilisateur
@@ -290,7 +329,14 @@ frontend/
 │   │       └── index.ts            # Export centralisé
 │   │
 │   ├── types/                      # Types TypeScript
-│   └── styles/                     # Styles globaux
+│   │   ├── game.ts                 # Entités jeu (Game, GameMessage, DiceResult, etc.)
+│   │   ├── auth.ts                 # Types auth (User, LoginCredentials, etc.)
+│   │   ├── errors.ts               # Types erreurs
+│   │   └── websocket.ts            # Types événements Mercure
+│   │
+│   └── utils/
+│       ├── logger.ts               # Utilitaire de logging
+│       └── errorHelpers.ts         # Extraction messages d'erreur
 │
 ├── tests/
 │   ├── unit/                       # Tests Vitest

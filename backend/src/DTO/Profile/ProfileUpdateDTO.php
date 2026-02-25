@@ -15,7 +15,7 @@ final class ProfileUpdateDTO
         min: 3,
         max: 50,
         minMessage: 'Le pseudo doit faire au moins {{ limit }} caractères',
-        maxMessage: 'Le pseudo ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'Le pseudo ne peut pas dépasser {{ limit }} caractères',
     )]
     public ?string $pseudo = null;
 

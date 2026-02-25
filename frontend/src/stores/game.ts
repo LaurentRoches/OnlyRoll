@@ -245,6 +245,30 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  const hasMoreGames = computed(() => pagination.value.page < pagination.value.totalPages)
+
+  async function appendPublicGames(filters?: GameFilters) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await gameApi.listPublic(filters)
+      games.value.push(...response.data)
+
+      pagination.value = {
+        total: response.meta?.total ?? 0,
+        page: response.meta?.page ?? 1,
+        limit: response.meta?.limit ?? 15,
+        totalPages: response.meta?.totalPages ?? 0,
+      }
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e) || 'Erreur lors du chargement des parties'
+      logger.error('Error appending games:', e)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   function clearError() {
     error.value = null
   }
@@ -262,10 +286,12 @@ export const useGameStore = defineStore('game', () => {
     isPlayerInGame,
     canStartGame,
     canModifyGame,
+    hasMoreGames,
 
     fetchPublicGames,
     fetchMyGames,
     fetchGameById,
+    appendPublicGames,
     createGame,
     updateGame,
     deleteGame,

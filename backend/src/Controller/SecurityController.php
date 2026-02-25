@@ -8,13 +8,14 @@ use App\DTO\Security\EvaluatePasswordDTO;
 use App\DTO\Security\GeneratePasswordDTO;
 use App\Service\DtoValidatorService;
 use App\Service\PasswordGeneratorService;
+use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur pour les fonctionnalités de sécurité publiques.
@@ -51,14 +52,14 @@ final class SecurityController extends AbstractController
                     new OA\Property(property: 'includeDigits', type: 'boolean', example: true),
                     new OA\Property(property: 'includeSpecial', type: 'boolean', example: true),
                     new OA\Property(property: 'excludeAmbiguous', type: 'boolean', example: false),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Mot(s) de passe généré(s)'),
             new OA\Response(response: 400, description: 'Paramètres invalides'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/generate-password', name: 'generate_password', methods: ['POST'])]
     public function generatePassword(
@@ -135,7 +136,8 @@ final class SecurityController extends AbstractController
                     'excludeAmbiguous' => $dto->excludeAmbiguous,
                 ],
             ]);
-        } catch (\InvalidArgumentException $e) {
+        }
+        catch (InvalidArgumentException $e) {
             return $this->json([
                 'error' => $e->getMessage(),
             ], 400);
@@ -158,13 +160,13 @@ final class SecurityController extends AbstractController
                 required: ['password'],
                 properties: [
                     new OA\Property(property: 'password', type: 'string'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Évaluation du mot de passe'),
             new OA\Response(response: 422, description: 'Données invalides'),
-        ]
+        ],
     )]
     #[Route('/evaluate-password', name: 'evaluate_password', methods: ['POST'])]
     public function evaluatePassword(Request $request): JsonResponse
@@ -196,7 +198,7 @@ final class SecurityController extends AbstractController
         tags: ['Sécurité'],
         responses: [
             new OA\Response(response: 200, description: 'Options de génération'),
-        ]
+        ],
     )]
     #[Route('/password-options', name: 'password_options', methods: ['GET'])]
     public function getPasswordOptions(): JsonResponse

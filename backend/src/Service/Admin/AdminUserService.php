@@ -51,8 +51,6 @@ final class AdminUserService
 
     /**
      * Met à jour un utilisateur.
-     *
-     * @param array<string, mixed> $oldValues Valeurs avant modification pour l'audit
      */
     public function updateUser(User $user, UserUpdateDTO $dto, User $admin): User
     {
@@ -190,7 +188,8 @@ final class AdminUserService
     {
         if ($minutes > 0) {
             $lockUntil = (new DateTimeImmutable())->add(new DateInterval("PT{$minutes}M"));
-        } else {
+        }
+        else {
             $lockUntil = (new DateTimeImmutable())->add(new DateInterval('P1Y'));
         }
 

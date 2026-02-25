@@ -22,7 +22,7 @@ readonly class MercureTokenService
     ) {
         $this->jwtConfig = Configuration::forSymmetricSigner(
             new Sha256(),
-            InMemory::plainText($this->mercureJwtSecret)
+            InMemory::plainText($this->mercureJwtSecret),
         );
     }
 
@@ -39,13 +39,13 @@ readonly class MercureTokenService
         $now = new DateTimeImmutable();
 
         $subscribeTopics = [
-            sprintf('game/%d/chat', $gameId),
-            sprintf('game/%d/token', $gameId),
-            sprintf('game/%d/map', $gameId),
-            sprintf('game/%d/dice', $gameId),
-            sprintf('game/%d/player', $gameId),
-            sprintf('game/%d/presence', $gameId),
-            sprintf('game/%d/system', $gameId),
+            \sprintf('game/%d/chat', $gameId),
+            \sprintf('game/%d/token', $gameId),
+            \sprintf('game/%d/map', $gameId),
+            \sprintf('game/%d/dice', $gameId),
+            \sprintf('game/%d/player', $gameId),
+            \sprintf('game/%d/presence', $gameId),
+            \sprintf('game/%d/system', $gameId),
         ];
 
         $token = $this->jwtConfig->builder()
@@ -72,8 +72,8 @@ readonly class MercureTokenService
         $now = new DateTimeImmutable();
 
         $subscribeTopics = array_map(
-            fn (int $gameId) => sprintf('game/%d/presence', $gameId),
-            $gameIds
+            fn (int $gameId) => \sprintf('game/%d/presence', $gameId),
+            $gameIds,
         );
 
         $token = $this->jwtConfig->builder()

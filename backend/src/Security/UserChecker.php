@@ -25,19 +25,19 @@ final class UserChecker implements UserCheckerInterface
 
         if ($user->isDeleted()) {
             throw new CustomUserMessageAccountStatusException(
-                'Ce compte a été supprimé.'
+                'Ce compte a été supprimé.',
             );
         }
 
         if (!$user->isActive()) {
             throw new CustomUserMessageAccountStatusException(
-                'Ce compte est désactivé.'
+                'Ce compte est désactivé.',
             );
         }
 
         if ($user->isLocked()) {
             throw new CustomUserMessageAccountStatusException(
-                'Ce compte est temporairement verrouillé. Veuillez réessayer plus tard.'
+                'Ce compte est temporairement verrouillé. Veuillez réessayer plus tard.',
             );
         }
     }

@@ -14,7 +14,7 @@ final class GeneratePasswordDTO
     #[Assert\Range(
         min: 12,
         max: 128,
-        notInRangeMessage: 'La longueur doit être entre {{ min }} et {{ max }} caractères'
+        notInRangeMessage: 'La longueur doit être entre {{ min }} et {{ max }} caractères',
     )]
     public int $length = 16;
 
@@ -32,7 +32,7 @@ final class GeneratePasswordDTO
     #[Assert\Range(
         min: 1,
         max: 10,
-        notInRangeMessage: 'Le nombre de mots de passe doit être entre {{ min }} et {{ max }}'
+        notInRangeMessage: 'Le nombre de mots de passe doit être entre {{ min }} et {{ max }}',
     )]
     public int $count = 1;
 }

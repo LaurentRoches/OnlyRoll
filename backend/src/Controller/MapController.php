@@ -14,6 +14,7 @@ use App\Service\MapService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,7 +23,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion des cartes de jeu.
@@ -104,7 +104,7 @@ final class MapController extends AbstractController
             new OA\Response(response: 200, description: 'Liste des cartes'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(int $gameId): JsonResponse
@@ -152,7 +152,7 @@ final class MapController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Carte active'),
             new OA\Response(response: 404, description: 'Aucune carte active ou partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/active', name: 'active', methods: ['GET'])]
     public function getActive(int $gameId): JsonResponse
@@ -204,7 +204,7 @@ final class MapController extends AbstractController
             new OA\Response(response: 200, description: 'Détails de la carte'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Carte introuvable'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $gameId, int $id): JsonResponse
@@ -269,14 +269,14 @@ final class MapController extends AbstractController
                     new OA\Property(property: 'gridType', type: 'string', default: 'square'),
                     new OA\Property(property: 'width', type: 'integer', default: 20),
                     new OA\Property(property: 'height', type: 'integer', default: 20),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 201, description: 'Carte créée'),
             new OA\Response(response: 400, description: 'Données invalides'),
             new OA\Response(response: 403, description: 'Réservé au MJ'),
-        ]
+        ],
     )]
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(int $gameId, Request $request): JsonResponse
@@ -399,14 +399,14 @@ final class MapController extends AbstractController
                     new OA\Property(property: 'gridType', type: 'string'),
                     new OA\Property(property: 'width', type: 'integer'),
                     new OA\Property(property: 'height', type: 'integer'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Carte mise à jour'),
             new OA\Response(response: 403, description: 'Réservé au MJ'),
             new OA\Response(response: 404, description: 'Carte introuvable'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(int $gameId, int $id, Request $request): JsonResponse
@@ -548,7 +548,7 @@ final class MapController extends AbstractController
             new OA\Response(response: 200, description: 'Carte activée'),
             new OA\Response(response: 403, description: 'Réservé au MJ'),
             new OA\Response(response: 404, description: 'Carte introuvable'),
-        ]
+        ],
     )]
     #[Route('/{id}/activate', name: 'activate', methods: ['POST'])]
     public function activate(int $gameId, int $id): JsonResponse
@@ -616,7 +616,7 @@ final class MapController extends AbstractController
             new OA\Response(response: 200, description: 'Carte supprimée'),
             new OA\Response(response: 403, description: 'Réservé au MJ'),
             new OA\Response(response: 404, description: 'Carte introuvable'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $gameId, int $id): JsonResponse
@@ -686,14 +686,14 @@ final class MapController extends AbstractController
             required: true,
             content: new OA\JsonContent(
                 type: 'object',
-                description: 'Paramètres à fusionner avec les existants'
-            )
+                description: 'Paramètres à fusionner avec les existants',
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Paramètres mis à jour'),
             new OA\Response(response: 400, description: 'Données invalides'),
             new OA\Response(response: 403, description: 'Réservé au MJ'),
-        ]
+        ],
     )]
     #[Route('/{id}/settings', name: 'update_settings', methods: ['PATCH'])]
     public function updateSettings(int $gameId, int $id, Request $request): JsonResponse

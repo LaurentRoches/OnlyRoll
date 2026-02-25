@@ -69,8 +69,8 @@ readonly class FileUploader
     /**
      * Upload un avatar utilisateur.
      *
-     * @param UploadedFile       $file Fichier uploadé
-     * @param \App\Entity\User   $user Utilisateur (optionnel, pour organisation)
+     * @param UploadedFile $file Fichier uploadé
+     * @param \App\Entity\User $user Utilisateur (optionnel, pour organisation)
      *
      * @return string URL publique du fichier
      */

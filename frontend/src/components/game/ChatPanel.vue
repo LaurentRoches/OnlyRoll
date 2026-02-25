@@ -3,7 +3,9 @@ import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useChatStore } from '@/stores/chatStore'
 import { useAuthStore } from '@/stores/auth'
 import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
+import SkeletonMessage from '@/components/game/SkeletonMessage.vue'
 import { getErrorMessage } from '@/utils/errorHelpers'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import type {
   GameMessage,
   MessageType,
@@ -26,6 +28,26 @@ const isInCharacter = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
 const isAtBottom = ref(true)
 const chatInputError = ref<string | null>(null)
+const loadOlderSentinel = ref<HTMLElement | null>(null)
+
+// Chargement de l'historique avec ancrage de position de scroll
+async function loadOlderMessages() {
+  if (!chatContainer.value) return
+  const prevHeight = chatContainer.value.scrollHeight
+  await chatStore.loadMoreMessages(props.gameId)
+  await nextTick()
+  // Maintenir la position de scroll après le prepend
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight - prevHeight
+  }
+}
+
+const infiniteScrollDisabled = computed(() => !chatStore.hasMore || chatStore.isLoading)
+
+useInfiniteScroll(loadOlderSentinel, loadOlderMessages, {
+  disabled: infiniteScrollDisabled,
+  rootMargin: '50px',
+})
 
 let errorClearTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -342,6 +364,14 @@ function getAvatarColor(userId: number): string {
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Messages -->
     <div ref="chatContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- Sentinel en haut : déclencheur du chargement de l'historique -->
+      <div ref="loadOlderSentinel" class="h-1" aria-hidden="true"></div>
+
+      <!-- Skeleton messages pendant le chargement de l'historique -->
+      <template v-if="chatStore.isLoading && chatStore.hasMore">
+        <SkeletonMessage v-for="n in 3" :key="`skel-${n}`" />
+      </template>
+
       <div
         v-for="msg in visibleMessages"
         :key="msg.id"

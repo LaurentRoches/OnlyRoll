@@ -9,17 +9,17 @@ use App\DTO\Admin\UserUpdateDTO;
 use App\Service\Admin\AdminUserService;
 use App\Service\AuditLogService;
 use Exception;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur de gestion des utilisateurs pour l'administration.
@@ -57,7 +57,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 200, description: 'Liste paginée des utilisateurs'),
             new OA\Response(response: 400, description: 'Paramètres de filtre invalides'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -117,7 +117,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 200, description: 'Détails de l\'utilisateur'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -161,8 +161,8 @@ final class AdminUserController extends AbstractController
                     new OA\Property(property: 'email', type: 'string'),
                     new OA\Property(property: 'roles', type: 'array', items: new OA\Items(type: 'string')),
                     new OA\Property(property: 'isActive', type: 'boolean'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Utilisateur mis à jour'),
@@ -170,7 +170,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 403, description: 'Modification de son propre compte interdite pour certaines actions'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[OA\Patch(
         path: '/api/admin/users/{id}',
@@ -188,8 +188,8 @@ final class AdminUserController extends AbstractController
                     new OA\Property(property: 'email', type: 'string'),
                     new OA\Property(property: 'roles', type: 'array', items: new OA\Items(type: 'string')),
                     new OA\Property(property: 'isActive', type: 'boolean'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Utilisateur mis à jour'),
@@ -197,7 +197,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 403, description: 'Modification de son propre compte interdite pour certaines actions'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(int $id, Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -245,7 +245,8 @@ final class AdminUserController extends AbstractController
             $updatedUser = $this->adminUserService->updateUser($user, $dto, $admin);
 
             return $this->json($updatedUser, Response::HTTP_OK, [], ['groups' => ['user:read', 'admin:user:read']]);
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
@@ -266,7 +267,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 403, description: 'Suppression de son propre compte interdite'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -316,7 +317,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 400, description: 'L\'utilisateur n\'est pas supprimé'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}/restore', name: 'restore', methods: ['POST'])]
     public function restore(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -363,15 +364,15 @@ final class AdminUserController extends AbstractController
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'minutes', type: 'integer', description: 'Durée du verrouillage en minutes (0 = indéfini)', example: 60),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 200, description: 'Compte verrouillé avec succès'),
             new OA\Response(response: 403, description: 'Verrouillage de son propre compte interdit'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}/lock', name: 'lock', methods: ['POST'])]
     public function lock(int $id, Request $request, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -424,7 +425,7 @@ final class AdminUserController extends AbstractController
             new OA\Response(response: 400, description: 'Le compte n\'est pas verrouillé'),
             new OA\Response(response: 404, description: 'Utilisateur non trouvé'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/{id}/unlock', name: 'unlock', methods: ['POST'])]
     public function unlock(int $id, #[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse
@@ -466,7 +467,7 @@ final class AdminUserController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Statistiques des utilisateurs'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/statistics', name: 'statistics', methods: ['GET'], priority: 10)]
     public function statistics(#[Autowire(service: 'limiter.admin_action_limiter')] RateLimiterFactory $adminActionLimiter): JsonResponse

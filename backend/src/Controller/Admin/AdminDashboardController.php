@@ -9,14 +9,14 @@ use App\Repository\GameRepository;
 use App\Repository\UserRepository;
 use App\Service\Admin\AdminUserService;
 use App\Service\AuditLogService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur du tableau de bord d'administration.
@@ -45,14 +45,13 @@ final class AdminDashboardController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Statistiques globales (utilisateurs, audit, parties)'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function stats(
         #[Autowire(service: 'limiter.admin_action_limiter')]
         RateLimiterFactory $adminActionLimiter,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         /** @var \App\Entity\User $admin */
         $admin = $this->getUser();
 
@@ -93,14 +92,13 @@ final class AdminDashboardController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Liste des activités récentes'),
             new OA\Response(response: 429, description: 'Trop de requêtes'),
-        ]
+        ],
     )]
     #[Route('/recent-activity', name: 'recent_activity', methods: ['GET'])]
     public function recentActivity(
         #[Autowire(service: 'limiter.admin_action_limiter')]
         RateLimiterFactory $adminActionLimiter,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         /** @var \App\Entity\User $admin */
         $admin = $this->getUser();
 

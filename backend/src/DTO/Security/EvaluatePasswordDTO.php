@@ -14,7 +14,7 @@ final class EvaluatePasswordDTO
     #[Assert\NotBlank(message: 'Le mot de passe est requis')]
     #[Assert\Length(
         max: 128,
-        maxMessage: 'Le mot de passe ne peut pas dépasser {{ limit }} caractères'
+        maxMessage: 'Le mot de passe ne peut pas dépasser {{ limit }} caractères',
     )]
     public string $password;
 }

@@ -19,11 +19,11 @@ final class PasswordChangeDTO
     #[Assert\NotBlank(message: 'Le nouveau mot de passe est requis')]
     #[Assert\Length(
         min: 12,
-        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères'
+        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères',
     )]
     #[Assert\Regex(
         pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%&*()_+\-=\[\]{}|;:,.<>?])/',
-        message: 'Le mot de passe doit contenir majuscule, minuscule, chiffre et caractère spécial (!@#$%&*()_+-=[]{}|;:,.<>?)'
+        message: 'Le mot de passe doit contenir majuscule, minuscule, chiffre et caractère spécial (!@#$%&*()_+-=[]{}|;:,.<>?)',
     )]
     #[NotCommonPassword]
     public string $newPassword = '';

@@ -10,9 +10,11 @@ import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
 import GameCard from '@/components/game/GameCard.vue'
+import SkeletonCard from '@/components/game/SkeletonCard.vue'
 import CreateGameModal from '@/components/game/CreateGameModal.vue'
 import JoinGameModal from '@/components/game/JoinGameModal.vue'
 import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, InboxIcon } from '@heroicons/vue/24/outline'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 const gameStore = useGameStore()
 const authStore = useAuthStore()
@@ -23,6 +25,8 @@ const selectedGame = ref<Game | null>(null)
 const activeTab = ref<'public' | 'my-games'>('public')
 const showFilters = ref(true)
 const connectedGameIds = ref<number[]>([])
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 const filters = ref<GameFilters>({
   search: '',
@@ -30,7 +34,7 @@ const filters = ref<GameFilters>({
   gameMaster: '',
   status: undefined,
   page: 1,
-  limit: 12,
+  limit: 15,
 })
 
 function handlePresenceEvent(data: unknown) {
@@ -72,7 +76,10 @@ async function connectToPresence() {
     await gameApi.getMercurePresenceToken(gameIds)
     console.log('Token Mercure de présence obtenu')
 
-    for (const gameId of gameIds) {
+    // Seulement pour les jeux pas encore suivis
+    const newGameIds = gameIds.filter((id) => !connectedGameIds.value.includes(id))
+
+    for (const gameId of newGameIds) {
       try {
         const response = await presenceApi.getOnlineUsers(gameId)
         if (response.onlineUsers && response.onlineUsers.length > 0) {
@@ -108,12 +115,49 @@ onUnmounted(() => {
 })
 
 async function loadGames() {
+  filters.value.page = 1
   if (activeTab.value === 'public') {
-    await Promise.all([gameStore.fetchMyGames(), gameStore.fetchPublicGames()])
+    await Promise.all([
+      gameStore.fetchMyGames(),
+      gameStore.fetchPublicGames({ ...filters.value, page: 1 }),
+    ])
   } else {
     await gameStore.fetchMyGames()
   }
 }
+
+async function loadMorePublicGames() {
+  if (!gameStore.hasMoreGames || gameStore.isLoading) return
+  filters.value.page += 1
+  await gameStore.appendPublicGames({ ...filters.value })
+}
+
+const infiniteScrollDisabled = computed(
+  () => !gameStore.hasMoreGames || activeTab.value !== 'public' || gameStore.isLoading
+)
+
+const { isLoading: isScrollLoading } = useInfiniteScroll(loadMoreSentinel, loadMorePublicGames, {
+  disabled: infiniteScrollDisabled,
+  rootMargin: '200px',
+})
+
+// Recharger les parties publiques côté serveur quand les filtres changent
+watch(
+  [
+    () => filters.value.search,
+    () => filters.value.title,
+    () => filters.value.gameMaster,
+    () => filters.value.status,
+  ],
+  () => {
+    if (activeTab.value !== 'public') return
+    if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
+    filterDebounceTimer = setTimeout(async () => {
+      await gameStore.fetchPublicGames({ ...filters.value, page: 1 })
+      filters.value.page = 1
+    }, 300)
+  }
+)
 
 function handleTabChange(tab: 'public' | 'my-games') {
   activeTab.value = tab
@@ -123,7 +167,7 @@ function handleTabChange(tab: 'public' | 'my-games') {
     gameMaster: '',
     status: undefined,
     page: 1,
-    limit: 12,
+    limit: 15,
   }
   loadGames()
 }
@@ -135,7 +179,7 @@ function resetFilters() {
     gameMaster: '',
     status: undefined,
     page: 1,
-    limit: 12,
+    limit: 15,
   }
   if (activeTab.value === 'public') {
     loadGames()
@@ -165,44 +209,19 @@ const sortedGamesForAllTab = computed(() => {
     seenIds.add(game.id)
   })
 
+  // Les parties déjà filtrées par le serveur (pagination serveur)
   gameStore.games.forEach((game) => {
     if (!seenIds.has(game.id)) {
       allGames.push(game)
     }
   })
 
-  let filteredGames = allGames
-
-  if (filters.value.search) {
-    const searchTerm = filters.value.search.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      (game.title || game.name).toLowerCase().includes(searchTerm)
-    )
-  }
-
-  if (filters.value.title) {
-    const titleFilter = filters.value.title.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      (game.title || game.name).toLowerCase().includes(titleFilter)
-    )
-  }
-
-  if (filters.value.gameMaster) {
-    const gmFilter = filters.value.gameMaster.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      game.gameMaster.pseudo.toLowerCase().includes(gmFilter)
-    )
-  }
-
-  if (filters.value.status) {
-    filteredGames = filteredGames.filter((game) => game.status === filters.value.status)
-  }
-
+  // Tri par priorité : MJ en premier, puis joueur, puis parties publiques
   const asMaster: Game[] = []
   const asPlayer: Game[] = []
   const publicGames: Game[] = []
 
-  filteredGames.forEach((game) => {
+  allGames.forEach((game) => {
     if (game.gameMaster.id === authStore.user!.id) {
       asMaster.push(game)
     } else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
@@ -409,19 +428,23 @@ watch(displayedGames, () => {
         <!-- Main Content -->
         <main class="flex-1 min-w-0">
           <!-- Results counter -->
-          <div v-if="!gameStore.isLoading && displayedGames.length > 0" class="mb-4">
+          <div v-if="displayedGames.length > 0" class="mb-4">
             <p class="text-secondary-400 text-sm">
               <span class="text-secondary-50 font-medium">{{ displayedGames.length }}</span>
-              {{ displayedGames.length > 1 ? 'parties trouvées' : 'partie trouvée' }}
+              {{ displayedGames.length > 1 ? 'parties chargées' : 'partie chargée' }}
+              <template v-if="activeTab === 'public' && gameStore.pagination.total > 0">
+                sur
+                <span class="text-secondary-50 font-medium">{{ gameStore.pagination.total }}</span>
+              </template>
             </p>
           </div>
 
-          <!-- Loading State -->
-          <div v-if="gameStore.isLoading" class="text-center py-20">
-            <div
-              class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-secondary-700 border-t-primary-500"
-            ></div>
-            <p class="text-secondary-400 mt-4">Chargement des parties...</p>
+          <!-- Loading State initial : skeleton cards -->
+          <div
+            v-if="gameStore.isLoading && displayedGames.length === 0"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          >
+            <SkeletonCard v-for="n in 15" :key="n" />
           </div>
 
           <!-- Games Grid -->
@@ -468,7 +491,21 @@ watch(displayedGames, () => {
             </button>
           </div>
 
-          <!-- Pagination désactivée (tri côté client) -->
+          <!-- Skeleton append (scroll infini en cours) -->
+          <div
+            v-if="isScrollLoading && activeTab === 'public'"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6"
+          >
+            <SkeletonCard v-for="n in 3" :key="n" />
+          </div>
+
+          <!-- Sentinel scroll infini (onglet public uniquement) -->
+          <div
+            v-if="activeTab === 'public'"
+            ref="loadMoreSentinel"
+            class="h-2 mt-4"
+            aria-hidden="true"
+          ></div>
 
           <!-- Error State -->
           <div

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use InvalidArgumentException;
+
 /**
  * Service responsable du parsing, de la validation et du calcul des jets de dés.
  *
@@ -24,47 +26,47 @@ class DiceService
      *   modifier: int
      * }
      *
-     * @throws \InvalidArgumentException si la formule est invalide
+     * @throws InvalidArgumentException si la formule est invalide
      */
     public function parseFormula(string $formula): array
     {
         if (!preg_match(self::REGEX, $formula, $matches)) {
-            throw new \InvalidArgumentException(
-                'Format de dés invalide. Utilisez le format XdY, XdY+Z, XdYkhN ou XdYklN'
+            throw new InvalidArgumentException(
+                'Format de dés invalide. Utilisez le format XdY, XdY+Z, XdYkhN ou XdYklN',
             );
         }
 
         $numberOfDice = (int) $matches[1];
-        $sidesPerDie  = (int) $matches[2];
-        $keepType     = isset($matches[3]) && $matches[3] !== '' ? strtolower($matches[3]) : null;
-        $keepCount    = isset($matches[4]) && $matches[4] !== '' ? (int) $matches[4] : null;
-        $modifier     = isset($matches[5]) && $matches[5] !== '' ? (int) $matches[5] : 0;
+        $sidesPerDie = (int) $matches[2];
+        $keepType = isset($matches[3]) && $matches[3] !== '' ? strtolower($matches[3]) : null;
+        $keepCount = isset($matches[4]) && $matches[4] !== '' ? (int) $matches[4] : null;
+        $modifier = isset($matches[5]) && $matches[5] !== '' ? (int) $matches[5] : 0;
 
         if ($numberOfDice < 1 || $numberOfDice > 100) {
-            throw new \InvalidArgumentException('Le nombre de dés doit être entre 1 et 100');
+            throw new InvalidArgumentException('Le nombre de dés doit être entre 1 et 100');
         }
 
         if ($sidesPerDie < 2 || $sidesPerDie > 1000) {
-            throw new \InvalidArgumentException('Le nombre de faces doit être entre 2 et 1000');
+            throw new InvalidArgumentException('Le nombre de faces doit être entre 2 et 1000');
         }
 
         if (null !== $keepCount) {
             if ($keepCount < 1 || $keepCount >= $numberOfDice) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     \sprintf(
                         'keepCount doit être entre 1 et %d (strictement inférieur au nombre de dés)',
-                        $numberOfDice - 1
-                    )
+                        $numberOfDice - 1,
+                    ),
                 );
             }
         }
 
         return [
             'numberOfDice' => $numberOfDice,
-            'sidesPerDie'  => $sidesPerDie,
-            'keepType'     => $keepType,
-            'keepCount'    => $keepCount,
-            'modifier'     => $modifier,
+            'sidesPerDie' => $sidesPerDie,
+            'keepType' => $keepType,
+            'keepCount' => $keepCount,
+            'modifier' => $modifier,
         ];
     }
 
@@ -87,9 +89,9 @@ class DiceService
     /**
      * Applique la règle kh (keep highest) ou kl (keep lowest) sur un tableau de résultats.
      *
-     * @param int[]      $rolls
-     * @param string|null $keepType  'kh' | 'kl' | null
-     * @param int|null    $keepCount Nombre de dés à garder (null = garder tous)
+     * @param int[] $rolls
+     * @param string|null $keepType 'kh' | 'kl' | null
+     * @param int|null $keepCount Nombre de dés à garder (null = garder tous)
      *
      * @return array{keptRolls: int[], dropped: int[], total: int}
      */
@@ -98,8 +100,8 @@ class DiceService
         if (null === $keepType || null === $keepCount) {
             return [
                 'keptRolls' => $rolls,
-                'dropped'   => [],
-                'total'     => array_sum($rolls) + $modifier,
+                'dropped' => [],
+                'total' => array_sum($rolls) + $modifier,
             ];
         }
 
@@ -107,17 +109,18 @@ class DiceService
 
         if ('kh' === $keepType) {
             rsort($sorted);
-        } else {
+        }
+        else {
             sort($sorted);
         }
 
         $keptRolls = \array_slice($sorted, 0, $keepCount);
-        $dropped   = \array_slice($sorted, $keepCount);
+        $dropped = \array_slice($sorted, $keepCount);
 
         return [
             'keptRolls' => $keptRolls,
-            'dropped'   => $dropped,
-            'total'     => array_sum($keptRolls) + $modifier,
+            'dropped' => $dropped,
+            'total' => array_sum($keptRolls) + $modifier,
         ];
     }
 }

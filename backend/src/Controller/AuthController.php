@@ -9,6 +9,7 @@ use App\DTO\Auth\UserResponseDTO;
 use App\Entity\User;
 use App\Service\DtoValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +18,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Serializer\SerializerInterface;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur d'authentification.
@@ -45,14 +45,14 @@ final class AuthController extends AbstractController
                     new OA\Property(property: 'email', type: 'string', format: 'email'),
                     new OA\Property(property: 'pseudo', type: 'string'),
                     new OA\Property(property: 'password', type: 'string', format: 'password'),
-                ]
-            )
+                ],
+            ),
         ),
         responses: [
             new OA\Response(response: 201, description: 'Utilisateur créé avec succès'),
             new OA\Response(response: 409, description: 'Email ou pseudo déjà existant'),
             new OA\Response(response: 422, description: 'Données invalides'),
-        ]
+        ],
     )]
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(
@@ -112,7 +112,7 @@ final class AuthController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Informations utilisateur'),
             new OA\Response(response: 401, description: 'Non authentifié'),
-        ]
+        ],
     )]
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me(#[CurrentUser] ?User $user): JsonResponse
@@ -144,7 +144,7 @@ final class AuthController extends AbstractController
         tags: ['Authentification'],
         responses: [
             new OA\Response(response: 200, description: 'Déconnexion réussie'),
-        ]
+        ],
     )]
     #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(): JsonResponse

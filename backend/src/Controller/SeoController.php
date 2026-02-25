@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\GameRepository;
+use Exception;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur SEO pour la génération du sitemap et robots.txt.
@@ -38,7 +39,7 @@ final class SeoController extends AbstractController
         tags: ['SEO'],
         responses: [
             new OA\Response(response: 200, description: 'Sitemap XML généré avec succès'),
-        ]
+        ],
     )]
     #[Route('/sitemap.xml', name: 'sitemap', methods: ['GET'])]
     public function sitemap(): Response
@@ -65,7 +66,7 @@ final class SeoController extends AbstractController
             $publicGames = $this->gameRepository->findBy(
                 ['isPublic' => true],
                 ['updatedAt' => 'DESC'],
-                100 // Limite pour éviter un sitemap trop grand
+                100, // Limite pour éviter un sitemap trop grand
             );
 
             foreach ($publicGames as $game) {
@@ -76,7 +77,8 @@ final class SeoController extends AbstractController
                     'changefreq' => 'weekly',
                 ];
             }
-        } catch (\Exception $e) {
+        }
+        catch (Exception $e) {
             // Log l'erreur mais continue avec les pages statiques
         }
 
@@ -136,7 +138,7 @@ final class SeoController extends AbstractController
         tags: ['SEO'],
         responses: [
             new OA\Response(response: 200, description: 'Fichier robots.txt généré avec succès'),
-        ]
+        ],
     )]
     #[Route('/robots.txt', name: 'robots', methods: ['GET'])]
     public function robots(): Response

@@ -115,7 +115,7 @@ async function initializeGame() {
     await Promise.all([
       gameStore.fetchGameById(gameId.value),
       mapStore.loadActiveMap(gameId.value),
-      chatStore.loadRecentMessages(gameId.value, 50),
+      chatStore.loadRecentMessages(gameId.value, 30),
     ])
 
     console.log('Partie chargée:', {

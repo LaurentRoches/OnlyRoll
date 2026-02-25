@@ -6,12 +6,12 @@ namespace App\Controller;
 
 use App\Repository\GameRepository;
 use App\Service\PresenceService;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use OpenApi\Attributes as OA;
 
 /**
  * Contrôleur pour gérer la présence en temps réel des joueurs.
@@ -41,7 +41,7 @@ final class PresenceController extends AbstractController
             new OA\Response(response: 200, description: 'Présence enregistrée'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/join', name: 'join', methods: ['POST'])]
     public function join(int $gameId): JsonResponse
@@ -87,7 +87,7 @@ final class PresenceController extends AbstractController
         responses: [
             new OA\Response(response: 200, description: 'Départ enregistré'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/leave', name: 'leave', methods: ['POST'])]
     public function leave(int $gameId): JsonResponse
@@ -127,7 +127,7 @@ final class PresenceController extends AbstractController
             new OA\Response(response: 200, description: 'Heartbeat enregistré avec liste des utilisateurs en ligne'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/heartbeat', name: 'heartbeat', methods: ['POST'])]
     public function heartbeat(int $gameId): JsonResponse
@@ -175,7 +175,7 @@ final class PresenceController extends AbstractController
             new OA\Response(response: 200, description: 'Utilisateurs en ligne'),
             new OA\Response(response: 403, description: 'Accès refusé'),
             new OA\Response(response: 404, description: 'Partie introuvable'),
-        ]
+        ],
     )]
     #[Route('/online', name: 'online', methods: ['GET'])]
     public function getOnlineUsers(int $gameId): JsonResponse
