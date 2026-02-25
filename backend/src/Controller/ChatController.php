@@ -9,6 +9,7 @@ use App\Enum\MessageType;
 use App\Repository\GameRepository;
 use App\Repository\UserRepository;
 use App\Service\ChatService;
+use App\Service\DiceService;
 use DateTimeImmutable;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,6 +31,7 @@ final class ChatController extends AbstractController
 {
     public function __construct(
         private readonly ChatService $chatService,
+        private readonly DiceService $diceService,
         private readonly GameRepository $gameRepository,
         private readonly UserRepository $userRepository,
         private readonly SerializerInterface $serializer,
@@ -364,40 +366,15 @@ final class ChatController extends AbstractController
         $recipientId = $data['recipientId'] ?? null;
 
         try {
-            // Format attendu: "2d6+3" ou "1d20"
-            if (!preg_match('/^(\d+)d(\d+)([+-]\d+)?$/i', $formula, $matches)) {
-                return $this->json(
-                    ['error' => 'Format de dés invalide. Utilisez le format XdY ou XdY+Z'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            $numberOfDice = (int) $matches[1];
-            $sidesPerDie = (int) $matches[2];
-            $modifier = isset($matches[3]) ? (int) $matches[3] : 0;
-
-            if ($numberOfDice < 1 || $numberOfDice > 100) {
-                return $this->json(
-                    ['error' => 'Le nombre de dés doit être entre 1 et 100'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            if ($sidesPerDie < 2 || $sidesPerDie > 1000) {
-                return $this->json(
-                    ['error' => 'Le nombre de faces doit être entre 2 et 1000'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            $results = [];
-            $total = $modifier;
-
-            for ($i = 0; $i < $numberOfDice; ++$i) {
-                $roll = random_int(1, $sidesPerDie);
-                $results[] = $roll;
-                $total += $roll;
-            }
+            $parsed   = $this->diceService->parseFormula($formula);
+            $allRolls = $this->diceService->rollDice($parsed['numberOfDice'], $parsed['sidesPerDie']);
+            $kept     = $this->diceService->applyKeep(
+                $allRolls,
+                $parsed['keepType'],
+                $parsed['keepCount'],
+                $parsed['sidesPerDie'],
+                $parsed['modifier'],
+            );
 
             $recipient = null;
             if (null !== $recipientId) {
@@ -422,18 +399,27 @@ final class ChatController extends AbstractController
                 $user,
                 $formula,
                 [
-                    'rolls' => $results,
-                    'total' => $total,
-                    'modifier' => $modifier,
-                    'formula' => $formula,
+                    'rolls'       => $allRolls,
+                    'keptRolls'   => $kept['keptRolls'],
+                    'dropped'     => $kept['dropped'],
+                    'total'       => $kept['total'],
+                    'modifier'    => $parsed['modifier'],
+                    'formula'     => $formula,
+                    'keepType'    => $parsed['keepType'],
+                    'keepCount'   => $parsed['keepCount'],
+                    'sidesPerDie' => $parsed['sidesPerDie'],
                 ],
                 false,
                 $recipient,
             );
 
             return $this->json($message, Response::HTTP_CREATED, [], ['groups' => 'message:read']);
-        }
-        catch (Exception $e) {
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                Response::HTTP_BAD_REQUEST,
+            );
+        } catch (Exception $e) {
             return $this->json(
                 ['error' => $e->getMessage()],
                 Response::HTTP_INTERNAL_SERVER_ERROR,

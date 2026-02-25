@@ -284,6 +284,92 @@ class ChatControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testRollDiceWithAdvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kh1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(MessageType::DICE_ROLL->value, $data['type']);
+        $this->assertArrayHasKey('diceResult', $data);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(1, $data['diceResult']['dropped']);
+        $this->assertGreaterThanOrEqual(
+            $data['diceResult']['dropped'][0],
+            $data['diceResult']['keptRolls'][0],
+        );
+    }
+
+    public function testRollDiceWithDisadvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kl1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(1, $data['diceResult']['dropped']);
+        $this->assertLessThanOrEqual(
+            $data['diceResult']['dropped'][0],
+            $data['diceResult']['keptRolls'][0],
+        );
+    }
+
+    public function testRollDiceWithSuperAdvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '3d20kh1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(2, $data['diceResult']['dropped']);
+        $this->assertEquals('kh', $data['diceResult']['keepType']);
+    }
+
+    public function testRollDiceWithInvalidKeepCount(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kh2']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testGetStatsAsGameMaster(): void
     {
         $message = new GameMessage();

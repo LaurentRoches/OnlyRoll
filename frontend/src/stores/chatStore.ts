@@ -8,6 +8,7 @@ import { ref, computed } from 'vue'
 import { chatApi } from '@/services/api'
 import type { GameMessage, MessageType } from '@/types/game'
 import { logger } from '@/utils/logger'
+import { getErrorMessage } from '@/utils/errorHelpers'
 import type {
   MercureChatMessageData,
   MercureDiceRollData,
@@ -15,10 +16,6 @@ import type {
 } from '@/types/websocket'
 
 export const useChatStore = defineStore('chat', () => {
-  // ===========================
-  // État
-  // ===========================
-
   const messages = ref<GameMessage[]>([])
   const isLoading = ref(false)
   const isSending = ref(false)
@@ -26,10 +23,6 @@ export const useChatStore = defineStore('chat', () => {
 
   const hasMore = ref(true)
   const oldestMessageId = ref<number | null>(null)
-
-  // ===========================
-  // Getters (computed)
-  // ===========================
 
   /**
    * Messages triés par date (plus récents en bas)
@@ -99,10 +92,6 @@ export const useChatStore = defineStore('chat', () => {
     const sorted = sortedMessages.value
     return sorted[sorted.length - 1]
   })
-
-  // ===========================
-  // Actions - Chargement
-  // ===========================
 
   /**
    * Charger les messages récents d'un jeu
@@ -203,10 +192,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // ===========================
-  // Actions - Envoi de messages
-  // ===========================
-
   /**
    * Envoyer un message de chat
    */
@@ -219,11 +204,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi du message"
-      } else {
-        error.value = "Erreur lors de l'envoi du message"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message")
       logger.error('Erreur sendMessage:', e)
       throw e
     } finally {
@@ -243,11 +224,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi de l'émote"
-      } else {
-        error.value = "Erreur lors de l'envoi de l'émote"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi de l'émote")
       logger.error('Erreur sendEmote:', e)
       throw e
     } finally {
@@ -267,11 +244,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi du chuchotement"
-      } else {
-        error.value = "Erreur lors de l'envoi du chuchotement"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du chuchotement")
       logger.error('Erreur sendWhisper:', e)
       throw e
     } finally {
@@ -291,12 +264,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value =
-          (e as { message: string }).message || "Erreur lors de l'envoi du message système"
-      } else {
-        error.value = "Erreur lors de l'envoi du message système"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message système")
       logger.error('Erreur sendSystemMessage:', e)
       throw e
     } finally {
@@ -326,11 +294,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du lancer de dés'
-      } else {
-        error.value = 'Erreur lors du lancer de dés'
-      }
+      error.value = getErrorMessage(e, 'Erreur lors du lancer de dés')
       logger.error('Erreur rollDice:', e)
       throw e
     } finally {
@@ -358,10 +322,6 @@ export const useChatStore = defineStore('chat', () => {
       throw e
     }
   }
-
-  // ===========================
-  // Actions - Synchronisation Mercure
-  // ===========================
 
   /**
    * Gérer un message reçu via Mercure
@@ -426,10 +386,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // ===========================
-  // Helpers privés
-  // ===========================
-
   /**
    * Ajouter un message à la liste (évite les doublons)
    */
@@ -479,10 +435,6 @@ export const useChatStore = defineStore('chat', () => {
     hasMore.value = true
     oldestMessageId.value = null
   }
-
-  // ===========================
-  // Return (API publique du store)
-  // ===========================
 
   return {
     messages,
