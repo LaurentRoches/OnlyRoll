@@ -14,6 +14,7 @@ OnlyRoll/
 ├── frontend/                       # SPA (Vue.js + Vite)
 ├── docker/                         # Configurations Docker
 ├── docs/                           # Documentation technique
+├── tests/                          # Tests transverses (charge)
 └── .github/                        # CI/CD GitHub Actions
 ```
 
@@ -145,20 +146,70 @@ backend/
 │   └── Security/                               # Authentification JWT
 │
 ├── migrations/                                 # Migrations BDD
+├── src/
+│   └── DataFixtures/
+│       ├── LoadTestFixtures.php                # Fixtures pour tests de charge (k6)
+│       └── FuzzFixtures.php                    # Fixtures pour tests de fuzzing
+│
 ├── tests/
 │   ├── Unit/                                   # Tests unitaires
+│   │   ├── Entity/
+│   │   │   ├── UserTest.php
+│   │   │   ├── GameTest.php
+│   │   │   ├── GameMapTest.php
+│   │   │   ├── GamePlayerTest.php
+│   │   │   ├── GameMessageTest.php
+│   │   │   └── GameTokenTest.php
+│   │   ├── Enum/
+│   │   │   ├── GameStatusTest.php
+│   │   │   ├── MapGridTypeTest.php
+│   │   │   ├── TokenLayerTest.php
+│   │   │   └── TokenTypeTest.php
+│   │   ├── EventSubscriber/
+│   │   │   └── AuthenticationSuccessSubscriberTest.php
+│   │   ├── Repository/
+│   │   │   ├── UserRepositoryTest.php
+│   │   │   ├── GameRepositoryTest.php
+│   │   │   ├── GameMapRepositoryTest.php
+│   │   │   ├── GameMessageRepositoryTest.php
+│   │   │   ├── GamePlayerRepositoryTest.php
+│   │   │   └── GameTokenRepositoryTest.php
+│   │   ├── Security/
+│   │   │   └── JwtCookieAuthenticatorTest.php
 │   │   └── Service/
 │   │       ├── AuditLogServiceTest.php
+│   │       ├── ChatServiceTest.php
+│   │       ├── DtoValidatorServiceTest.php
+│   │       ├── FileUploaderTest.php
+│   │       ├── GameServiceTest.php
+│   │       ├── MapServiceTest.php
+│   │       ├── MercurePublisherTest.php
+│   │       ├── MercureTokenServiceTest.php
 │   │       ├── ProfileServiceTest.php
+│   │       ├── TokenServiceTest.php
 │   │       └── Admin/
 │   │           └── AdminUserServiceTest.php
-│   └── Functional/                             # Tests d'intégration
-│       └── Controller/
-│           ├── ProfileControllerTest.php
-│           └── Admin/
-│               ├── AdminDashboardControllerTest.php
-│               ├── AdminUserControllerTest.php
-│               └── AdminAuditLogControllerTest.php
+│   ├── Functional/                             # Tests d'intégration
+│   │   └── Controller/
+│   │       ├── AuthControllerTest.php
+│   │       ├── ChatControllerTest.php
+│   │       ├── GameControllerTest.php
+│   │       ├── HealthControllerTest.php
+│   │       ├── MapControllerTest.php
+│   │       ├── PresenceControllerTest.php
+│   │       ├── ProfileControllerTest.php
+│   │       ├── TokenControllerTest.php
+│   │       └── Admin/
+│   │           ├── AdminDashboardControllerTest.php
+│   │           ├── AdminUserControllerTest.php
+│   │           └── AdminAuditLogControllerTest.php
+│   └── Fuzzing/                                # Tests de fuzzing (PHPUnit)
+│       ├── FuzzPayloadProvider.php             # Générateur de payloads malveillants
+│       ├── AuthFuzzTest.php                    # Fuzzing endpoints auth
+│       ├── ChatFuzzTest.php                    # Fuzzing endpoints chat
+│       ├── GameFuzzTest.php                    # Fuzzing endpoints parties
+│       ├── PathFuzzTest.php                    # Fuzzing traversée de chemins
+│       └── TokenFuzzTest.php                  # Fuzzing endpoints tokens
 │
 └── public/
     └── uploads/                                # Fichiers uploadés
@@ -288,6 +339,33 @@ docs/
 
 ---
 
+## Tests de charge (`tests/load/`)
+
+```
+tests/load/
+├── RESULTS.md                      # Résultats des scénarios de charge
+├── data/
+│   └── test-users.json             # Jeu de données utilisateurs (k6)
+├── helpers/
+│   └── auth.js                     # Helper d'authentification JWT pour k6
+└── scripts/
+    ├── 01-auth-load.js             # Scénario : authentification (login/register)
+    ├── 02-games-list-load.js       # Scénario : liste des parties
+    ├── 03-chat-load.js             # Scénario : envoi de messages chat
+    ├── 04-join-game-load.js        # Scénario : rejoindre une partie
+    └── 05-mixed-scenario.js        # Scénario mixte (trafic réaliste)
+```
+
+| Scénario | Outil | VUs | Description |
+|----------|-------|-----|-------------|
+| Auth load | k6 | 50 | Connexion / inscription sous charge |
+| Games list | k6 | 100 | Parcours de la liste des parties |
+| Chat load | k6 | 75 | Envoi massif de messages |
+| Join game | k6 | 50 | Rejoindre et interagir dans une partie |
+| Mixed | k6 | 200 | Simulation de trafic réel multi-endpoints |
+
+---
+
 ## CI/CD (`.github/workflows/`)
 
 ```
@@ -310,6 +388,11 @@ docs/
     └── Health checks
 ```
 
+> **Note :** Les tests de charge (k6) ne sont pas exécutés en CI automatique — ils se lancent manuellement contre un environnement dédié. Les tests de fuzzing (PHPUnit) sont intégrés dans la pipeline CI avec `phpunit --testsuite Fuzzing`.
+
+```
+```
+
 ---
 
 ## Sécurité OWASP Top 10:2025
@@ -322,6 +405,13 @@ Le projet implémente les mesures de prévention OWASP suivantes :
 | **A06** | Insecure Design | `rate_limiter.yaml` (login: 5/15min, password: 3/h, admin: 100/h) |
 | **A07** | Authentication Failures | `User.php` (lockout), `NotCommonPasswordValidator.php`, sliding session |
 | **A09** | Logging Failures | `AuditLog.php`, `AuditAction.php`, `AuditLogService.php` |
+
+### Tests de sécurité
+
+| Type | Outil | Fichiers | Couverture |
+|------|-------|----------|------------|
+| **Fuzzing** | PHPUnit | `tests/Fuzzing/` | Auth, Chat, Game, Token, Path traversal |
+| **Charge** | k6 | `tests/load/` | Auth, Games, Chat, Join, Scénario mixte |
 
 ### Conformité RGPD
 
