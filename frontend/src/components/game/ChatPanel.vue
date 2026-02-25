@@ -2,6 +2,8 @@
 import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useChatStore } from '@/stores/chatStore'
 import { useAuthStore } from '@/stores/auth'
+import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
+import { getErrorMessage } from '@/utils/errorHelpers'
 import type {
   GameMessage,
   MessageType,
@@ -23,6 +25,22 @@ const messageInput = ref('')
 const isInCharacter = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
 const isAtBottom = ref(true)
+const chatInputError = ref<string | null>(null)
+
+let errorClearTimer: ReturnType<typeof setTimeout> | null = null
+
+function showInputError(message: string) {
+  if (errorClearTimer) clearTimeout(errorClearTimer)
+  chatInputError.value = message
+  errorClearTimer = setTimeout(() => {
+    chatInputError.value = null
+  }, 5000)
+}
+
+function clearInputError() {
+  if (errorClearTimer) clearTimeout(errorClearTimer)
+  chatInputError.value = null
+}
 
 const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(0)
@@ -58,7 +76,7 @@ const filteredPlayers = computed(() => {
   return props.players
     .filter((p) => p.user.id !== authStore.user?.id)
     .filter((p) => p.user.pseudo.toLowerCase().includes(searchTerm))
-    .slice(0, 5) // Limiter à 5 suggestions
+    .slice(0, 5)
 })
 
 watch(messageInput, (newValue) => {
@@ -74,7 +92,6 @@ function selectPlayer(player: GamePlayer) {
   if (whisperMatch) {
     messageInput.value = `${whisperMatch[0]}${player.user.pseudo} `
     showSuggestions.value = false
-    // Focus sur le textarea
     nextTick(() => {
       textareaRef.value?.focus()
     })
@@ -111,25 +128,28 @@ onMounted(() => {
   scrollToBottom()
 })
 
+watch(messageInput, () => {
+  if (chatInputError.value) clearInputError()
+})
+
 // ============================================
 // Envoi de messages - Utilise chatStore
 // ============================================
 async function sendMessage() {
   if (!messageInput.value.trim()) return
 
+  clearInputError()
+
   try {
     if (messageInput.value.startsWith('/roll ') || messageInput.value.startsWith('/r ')) {
       const formula = messageInput.value.replace(/^\/(roll|r) /, '').trim()
       await chatStore.rollDice(props.gameId, formula, isInCharacter.value)
-      console.log('Dés lancés:', formula)
     } else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
       const content = messageInput.value.replace(/^\/(whisper|w) /, '').trim()
 
       const firstSpaceIndex = content.indexOf(' ')
       if (firstSpaceIndex === -1) {
-        console.error(
-          'Format invalide. Utilisez: /whisper <pseudo> <message> ou /whisper <pseudo> /r <formule>'
-        )
+        showInputError('Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>')
         return
       }
 
@@ -137,7 +157,7 @@ async function sendMessage() {
       const message = content.substring(firstSpaceIndex + 1).trim()
 
       if (!message) {
-        console.error('Le message ne peut pas être vide')
+        showInputError('Le message ne peut pas être vide.')
         return
       }
 
@@ -146,34 +166,30 @@ async function sendMessage() {
       )
 
       if (!recipient) {
-        console.error(`Joueur "${recipientPseudo}" introuvable`)
+        showInputError(`Joueur "${recipientPseudo}" introuvable dans cette partie.`)
         return
       }
 
       if (message.startsWith('/roll ') || message.startsWith('/r ')) {
         const formula = message.replace(/^\/(roll|r) /, '').trim()
         if (!formula) {
-          console.error('La formule de dés ne peut pas être vide')
+          showInputError('La formule de dés ne peut pas être vide.')
           return
         }
         await chatStore.rollDice(props.gameId, formula, isInCharacter.value, recipient.user.id)
-        console.log('Dés privés lancés à', recipientPseudo, ':', formula)
       } else {
         await chatStore.sendWhisper(props.gameId, recipient.user.id, message)
-        console.log('Whisper envoyé à', recipientPseudo)
       }
     } else if (messageInput.value.startsWith('/me ')) {
       const content = messageInput.value.replace('/me ', '').trim()
       await chatStore.sendEmote(props.gameId, content)
-      console.log('Emote envoyée')
     } else {
       await chatStore.sendMessage(props.gameId, messageInput.value, isInCharacter.value)
-      console.log('Message envoyé')
     }
 
     messageInput.value = ''
   } catch (error) {
-    console.error('Erreur envoi message:', error)
+    showInputError(getErrorMessage(error, 'Une erreur est survenue lors de l\'envoi.'))
   }
 }
 
@@ -262,15 +278,25 @@ function normalizeDiceResult(result: unknown): DiceResult | null {
       formula?: string
       rolls?: number[]
       results?: number[]
+      keptRolls?: number[]
+      dropped?: number[]
       total?: number
       modifier?: number
+      keepType?: 'kh' | 'kl' | null
+      keepCount?: number | null
+      sidesPerDie?: number
     }
 
     return {
-      formula: newResult.formula || '',
-      results: newResult.results || newResult.rolls || [],
-      total: newResult.total || 0,
-      modifier: newResult.modifier || 0,
+      formula:     newResult.formula || '',
+      results:     newResult.results || newResult.rolls || [],
+      keptRolls:   newResult.keptRolls,
+      dropped:     newResult.dropped,
+      total:       newResult.total || 0,
+      modifier:    newResult.modifier || 0,
+      keepType:    newResult.keepType,
+      keepCount:   newResult.keepCount,
+      sidesPerDie: newResult.sidesPerDie,
     }
   }
 
@@ -343,26 +369,12 @@ function getAvatarColor(userId: number): string {
         <!-- Contenu -->
         <p class="text-secondary-100 text-sm">{{ msg.content }}</p>
 
-        <!-- Résultat de dés - Avec sécurité -->
-        <div v-if="normalizeDiceResult(msg.diceResult)" class="mt-2 p-3 bg-black/30 rounded-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-secondary-400 mb-1">
-                🎲 {{ normalizeDiceResult(msg.diceResult)!.formula }}
-              </div>
-              <div class="text-xs text-secondary-500">
-                Lancés: {{ normalizeDiceResult(msg.diceResult)!.results.join(' + ') }}
-                <span v-if="normalizeDiceResult(msg.diceResult)!.modifier !== 0">
-                  {{ normalizeDiceResult(msg.diceResult)!.modifier > 0 ? '+' : ''
-                  }}{{ normalizeDiceResult(msg.diceResult)!.modifier }}
-                </span>
-              </div>
-            </div>
-            <div class="text-3xl font-bold text-white">
-              {{ normalizeDiceResult(msg.diceResult)!.total }}
-            </div>
-          </div>
-        </div>
+        <!-- Résultat de dés -->
+        <DiceResultDisplay
+          v-if="normalizeDiceResult(msg.diceResult)"
+          :diceResult="normalizeDiceResult(msg.diceResult)!"
+          class="mt-2 bg-black/30"
+        />
       </div>
 
       <!-- Message si pas de messages -->
@@ -406,6 +418,23 @@ function getAvatarColor(userId: number): string {
           action
         </div>
       </div>
+
+      <!-- Erreur d'envoi -->
+      <Transition name="fade">
+        <div
+          v-if="chatInputError"
+          class="flex items-start gap-2 mb-2 px-3 py-2 bg-red-900/40 border border-red-500/50 rounded-lg text-sm text-red-300"
+          role="alert"
+        >
+          <span class="flex-shrink-0 mt-0.5">⚠️</span>
+          <span>{{ chatInputError }}</span>
+          <button
+            @click="clearInputError"
+            class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
+            aria-label="Fermer"
+          >✕</button>
+        </div>
+      </Transition>
 
       <!-- Input de message -->
       <div class="relative">
