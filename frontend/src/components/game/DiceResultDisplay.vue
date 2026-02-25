@@ -14,14 +14,15 @@ const sidesPerDie = computed<number | null>(() => {
   return m ? parseInt(m[1]) : null
 })
 
-const isAllMax = computed(() =>
-  sidesPerDie.value !== null &&
-  effectiveRolls.value.length > 0 &&
-  effectiveRolls.value.every((r) => r === sidesPerDie.value),
+const isAllMax = computed(
+  () =>
+    sidesPerDie.value !== null &&
+    effectiveRolls.value.length > 0 &&
+    effectiveRolls.value.every((r) => r === sidesPerDie.value)
 )
 
-const isAllMin = computed(() =>
-  effectiveRolls.value.length > 0 && effectiveRolls.value.every((r) => r === 1),
+const isAllMin = computed(
+  () => effectiveRolls.value.length > 0 && effectiveRolls.value.every((r) => r === 1)
 )
 
 const modeBadge = computed(() => {

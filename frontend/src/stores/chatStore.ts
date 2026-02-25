@@ -16,7 +16,6 @@ import type {
 } from '@/types/websocket'
 
 export const useChatStore = defineStore('chat', () => {
-
   const messages = ref<GameMessage[]>([])
   const isLoading = ref(false)
   const isSending = ref(false)

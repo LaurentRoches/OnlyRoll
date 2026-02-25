@@ -206,14 +206,14 @@ export const MESSAGE_TYPES = {
  */
 export interface DiceResult {
   formula: string
-  results: number[]      // tous les dés lancés
-  keptRolls?: number[]   // dés comptabilisés (absent = tous gardés)
-  dropped?: number[]     // dés écartés
+  results: number[] // tous les dés lancés
+  keptRolls?: number[] // dés comptabilisés (absent = tous gardés)
+  dropped?: number[] // dés écartés
   total: number
   modifier: number
   keepType?: 'kh' | 'kl' | null
   keepCount?: number | null
-  sidesPerDie?: number   // faces du dé (pour calcul min/max côté front)
+  sidesPerDie?: number // faces du dé (pour calcul min/max côté front)
 }
 
 /**

@@ -149,7 +149,9 @@ async function sendMessage() {
 
       const firstSpaceIndex = content.indexOf(' ')
       if (firstSpaceIndex === -1) {
-        showInputError('Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>')
+        showInputError(
+          'Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>'
+        )
         return
       }
 
@@ -189,7 +191,7 @@ async function sendMessage() {
 
     messageInput.value = ''
   } catch (error) {
-    showInputError(getErrorMessage(error, 'Une erreur est survenue lors de l\'envoi.'))
+    showInputError(getErrorMessage(error, "Une erreur est survenue lors de l'envoi."))
   }
 }
 
@@ -288,14 +290,14 @@ function normalizeDiceResult(result: unknown): DiceResult | null {
     }
 
     return {
-      formula:     newResult.formula || '',
-      results:     newResult.results || newResult.rolls || [],
-      keptRolls:   newResult.keptRolls,
-      dropped:     newResult.dropped,
-      total:       newResult.total || 0,
-      modifier:    newResult.modifier || 0,
-      keepType:    newResult.keepType,
-      keepCount:   newResult.keepCount,
+      formula: newResult.formula || '',
+      results: newResult.results || newResult.rolls || [],
+      keptRolls: newResult.keptRolls,
+      dropped: newResult.dropped,
+      total: newResult.total || 0,
+      modifier: newResult.modifier || 0,
+      keepType: newResult.keepType,
+      keepCount: newResult.keepCount,
       sidesPerDie: newResult.sidesPerDie,
     }
   }
@@ -432,7 +434,9 @@ function getAvatarColor(userId: number): string {
             @click="clearInputError"
             class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
             aria-label="Fermer"
-          >✕</button>
+          >
+            ✕
+          </button>
         </div>
       </Transition>
 

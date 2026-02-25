@@ -23,7 +23,9 @@ let rollErrorTimer: ReturnType<typeof setTimeout> | null = null
 function showRollError(message: string) {
   if (rollErrorTimer) clearTimeout(rollErrorTimer)
   rollError.value = message
-  rollErrorTimer = setTimeout(() => { rollError.value = null }, 5000)
+  rollErrorTimer = setTimeout(() => {
+    rollError.value = null
+  }, 5000)
 }
 
 // ============================================
@@ -118,16 +120,16 @@ async function rollDice() {
 
     if (result.diceResult) {
       lastResult.value = {
-        formula:     fullFormula.value,
-        results:     result.diceResult.results,
-        keptRolls:   result.diceResult.keptRolls,
-        dropped:     result.diceResult.dropped,
-        total:       result.diceResult.total,
-        modifier:    result.diceResult.modifier,
-        keepType:    result.diceResult.keepType,
-        keepCount:   result.diceResult.keepCount,
+        formula: fullFormula.value,
+        results: result.diceResult.results,
+        keptRolls: result.diceResult.keptRolls,
+        dropped: result.diceResult.dropped,
+        total: result.diceResult.total,
+        modifier: result.diceResult.modifier,
+        keepType: result.diceResult.keepType,
+        keepCount: result.diceResult.keepCount,
         sidesPerDie: result.diceResult.sidesPerDie,
-        timestamp:   result.createdAt,
+        timestamp: result.createdAt,
       }
       console.log('✅ Résultat:', lastResult.value)
     }
@@ -196,7 +198,9 @@ function addToFormula(text: string) {
           v-for="mode in advantageModes"
           :key="mode.key"
           @click="advantageMode = mode.key"
-          :title="advantageMode === mode.key && advantagePreview ? `Formule : ${advantagePreview}` : ''"
+          :title="
+            advantageMode === mode.key && advantagePreview ? `Formule : ${advantagePreview}` : ''
+          "
           :class="[
             'px-3 py-2 rounded-lg text-white text-sm font-medium transition-all',
             advantageMode === mode.key ? mode.activeColor : mode.color,
@@ -326,7 +330,9 @@ function addToFormula(text: string) {
           @click="rollError = null"
           class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
           aria-label="Fermer"
-        >✕</button>
+        >
+          ✕
+        </button>
       </div>
     </Transition>
 
