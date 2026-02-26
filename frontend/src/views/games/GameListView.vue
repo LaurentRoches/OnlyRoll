@@ -128,7 +128,7 @@ async function loadGames() {
 
 async function loadMorePublicGames() {
   if (!gameStore.hasMoreGames || gameStore.isLoading) return
-  filters.value.page += 1
+  filters.value.page = (filters.value.page ?? 1) + 1
   await gameStore.appendPublicGames({ ...filters.value })
 }
 
