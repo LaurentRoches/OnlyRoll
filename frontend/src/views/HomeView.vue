@@ -63,7 +63,7 @@
 
     <!-- Hero Section -->
     <section class="relative py-20 lg:py-32 overflow-hidden">
-      <!-- Background Image avec overlay - optimisé pour visibilité tout en maintenant contraste WCAG -->
+      <!-- Background Image avec overlay -->
       <div class="absolute inset-0 z-0">
         <img
           src="/images/hero_banner_onlyroll.jpg"
@@ -71,28 +71,45 @@
           class="w-full h-full object-cover opacity-40"
           aria-hidden="true"
         />
-        <!-- Overlay gradient pour garantir le contraste du texte -->
         <div
           class="absolute inset-0 bg-gradient-to-b from-primary-900/40 via-primary-800/35 to-secondary-900/40"
         ></div>
       </div>
 
+      <!-- Particules flottantes (z-index intermédiaire) -->
+      <HeroParticles class="z-[1]" />
+
+      <!-- Contenu hero avec animations d'entrée staggerées -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <!-- Titre principal -->
-        <h1 class="text-4xl md:text-6xl font-bold text-secondary-50 mb-6 text-shadow-stronger">
+        <h1
+          class="text-4xl md:text-6xl font-bold text-secondary-50 mb-6 text-shadow-stronger reveal-up"
+          :class="{ revealed: heroReady }"
+        >
           OnlyRoll
         </h1>
-        <p class="text-xl md:text-2xl text-secondary-200 mb-4 text-shadow-stronger">
+        <p
+          class="text-xl md:text-2xl text-secondary-200 mb-4 text-shadow-stronger reveal-up"
+          :class="{ revealed: heroReady }"
+          style="transition-delay: 200ms"
+        >
           One site to Roll them all
         </p>
-        <p class="text-lg text-secondary-400 mb-12 max-w-3xl mx-auto text-shadow-strong">
-          Jouez à distance avec vos amis !<br />
-          Interface simple, données SRD intégrées,<br />
-          aucune installation requise.
+        <p
+          class="text-lg text-secondary-400 mb-12 max-w-3xl mx-auto text-shadow-strong reveal-up"
+          :class="{ revealed: heroReady }"
+          style="transition-delay: 400ms"
+        >
+          Votre prochaine aventure commence ici.<br />
+          Lancez les dés, explorez les donjons,<br />
+          le tout depuis votre navigateur.
         </p>
 
-        <!-- Boutons d'action -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <!-- Boutons CTA -->
+        <div
+          class="flex flex-col sm:flex-row gap-4 justify-center items-center reveal-up"
+          :class="{ revealed: heroReady }"
+          style="transition-delay: 600ms"
+        >
           <RouterLink
             to="/auth/register"
             class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
@@ -107,120 +124,45 @@
           </RouterLink>
         </div>
       </div>
-    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-20 bg-secondary-50/5">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-center text-secondary-50 mb-16 text-shadow-strong">
-          Fonctionnalités
-        </h2>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Wiki D&D -->
-          <FeatureCard
-            title="Wiki D&D"
-            description="Toutes les données officielles de D&D 5e à portée de main !"
-            icon="book"
-            color="primary"
+      <!-- Scroll indicator -->
+      <div
+        class="absolute bottom-8 left-1/2 -translate-x-1/2 text-secondary-500 animate-bounce-gentle reveal-up"
+        :class="{ revealed: heroReady }"
+        style="transition-delay: 800ms"
+        aria-label="Défiler vers le bas"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
           />
-
-          <!-- Feuille de personnage -->
-          <FeatureCard
-            title="Feuille perso"
-            description="Des feuilles de personnage personnalisées et automatisées depuis le SRD"
-            icon="user"
-            color="accent-emerald"
-          />
-
-          <!-- Chat temps réel -->
-          <FeatureCard
-            title="Chat Temps Réel"
-            description="Vos résultats de dés et vos meilleurs vannes en temps réel"
-            icon="chat"
-            color="accent-cyan"
-          />
-
-          <!-- Lanceur de dés -->
-          <FeatureCard
-            title="Lanceur de Dés"
-            description="Système de dés avancé avec historique et formules complexes"
-            icon="dice"
-            color="accent-amber"
-          />
-
-          <!-- Table virtuelle -->
-          <FeatureCard
-            title="Table Virtuelle"
-            description="Interface de jeu complète pour MJ et joueurs"
-            icon="table"
-            color="accent-purple"
-          />
-
-          <!-- Multijoueur -->
-          <FeatureCard
-            title="Multijoueur"
-            description="Créez vos parties et invitez vos amis facilement"
-            icon="users"
-            color="accent-rose"
-          />
-        </div>
+        </svg>
       </div>
     </section>
 
-    <!-- Demo Section -->
-    <section class="py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold text-secondary-50 mb-8 text-shadow-strong">Interface</h2>
-        <p class="text-lg text-secondary-400 mb-12 text-shadow-strong">Aperçu interface</p>
+    <!-- Fonctionnalités (layout asymétrique) -->
+    <FeatureShowcase />
 
-        <!-- Placeholder pour screenshot/demo -->
-        <div class="bg-secondary-800 rounded-xl p-8 border border-secondary-700 max-w-4xl mx-auto">
-          <div class="aspect-video bg-secondary-700 rounded-lg flex items-center justify-center">
-            <div class="text-center">
-              <svg
-                class="w-16 h-16 text-secondary-500 mx-auto mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <p class="text-secondary-400 text-lg">Aperçu interface</p>
-            </div>
-          </div>
-        </div>
+    <!-- Stats / Social Proof -->
+    <StatsCounter />
 
-        <div class="mt-8">
-          <RouterLink
-            to="/auth/register"
-            class="inline-flex items-center px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors"
-          >
-            Essayer maintenant
-            <svg
-              class="ml-2 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </RouterLink>
-        </div>
-      </div>
-    </section>
+    <!-- Aperçu in-game avec tilt 3D -->
+    <GamePreview />
+
+    <!-- Comment ça marche -->
+    <HowItWorks />
+
+    <!-- CTA final immersif -->
+    <FinalCTA />
 
     <!-- Footer -->
     <footer class="bg-secondary-900 border-t border-secondary-800 py-12">
@@ -261,7 +203,7 @@
         <!-- Copyright -->
         <div class="border-t border-secondary-800 mt-8 pt-8 text-center">
           <p class="text-secondary-500 text-sm">
-            © 2024 OnlyRoll • Tous droits réservés
+            © 2025 OnlyRoll • Tous droits réservés
             <span class="mx-2">🇫🇷</span>
             Français
           </p>
@@ -272,9 +214,23 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useAuth } from '@/composables/useAuth'
-import FeatureCard from '@/components/common/FeatureCard.vue'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
+import HeroParticles from '@/components/landing/HeroParticles.vue'
+import FeatureShowcase from '@/components/landing/FeatureShowcase.vue'
+import StatsCounter from '@/components/landing/StatsCounter.vue'
+import GamePreview from '@/components/landing/GamePreview.vue'
+import HowItWorks from '@/components/landing/HowItWorks.vue'
+import FinalCTA from '@/components/landing/FinalCTA.vue'
 
 const { isAuthenticated } = useAuth()
+
+// Animations d'entrée du hero déclenchées après le montage (stagger CSS)
+const heroReady = ref(false)
+onMounted(() => {
+  setTimeout(() => {
+    heroReady.value = true
+  }, 50)
+})
 </script>
