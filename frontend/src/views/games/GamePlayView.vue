@@ -399,8 +399,8 @@ async function handleTokenCreated() {
     />
 
     <div class="flex-1 flex overflow-hidden relative">
-      <!-- Zone centrale - Carte -->
-      <div class="flex-1 flex flex-col min-w-0">
+      <!-- Zone centrale - Carte (masquée sur mobile) -->
+      <div class="hidden lg:flex lg:flex-1 lg:flex-col min-w-0">
         <!-- Toolbar -->
         <MapToolbar
           :is-game-master="isGameMaster"
@@ -441,7 +441,7 @@ async function handleTokenCreated() {
       <Transition name="slide-left">
         <div
           v-if="rightPanelOpen"
-          class="w-96 bg-secondary-800 border-l border-secondary-700 flex flex-col"
+          class="w-full lg:w-96 bg-secondary-800 lg:border-l border-secondary-700 flex flex-col"
         >
           <!-- Tabs -->
           <div class="flex border-b border-secondary-700">
@@ -480,11 +480,11 @@ async function handleTokenCreated() {
         </div>
       </Transition>
 
-      <!-- Toggle panel -->
+      <!-- Toggle panel — desktop uniquement -->
       <button
         @click="rightPanelOpen = !rightPanelOpen"
         :class="[
-          'absolute top-1/2 -translate-y-1/2 bg-secondary-800 border border-secondary-700 p-3 hover:bg-secondary-700 transition-all z-20 shadow-lg',
+          'hidden lg:flex absolute top-1/2 -translate-y-1/2 bg-secondary-800 border border-secondary-700 p-3 hover:bg-secondary-700 transition-all z-20 shadow-lg',
           rightPanelOpen ? 'right-96' : 'right-0',
           rightPanelOpen ? 'rounded-l-lg' : 'rounded-l-lg',
         ]"

@@ -21,7 +21,31 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
           <!-- Logo et titre -->
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-3 sm:space-x-4">
+            <!-- Burger sidebar — mobile uniquement -->
+            <button
+              type="button"
+              class="lg:hidden p-1.5 rounded-lg text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700 transition-colors"
+              :aria-expanded="sidebarOpen"
+              aria-label="Ouvrir la navigation"
+              @click="sidebarOpen = !sidebarOpen"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+
             <RouterLink
               to="/dashboard"
               class="text-secondary-400 hover:text-secondary-200 transition-colors"
@@ -51,11 +75,12 @@
           </div>
 
           <!-- User info -->
-          <div class="flex items-center space-x-4">
-            <span class="text-secondary-400 text-sm">
+          <div class="flex items-center space-x-3 sm:space-x-4">
+            <span class="hidden sm:inline text-secondary-400 text-sm">
               Connecté en tant que
               <strong class="text-secondary-200">{{ currentUser?.pseudo }}</strong>
             </span>
+            <strong class="sm:hidden text-secondary-200 text-sm">{{ currentUser?.pseudo }}</strong>
             <button
               type="button"
               class="px-3 py-1.5 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors text-sm"
@@ -68,14 +93,49 @@
       </div>
     </header>
 
+    <!-- Overlay backdrop — mobile -->
+    <div
+      v-if="sidebarOpen"
+      class="fixed inset-0 z-30 bg-black/50 lg:hidden"
+      aria-hidden="true"
+      @click="sidebarOpen = false"
+    />
+
     <div class="flex">
       <!-- Navigation principale - RGAA 12.1, 12.2 -->
       <nav
         id="main-nav"
         role="navigation"
         aria-label="Navigation administration"
-        class="w-64 bg-secondary-800 border-r border-secondary-700 min-h-[calc(100vh-65px)]"
+        class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-secondary-800 border-r border-secondary-700 min-h-screen transition-transform duration-300 ease-in-out"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
       >
+        <!-- Bouton fermeture — mobile -->
+        <div class="flex items-center justify-between px-4 pt-4 pb-2 lg:hidden">
+          <span class="text-sm font-medium text-secondary-300">Navigation</span>
+          <button
+            type="button"
+            class="p-1.5 rounded-lg text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700 transition-colors"
+            aria-label="Fermer la navigation"
+            @click="sidebarOpen = false"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
         <ul role="list" class="py-4">
           <li v-for="item in navigationItems" :key="item.to">
             <RouterLink
@@ -92,12 +152,12 @@
       </nav>
 
       <!-- Contenu principal - RGAA 12.6 -->
-      <main id="main-content" role="main" tabindex="-1" class="flex-1">
+      <main id="main-content" role="main" tabindex="-1" class="flex-1 min-w-0">
         <!-- Fil d'Ariane - RGAA 12.8 -->
         <nav
           v-if="breadcrumbs.length > 1"
           aria-label="Fil d'Ariane"
-          class="bg-secondary-850 border-b border-secondary-700 px-6 py-3"
+          class="bg-secondary-850 border-b border-secondary-700 px-4 sm:px-6 py-3"
         >
           <ol role="list" class="flex items-center space-x-2 text-sm">
             <li v-for="(crumb, index) in breadcrumbs" :key="crumb.path" class="flex items-center">
@@ -131,7 +191,7 @@
         </nav>
 
         <!-- Contenu de la page -->
-        <div class="p-6">
+        <div class="p-3 sm:p-6">
           <router-view />
         </div>
       </main>
@@ -184,6 +244,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const announcement = ref('')
+const sidebarOpen = ref(false)
 
 const currentUser = computed(() => authStore.user)
 
@@ -224,6 +285,7 @@ const handleLogout = async () => {
 watch(
   () => route.path,
   () => {
+    sidebarOpen.value = false
     const pageName = breadcrumbsMap[route.path] || 'Page'
     announcement.value = `Navigation vers ${pageName}`
     setTimeout(() => {
