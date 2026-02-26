@@ -225,8 +225,6 @@ const visiblePages = computed(() => {
 
   if (leftSibling > 2) {
     pages.push('ellipsis-start')
-  } else if (leftSibling === 2) {
-    pages.push(2)
   }
 
   for (let i = leftSibling; i <= rightSibling; i++) {
@@ -237,8 +235,6 @@ const visiblePages = computed(() => {
 
   if (rightSibling < totalPages - 1) {
     pages.push('ellipsis-end')
-  } else if (rightSibling === totalPages - 1 && totalPages > 1) {
-    pages.push(totalPages - 1)
   }
 
   if (totalPages > 1) {
