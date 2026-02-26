@@ -32,12 +32,12 @@
           </div>
 
           <!-- Auth buttons -->
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 sm:space-x-4">
             <template v-if="isAuthenticated">
-              <UserProfileBadge />
+              <UserProfileBadge class="hidden sm:flex" />
               <RouterLink
                 to="/dashboard"
-                class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
+                class="px-3 py-2 sm:px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors text-sm sm:text-base"
               >
                 Dashboard
               </RouterLink>
@@ -45,13 +45,13 @@
             <template v-else>
               <RouterLink
                 to="/auth/login"
-                class="px-4 py-2 text-secondary-300 hover:text-secondary-50 transition-colors"
+                class="hidden sm:inline-flex px-4 py-2 text-secondary-300 hover:text-secondary-50 transition-colors"
               >
                 Connexion
               </RouterLink>
               <RouterLink
                 to="/auth/register"
-                class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
+                class="px-3 py-2 sm:px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors text-sm sm:text-base whitespace-nowrap"
               >
                 Inscription
               </RouterLink>
