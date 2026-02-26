@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useTransition, TransitionPresets } from '@vueuse/core'
 import { useScrollReveal } from '@/composables/useScrollReveal'
 
@@ -53,20 +53,28 @@ const spellsDisplay = useTransition(spellsBase, {
   transition: TransitionPresets.easeOutExpo,
 })
 
-const stats = [
-  { emoji: '🎲', label: 'Lancers de dés', display: dicesDisplay },
-  { emoji: '⚔️', label: 'Parties créées', display: gamesDisplay },
-  { emoji: '👥', label: 'Aventuriers inscrits', display: playersDisplay },
-  { emoji: '📜', label: 'Sorts dans le Wiki', display: spellsDisplay },
-]
+const stats = computed(() => [
+  { emoji: '🎲', label: 'Lancers de dés', display: dicesDisplay.value },
+  { emoji: '⚔️', label: 'Parties créées', display: gamesDisplay.value },
+  { emoji: '👥', label: 'Aventuriers inscrits', display: playersDisplay.value },
+  { emoji: '📜', label: 'Sorts dans le Wiki', display: spellsDisplay.value },
+])
 
 // Déclencher les compteurs quand la section est visible
 watch(isVisible, (visible) => {
   if (!visible) return
   // Stagger les départs pour un effet cascade
-  setTimeout(() => { dicesBase.value = 1247 }, 0)
-  setTimeout(() => { gamesBase.value = 83 }, 150)
-  setTimeout(() => { playersBase.value = 312 }, 300)
-  setTimeout(() => { spellsBase.value = 400 }, 450)
+  setTimeout(() => {
+    dicesBase.value = 1247
+  }, 0)
+  setTimeout(() => {
+    gamesBase.value = 83
+  }, 150)
+  setTimeout(() => {
+    playersBase.value = 312
+  }, 300)
+  setTimeout(() => {
+    spellsBase.value = 400
+  }, 450)
 })
 </script>

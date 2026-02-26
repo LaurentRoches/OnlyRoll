@@ -8,15 +8,14 @@ interface ScrollRevealOptions {
 
 export function useScrollReveal(
   target: Ref<HTMLElement | undefined | null>,
-  options: ScrollRevealOptions = {},
+  options: ScrollRevealOptions = {}
 ) {
   const { threshold = 0.1, delay = 0 } = options
   const isVisible = ref(false)
 
   // Respecter prefers-reduced-motion : révéler immédiatement sans animation
   const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   if (prefersReducedMotion) {
     isVisible.value = true
@@ -48,12 +47,12 @@ export function useScrollReveal(
             observer?.unobserve(el)
           }
         },
-        { threshold },
+        { threshold }
       )
 
       observer.observe(el)
     },
-    { immediate: true },
+    { immediate: true }
   )
 
   onUnmounted(() => {

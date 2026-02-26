@@ -50,19 +50,15 @@
             </div>
             <h3 class="text-xl font-bold text-secondary-50 mb-3">Wiki D&D</h3>
             <p class="text-secondary-400 leading-relaxed">
-              Toutes les données officielles de D&D 5e à portée de main ! Sorts, monstres, équipements
-              — tout le SRD intégré directement dans votre session.
+              Toutes les données officielles de D&D 5e à portée de main ! Sorts, monstres,
+              équipements — tout le SRD intégré directement dans votre session.
             </p>
           </div>
         </div>
 
         <!-- Feuille perso + Chat — 2 petites empilées -->
         <div class="flex flex-col gap-6">
-          <div
-            class="reveal-up"
-            :class="{ revealed: isVisible }"
-            style="transition-delay: 250ms"
-          >
+          <div class="reveal-up" :class="{ revealed: isVisible }" style="transition-delay: 250ms">
             <div
               class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-emerald-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
             >
@@ -91,11 +87,7 @@
             </div>
           </div>
 
-          <div
-            class="reveal-up"
-            :class="{ revealed: isVisible }"
-            style="transition-delay: 350ms"
-          >
+          <div class="reveal-up" :class="{ revealed: isVisible }" style="transition-delay: 350ms">
             <div
               class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-cyan-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
             >
@@ -130,11 +122,7 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Dés + Multijoueur — 2 petites empilées -->
         <div class="flex flex-col gap-6">
-          <div
-            class="reveal-up"
-            :class="{ revealed: isVisible }"
-            style="transition-delay: 400ms"
-          >
+          <div class="reveal-up" :class="{ revealed: isVisible }" style="transition-delay: 400ms">
             <div
               class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-amber-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
             >
@@ -159,11 +147,7 @@
             </div>
           </div>
 
-          <div
-            class="reveal-up"
-            :class="{ revealed: isVisible }"
-            style="transition-delay: 500ms"
-          >
+          <div class="reveal-up" :class="{ revealed: isVisible }" style="transition-delay: 500ms">
             <div
               class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-rose-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
             >
@@ -223,8 +207,8 @@
             </div>
             <h3 class="text-xl font-bold text-secondary-50 mb-3">Table Virtuelle</h3>
             <p class="text-secondary-400 leading-relaxed">
-              Une interface de jeu complète pour le MJ et les joueurs. Gérez vos sessions,
-              partagez des informations et vivez l'aventure ensemble, même à distance.
+              Une interface de jeu complète pour le MJ et les joueurs. Gérez vos sessions, partagez
+              des informations et vivez l'aventure ensemble, même à distance.
             </p>
           </div>
         </div>

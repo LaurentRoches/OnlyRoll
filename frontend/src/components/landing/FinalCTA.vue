@@ -29,11 +29,7 @@
       </p>
 
       <!-- Bouton CTA principal -->
-      <div
-        class="reveal-scale"
-        :class="{ revealed: isVisible }"
-        style="transition-delay: 300ms"
-      >
+      <div class="reveal-scale" :class="{ revealed: isVisible }" style="transition-delay: 300ms">
         <RouterLink
           to="/auth/register"
           class="inline-flex items-center gap-3 px-10 py-5 bg-primary-500 hover:bg-primary-600 text-white text-xl font-bold rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-purple-lg cta-glow"

@@ -81,8 +81,7 @@ interface Particle {
 const particles = ref<Particle[]>([])
 
 const prefersReducedMotion =
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 onMounted(() => {
   if (prefersReducedMotion) return

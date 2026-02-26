@@ -53,10 +53,7 @@
           <div
             class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-6"
             :class="isVisible ? 'step-circle-animate' : 'opacity-0'"
-            style="
-              background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-              animation-delay: 200ms;
-            "
+            style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); animation-delay: 200ms"
           >
             2
           </div>
@@ -80,10 +77,7 @@
           <div
             class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-6"
             :class="isVisible ? 'step-circle-animate' : 'opacity-0'"
-            style="
-              background: linear-gradient(135deg, #06b6d4, #38bdf8);
-              animation-delay: 400ms;
-            "
+            style="background: linear-gradient(135deg, #06b6d4, #38bdf8); animation-delay: 400ms"
           >
             3
           </div>
