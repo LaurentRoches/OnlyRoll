@@ -16,7 +16,6 @@ import type {
 } from '@/types/websocket'
 import type { GameMap as GameMapType } from '@/types/game'
 
-// Composants
 import GameHeader from '@/components/game/GameHeader.vue'
 import GameMap from '@/components/game/GameMap.vue'
 import MapToolbar from '@/components/game/MapToolbar.vue'
@@ -32,35 +31,28 @@ const route = useRoute()
 const router = useRouter()
 const gameId = computed(() => Number(route.params.id))
 
-// Stores
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const chatStore = useChatStore()
 const presenceStore = usePresenceStore()
 
-// États locaux
 const rightPanelOpen = ref(true)
 const activeTab = ref<'chat' | 'players' | 'dice'>('chat')
 const isLoading = ref(true)
 const selectedTool = ref('select')
 const mapZoom = ref(100)
 
-// État Mercure
 const isConnected = ref(false)
 const connectionState = ref<'connecting' | 'open' | 'closed'>('connecting')
 
-// État upload carte
 const showUploadModal = ref(false)
 
-// État édition carte
 const showEditModal = ref(false)
 const editingMap = ref<GameMapType | null>(null)
 
-// État création token
 const showCreateTokenModal = ref(false)
 const tokenCreationPosition = ref<{ x: number; y: number } | null>(null)
 
-// Référence au composant GameMap
 const gameMapRef = ref<InstanceType<typeof GameMap> | null>(null)
 
 // ============================================
@@ -68,7 +60,6 @@ const gameMapRef = ref<InstanceType<typeof GameMap> | null>(null)
 // ============================================
 function notifyDisconnectionBeacon() {
   try {
-    // Pour beforeunload, on utilise sendBeacon (pas d'auth mais c'est le mieux qu'on puisse faire)
     const url = `/api/games/${gameId.value}/presence/leave`
     const blob = new Blob([JSON.stringify({})], { type: 'application/json' })
     navigator.sendBeacon(url, blob)
@@ -77,7 +68,6 @@ function notifyDisconnectionBeacon() {
   }
 }
 
-// Fonction de déconnexion async pour navigation interne
 async function notifyDisconnection() {
   try {
     console.log('Envoi notification de déconnexion...')
@@ -98,23 +88,19 @@ onMounted(async () => {
   setupBeforeUnload()
 })
 
-// Détecter la navigation interne (retour arrière, changement de route)
 onBeforeRouteLeave(async () => {
   console.log('Navigation détectée - déconnexion en cours')
 
-  // Attendre que la déconnexion soit notifiée avant de continuer
   await notifyDisconnection()
 
   mercureService.disconnect()
   presenceStore.clearGamePresence(gameId.value)
 
-  return true // Permettre la navigation
+  return true
 })
 
 onUnmounted(() => {
   console.log('Nettoyage de la partie')
-  // Le nettoyage a déjà été fait dans onBeforeRouteLeave pour la navigation interne
-  // Mais on le fait quand même au cas où le composant serait détruit autrement
   mercureService.disconnect()
   presenceStore.clearGamePresence(gameId.value)
 })
@@ -126,11 +112,10 @@ async function initializeGame() {
   try {
     isLoading.value = true
 
-    // Charger les données de la partie en parallèle
     await Promise.all([
       gameStore.fetchGameById(gameId.value),
       mapStore.loadActiveMap(gameId.value),
-      chatStore.loadRecentMessages(gameId.value, 50),
+      chatStore.loadRecentMessages(gameId.value, 30),
     ])
 
     console.log('Partie chargée:', {
@@ -140,7 +125,6 @@ async function initializeGame() {
       messages: chatStore.messages.length,
     })
 
-    // Notifier la présence et charger la liste des utilisateurs en ligne
     try {
       const response = await presenceApi.join(gameId.value)
       if (response.onlineUsers) {
@@ -165,14 +149,11 @@ async function setupMercure() {
   console.log('Configuration de Mercure pour la partie', gameId.value)
 
   try {
-    // Récupérer le token JWT Mercure depuis l'API (défini en cookie)
     await gameApi.getMercureToken(gameId.value)
     console.log('Token Mercure obtenu')
 
-    // Se connecter à Mercure (le cookie mercureAuthorization est envoyé automatiquement)
     mercureService.connect(gameId.value)
 
-    // Vérifier l'état de connexion
     const checkConnection = setInterval(() => {
       isConnected.value = mercureService.isConnected()
       connectionState.value = mercureService.getConnectionState()
@@ -186,39 +167,33 @@ async function setupMercure() {
     console.error('Erreur lors de la récupération du token Mercure:', error)
   }
 
-  // Écouter les événements de tokens
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('token', (event: any) => {
     console.log('Token event:', event.data)
     mapStore.handleTokenEvent(event.data as MercureTokenEventData)
   })
 
-  // Écouter les événements de carte
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('map', (event: any) => {
     console.log('Map event:', event.data)
     mapStore.handleMapEvent(event.data as MercureMapEventData)
   })
 
-  // Écouter les messages du chat (inclut aussi les lancers de dés)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('chat', (event: any) => {
     console.log('Chat message:', event.data)
     chatStore.handleChatMessage(event.data as MercureChatMessageData)
   })
 
-  // Écouter les événements de joueurs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('player', (event: any) => {
     console.log('Player event:', event.data)
     gameStore.fetchGameById(gameId.value)
   })
 
-  // Écouter les événements de présence
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('presence', (event: any) => {
     console.log('Presence event:', event)
-    // L'événement Mercure a gameId au niveau principal
     const presenceData: MercurePresenceEventData = {
       gameId: event.gameId,
       userId: event.data.userId,
@@ -229,9 +204,7 @@ async function setupMercure() {
     presenceStore.handlePresenceEvent(presenceData)
   })
 
-  // Envoyer un heartbeat de présence toutes les 30 secondes
   const heartbeatInterval = setInterval(async () => {
-    // Vérifier que gameId est valide avant d'envoyer
     if (mercureService.isConnected() && gameId.value && !isNaN(gameId.value)) {
       try {
         await presenceApi.heartbeat(gameId.value)
@@ -239,8 +212,6 @@ async function setupMercure() {
       } catch (error: unknown) {
         console.error("Erreur lors de l'envoi du heartbeat:", error)
 
-        // Si erreur 401, la session a expiré (géré automatiquement par l'intercepteur)
-        // L'utilisateur sera redirigé vers /login par apiClient
         if (
           error &&
           typeof error === 'object' &&
@@ -253,7 +224,6 @@ async function setupMercure() {
     }
   }, 30000)
 
-  // Nettoyer l'interval au démontage
   onUnmounted(() => {
     clearInterval(heartbeatInterval)
   })
@@ -263,11 +233,8 @@ async function setupMercure() {
 // Setup BeforeUnload - Notifier la déconnexion
 // ============================================
 function setupBeforeUnload() {
-  // Ajouter les listeners pour beforeunload (fermeture navigateur/onglet)
-  // On utilise sendBeacon car async n'est pas possible dans beforeunload
   window.addEventListener('beforeunload', notifyDisconnectionBeacon)
 
-  // Nettoyer au démontage
   onUnmounted(() => {
     window.removeEventListener('beforeunload', notifyDisconnectionBeacon)
   })
@@ -302,7 +269,6 @@ function handleCreateMap() {
 }
 
 async function handleMapCreated() {
-  // Recharger la carte active
   await mapStore.loadActiveMap(gameId.value)
   showUploadModal.value = false
 }
@@ -312,7 +278,6 @@ async function handleMapCreated() {
 // ============================================
 async function handleEditMap(map: GameMapType) {
   try {
-    // Charger les données complètes de la carte depuis l'API
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost/api'
     const response = await fetch(`${apiUrl}/games/${gameId.value}/maps/${map.id}`, {
       method: 'GET',
@@ -333,7 +298,6 @@ async function handleEditMap(map: GameMapType) {
 }
 
 async function handleMapUpdated() {
-  // Les données seront mises à jour via Mercure
   showEditModal.value = false
   editingMap.value = null
 }
@@ -374,12 +338,9 @@ async function handleGridSettingsChanged(settings: {
 
 function handleOpenSettings() {
   console.log('Ouvrir les paramètres')
-  // TODO: Implémenter le modal des paramètres
 }
 
 function handleGoBack() {
-  // Simplement retourner à la liste des parties
-  // La déconnexion sera gérée automatiquement par onBeforeRouteLeave
   router.push('/games')
 }
 
@@ -410,7 +371,6 @@ function handleCreateToken(position: { x: number; y: number }) {
 async function handleTokenCreated() {
   showCreateTokenModal.value = false
   tokenCreationPosition.value = null
-  // Revenir à l'outil de sélection après création
   selectedTool.value = 'select'
 }
 </script>
@@ -439,8 +399,8 @@ async function handleTokenCreated() {
     />
 
     <div class="flex-1 flex overflow-hidden relative">
-      <!-- Zone centrale - Carte -->
-      <div class="flex-1 flex flex-col min-w-0">
+      <!-- Zone centrale - Carte (masquée sur mobile) -->
+      <div class="hidden lg:flex lg:flex-1 lg:flex-col min-w-0">
         <!-- Toolbar -->
         <MapToolbar
           :is-game-master="isGameMaster"
@@ -481,7 +441,7 @@ async function handleTokenCreated() {
       <Transition name="slide-left">
         <div
           v-if="rightPanelOpen"
-          class="w-96 bg-secondary-800 border-l border-secondary-700 flex flex-col"
+          class="w-full lg:w-96 bg-secondary-800 lg:border-l border-secondary-700 flex flex-col"
         >
           <!-- Tabs -->
           <div class="flex border-b border-secondary-700">
@@ -520,11 +480,11 @@ async function handleTokenCreated() {
         </div>
       </Transition>
 
-      <!-- Toggle panel -->
+      <!-- Toggle panel — desktop uniquement -->
       <button
         @click="rightPanelOpen = !rightPanelOpen"
         :class="[
-          'absolute top-1/2 -translate-y-1/2 bg-secondary-800 border border-secondary-700 p-3 hover:bg-secondary-700 transition-all z-20 shadow-lg',
+          'hidden lg:flex absolute top-1/2 -translate-y-1/2 bg-secondary-800 border border-secondary-700 p-3 hover:bg-secondary-700 transition-all z-20 shadow-lg',
           rightPanelOpen ? 'right-96' : 'right-0',
           rightPanelOpen ? 'rounded-l-lg' : 'rounded-l-lg',
         ]"

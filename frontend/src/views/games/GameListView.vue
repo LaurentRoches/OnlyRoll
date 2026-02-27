@@ -10,9 +10,11 @@ import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
 import GameCard from '@/components/game/GameCard.vue'
+import SkeletonCard from '@/components/game/SkeletonCard.vue'
 import CreateGameModal from '@/components/game/CreateGameModal.vue'
 import JoinGameModal from '@/components/game/JoinGameModal.vue'
 import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, InboxIcon } from '@heroicons/vue/24/outline'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 
 const gameStore = useGameStore()
 const authStore = useAuthStore()
@@ -22,19 +24,19 @@ const showJoinModal = ref(false)
 const selectedGame = ref<Game | null>(null)
 const activeTab = ref<'public' | 'my-games'>('public')
 const showFilters = ref(true)
-const connectedGameIds = ref<number[]>([]) // Garder trace des parties écoutées
+const connectedGameIds = ref<number[]>([])
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
-// Filtres
 const filters = ref<GameFilters>({
   search: '',
   title: '',
   gameMaster: '',
   status: undefined,
   page: 1,
-  limit: 12,
+  limit: 15,
 })
 
-// Handler pour les événements de présence
 function handlePresenceEvent(data: unknown) {
   const event = data as {
     gameId: number
@@ -51,7 +53,6 @@ function handlePresenceEvent(data: unknown) {
   presenceStore.handlePresenceEvent(presenceData)
 }
 
-// Connecter aux événements de présence pour les parties affichées
 async function connectToPresence() {
   const gameIds = displayedGames.value.map((game) => game.id)
 
@@ -60,7 +61,6 @@ async function connectToPresence() {
     return
   }
 
-  // Vérifier si les IDs ont changé
   const idsChanged =
     gameIds.length !== connectedGameIds.value.length ||
     !gameIds.every((id) => connectedGameIds.value.includes(id))
@@ -73,12 +73,13 @@ async function connectToPresence() {
   console.log('Connexion aux événements de présence pour les parties:', gameIds)
 
   try {
-    // Récupérer le token JWT Mercure pour la présence (défini en cookie)
     await gameApi.getMercurePresenceToken(gameIds)
     console.log('Token Mercure de présence obtenu')
 
-    // Charger l'état initial des utilisateurs en ligne pour chaque partie
-    for (const gameId of gameIds) {
+    // Seulement pour les jeux pas encore suivis
+    const newGameIds = gameIds.filter((id) => !connectedGameIds.value.includes(id))
+
+    for (const gameId of newGameIds) {
       try {
         const response = await presenceApi.getOnlineUsers(gameId)
         if (response.onlineUsers && response.onlineUsers.length > 0) {
@@ -93,10 +94,8 @@ async function connectToPresence() {
       }
     }
 
-    // Se connecter aux événements de présence (le cookie mercureAuthorization est envoyé automatiquement)
     mercureService.connectToPresence(gameIds)
 
-    // Mémoriser les IDs connectés
     connectedGameIds.value = [...gameIds]
   } catch (error) {
     console.error('Erreur lors de la récupération du token Mercure de présence:', error)
@@ -104,43 +103,72 @@ async function connectToPresence() {
 }
 
 onMounted(async () => {
-  // Enregistrer le listener une seule fois
   mercureService.on('presence', handlePresenceEvent)
 
   await loadGames()
-  // Connecter aux événements de présence après le chargement des parties
   connectToPresence()
 })
 
 onUnmounted(() => {
-  // Se déconnecter de Mercure
   mercureService.off('presence', handlePresenceEvent)
   mercureService.disconnect()
 })
 
 async function loadGames() {
+  filters.value.page = 1
   if (activeTab.value === 'public') {
-    // Pour l'onglet "Toutes", charger à la fois myGames et les parties publiques
-    // Les filtres sont appliqués côté client via les computed
-    await Promise.all([gameStore.fetchMyGames(), gameStore.fetchPublicGames()])
+    await Promise.all([
+      gameStore.fetchMyGames(),
+      gameStore.fetchPublicGames({ ...filters.value, page: 1 }),
+    ])
   } else {
-    // Pour l'onglet "M.J.", charger uniquement myGames
     await gameStore.fetchMyGames()
   }
 }
 
+async function loadMorePublicGames() {
+  if (!gameStore.hasMoreGames || gameStore.isLoading) return
+  filters.value.page = (filters.value.page ?? 1) + 1
+  await gameStore.appendPublicGames({ ...filters.value })
+}
+
+const infiniteScrollDisabled = computed(
+  () => !gameStore.hasMoreGames || activeTab.value !== 'public' || gameStore.isLoading
+)
+
+const { isLoading: isScrollLoading } = useInfiniteScroll(loadMoreSentinel, loadMorePublicGames, {
+  disabled: infiniteScrollDisabled,
+  rootMargin: '200px',
+})
+
+// Recharger les parties publiques côté serveur quand les filtres changent
+watch(
+  [
+    () => filters.value.search,
+    () => filters.value.title,
+    () => filters.value.gameMaster,
+    () => filters.value.status,
+  ],
+  () => {
+    if (activeTab.value !== 'public') return
+    if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
+    filterDebounceTimer = setTimeout(async () => {
+      await gameStore.fetchPublicGames({ ...filters.value, page: 1 })
+      filters.value.page = 1
+    }, 300)
+  }
+)
+
 function handleTabChange(tab: 'public' | 'my-games') {
   activeTab.value = tab
-  // Réinitialiser les filtres sans recharger
   filters.value = {
     search: '',
     title: '',
     gameMaster: '',
     status: undefined,
     page: 1,
-    limit: 12,
+    limit: 15,
   }
-  // Charger les données appropriées pour l'onglet
   loadGames()
 }
 
@@ -151,7 +179,7 @@ function resetFilters() {
     gameMaster: '',
     status: undefined,
     page: 1,
-    limit: 12,
+    limit: 15,
   }
   if (activeTab.value === 'public') {
     loadGames()
@@ -173,76 +201,36 @@ function handleJoinSuccess() {
 const sortedGamesForAllTab = computed(() => {
   if (!authStore.user) return []
 
-  // Combiner myGames et games publics
   const allGames: Game[] = []
   const seenIds = new Set<number>()
 
-  // D'abord ajouter myGames (pour éviter les doublons)
   gameStore.myGames.forEach((game) => {
     allGames.push(game)
     seenIds.add(game.id)
   })
 
-  // Ajouter les parties publiques qui ne sont pas déjà dans myGames
+  // Les parties déjà filtrées par le serveur (pagination serveur)
   gameStore.games.forEach((game) => {
     if (!seenIds.has(game.id)) {
       allGames.push(game)
     }
   })
 
-  // Appliquer les filtres
-  let filteredGames = allGames
-
-  // Filtre par recherche globale (titre ou nom de campagne)
-  if (filters.value.search) {
-    const searchTerm = filters.value.search.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      (game.title || game.name).toLowerCase().includes(searchTerm)
-    )
-  }
-
-  // Filtre par titre
-  if (filters.value.title) {
-    const titleFilter = filters.value.title.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      (game.title || game.name).toLowerCase().includes(titleFilter)
-    )
-  }
-
-  // Filtre par maître du jeu
-  if (filters.value.gameMaster) {
-    const gmFilter = filters.value.gameMaster.toLowerCase()
-    filteredGames = filteredGames.filter((game) =>
-      game.gameMaster.pseudo.toLowerCase().includes(gmFilter)
-    )
-  }
-
-  // Filtre par statut
-  if (filters.value.status) {
-    filteredGames = filteredGames.filter((game) => game.status === filters.value.status)
-  }
-
-  // Catégoriser les parties filtrées
+  // Tri par priorité : MJ en premier, puis joueur, puis parties publiques
   const asMaster: Game[] = []
   const asPlayer: Game[] = []
   const publicGames: Game[] = []
 
-  filteredGames.forEach((game) => {
-    // Vérifier si l'utilisateur est le MJ
+  allGames.forEach((game) => {
     if (game.gameMaster.id === authStore.user!.id) {
       asMaster.push(game)
-    }
-    // Vérifier si l'utilisateur est un joueur (mais pas MJ)
-    else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
+    } else if (game.gamePlayers?.some((gp) => gp.user.id === authStore.user!.id)) {
       asPlayer.push(game)
-    }
-    // Sinon c'est une partie publique
-    else if (game.isPublic) {
+    } else if (game.isPublic) {
       publicGames.push(game)
     }
   })
 
-  // Trier chaque catégorie par ordre alphabétique du titre
   const sortByTitle = (a: Game, b: Game) => {
     const titleA = (a.title || a.name).toLowerCase()
     const titleB = (b.title || b.name).toLowerCase()
@@ -253,19 +241,15 @@ const sortedGamesForAllTab = computed(() => {
   asPlayer.sort(sortByTitle)
   publicGames.sort(sortByTitle)
 
-  // Combiner dans l'ordre : MJ > Joueur > Public
   return [...asMaster, ...asPlayer, ...publicGames]
 })
 
-// Computed pour les parties à afficher selon l'onglet
 const displayedGames = computed(() => {
   if (!authStore.user) return []
 
   if (activeTab.value === 'my-games') {
-    // Onglet "M.J." : uniquement les parties où l'utilisateur est MJ
     let gmGames = gameStore.myGames.filter((game) => game.gameMaster.id === authStore.user!.id)
 
-    // Appliquer les filtres côté client
     if (filters.value.search) {
       const searchTerm = filters.value.search.toLowerCase()
       gmGames = gmGames.filter((game) =>
@@ -284,26 +268,21 @@ const displayedGames = computed(() => {
       gmGames = gmGames.filter((game) => game.status === filters.value.status)
     }
 
-    // Trier par ordre alphabétique
     return gmGames.sort((a, b) => {
       const titleA = (a.title || a.name).toLowerCase()
       const titleB = (b.title || b.name).toLowerCase()
       return titleA.localeCompare(titleB)
     })
   } else {
-    // Onglet "Toutes" : tri personnalisé
     return sortedGamesForAllTab.value
   }
 })
 
-// Reconnecter quand les parties affichées changent
 watch(displayedGames, () => {
   if (displayedGames.value.length > 0) {
     connectToPresence()
   }
 })
-
-// Pagination désactivée - pas d'alias nécessaires
 </script>
 
 <template>
@@ -449,19 +428,23 @@ watch(displayedGames, () => {
         <!-- Main Content -->
         <main class="flex-1 min-w-0">
           <!-- Results counter -->
-          <div v-if="!gameStore.isLoading && displayedGames.length > 0" class="mb-4">
+          <div v-if="displayedGames.length > 0" class="mb-4">
             <p class="text-secondary-400 text-sm">
               <span class="text-secondary-50 font-medium">{{ displayedGames.length }}</span>
-              {{ displayedGames.length > 1 ? 'parties trouvées' : 'partie trouvée' }}
+              {{ displayedGames.length > 1 ? 'parties chargées' : 'partie chargée' }}
+              <template v-if="activeTab === 'public' && gameStore.pagination.total > 0">
+                sur
+                <span class="text-secondary-50 font-medium">{{ gameStore.pagination.total }}</span>
+              </template>
             </p>
           </div>
 
-          <!-- Loading State -->
-          <div v-if="gameStore.isLoading" class="text-center py-20">
-            <div
-              class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-secondary-700 border-t-primary-500"
-            ></div>
-            <p class="text-secondary-400 mt-4">Chargement des parties...</p>
+          <!-- Loading State initial : skeleton cards -->
+          <div
+            v-if="gameStore.isLoading && displayedGames.length === 0"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+          >
+            <SkeletonCard v-for="n in 15" :key="n" />
           </div>
 
           <!-- Games Grid -->
@@ -508,7 +491,21 @@ watch(displayedGames, () => {
             </button>
           </div>
 
-          <!-- Pagination désactivée (tri côté client) -->
+          <!-- Skeleton append (scroll infini en cours) -->
+          <div
+            v-if="isScrollLoading && activeTab === 'public'"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6"
+          >
+            <SkeletonCard v-for="n in 3" :key="n" />
+          </div>
+
+          <!-- Sentinel scroll infini (onglet public uniquement) -->
+          <div
+            v-if="activeTab === 'public'"
+            ref="loadMoreSentinel"
+            class="h-2 mt-4"
+            aria-hidden="true"
+          ></div>
 
           <!-- Error State -->
           <div

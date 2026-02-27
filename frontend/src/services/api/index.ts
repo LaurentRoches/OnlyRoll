@@ -6,17 +6,21 @@ import { chatApi } from './chatApi'
 import { gameApi } from './gameApi'
 import { mapApi } from './mapApi'
 import { tokenApi } from './tokenApi'
+import { securityApi } from './securityApi'
+import { adminApi } from './adminApi'
+import { profileApi } from './profileApi'
 
-// Export du client HTTP de base
 export { apiClient } from './apiClient'
 export type { ApiError } from './apiClient'
 
-// Export des services
 export { authApi } from './authApi'
 export { gameApi } from './gameApi'
 export { mapApi } from './mapApi'
 export { tokenApi } from './tokenApi'
 export { chatApi } from './chatApi'
+export { securityApi } from './securityApi'
+export { adminApi } from './adminApi'
+export { profileApi } from './profileApi'
 
 export type { CreateMapDTO, UpdateMapDTO } from './mapApi'
 
@@ -30,6 +34,22 @@ export type {
   RollDiceDTO,
 } from '@/types/game'
 
+export type {
+  UserStats,
+  AuditStats,
+  GameStats,
+  DashboardStats,
+  AdminUser,
+  UserFilterParams,
+  UserUpdateData,
+  PaginatedResponse,
+  AuditLogEntry,
+  AuditLogFilterParams,
+  AuditActionInfo,
+} from './adminApi'
+
+export type { UserProfile, ProfileUpdateData, PasswordChangeData } from './profileApi'
+
 /**
  * Objet regroupant tous les services pour un usage simplifié
  */
@@ -39,4 +59,7 @@ export const api = {
   maps: mapApi,
   tokens: tokenApi,
   chat: chatApi,
+  security: securityApi,
+  admin: adminApi,
+  profile: profileApi,
 }

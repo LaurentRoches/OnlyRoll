@@ -70,10 +70,11 @@ readonly class FileUploader
      * Upload un avatar utilisateur.
      *
      * @param UploadedFile $file Fichier uploadé
+     * @param \App\Entity\User $user Utilisateur (optionnel, pour organisation)
      *
      * @return string URL publique du fichier
      */
-    public function uploadAvatar(UploadedFile $file): string
+    public function uploadAvatar(UploadedFile $file, ?\App\Entity\User $user = null): string
     {
         $this->validateFile($file);
 
@@ -81,6 +82,16 @@ readonly class FileUploader
         $filename = $this->generateUniqueFilename($file);
 
         return $this->moveFile($file, $directory, $filename);
+    }
+
+    /**
+     * Supprime un avatar utilisateur.
+     *
+     * @param string $avatarPath Chemin de l'avatar
+     */
+    public function deleteAvatar(string $avatarPath): void
+    {
+        $this->deleteFile($avatarPath);
     }
 
     /**

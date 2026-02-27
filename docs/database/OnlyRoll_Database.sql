@@ -40,9 +40,11 @@ CREATE TABLE weapon_property (
 CREATE TABLE item_category (
     category_id INT(11) NOT NULL AUTO_INCREMENT,
     category_name VARCHAR(50) NOT NULL COMMENT "Weapon, Armor, Wondrous, etc.",
+    category_abbreviation VARCHAR(10) NOT NULL COMMENT "W, A, WI, etc.",
     category_description TEXT NULL,
     PRIMARY KEY (category_id),
-    UNIQUE KEY uk_category_name (category_name)
+    UNIQUE KEY uk_category_name (category_name),
+    UNIQUE KEY uk_category_abbreviation (category_abbreviation)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Raretés d'objets
@@ -391,6 +393,29 @@ CREATE TABLE race_trait (
     CONSTRAINT fk_race_trait_race FOREIGN KEY (race_id) REFERENCES srd_race(race_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Vitesses spéciales des races (swim, fly, burrow, climb)
+CREATE TABLE race_speed (
+    speed_id INT(11) NOT NULL AUTO_INCREMENT,
+    race_id INT(11) NOT NULL,
+    speed_type VARCHAR(20) NOT NULL COMMENT "swim, fly, burrow, climb",
+    speed_value INT(2) NOT NULL,
+    PRIMARY KEY (speed_id),
+    UNIQUE KEY uk_race_speed (race_id, speed_type),
+    CONSTRAINT fk_race_speed_race FOREIGN KEY (race_id) REFERENCES srd_race(race_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Maîtrises raciales (armes, armures, outils)
+CREATE TABLE race_proficiency (
+    proficiency_id INT(11) NOT NULL AUTO_INCREMENT,
+    race_id INT(11) NOT NULL,
+    proficiency_type VARCHAR(50) NOT NULL COMMENT "armor, weapon, tool, skill",
+    proficiency_value VARCHAR(100) NOT NULL,
+    PRIMARY KEY (proficiency_id),
+    KEY idx_race_id (race_id),
+    KEY idx_proficiency_type (proficiency_type),
+    CONSTRAINT fk_race_proficiency_race FOREIGN KEY (race_id) REFERENCES srd_race(race_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Sous-races
 CREATE TABLE srd_subrace (
     subrace_id INT(11) NOT NULL AUTO_INCREMENT,
@@ -649,6 +674,19 @@ CREATE TABLE spell_damage (
     CONSTRAINT fk_spell_damage_type FOREIGN KEY (damage_type_id) REFERENCES damage_type(damage_type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Composants de sorts (V, S, M détaillés)
+CREATE TABLE spell_component (
+    component_id INT(11) NOT NULL AUTO_INCREMENT,
+    spell_id INT(11) NOT NULL,
+    component_type ENUM('V', 'S', 'M') NOT NULL,
+    component_name VARCHAR(150) NULL COMMENT "Nom du composant matériel",
+    component_cost_gp INT(11) NULL COMMENT "Coût en pièces d'or si applicable",
+    component_consumed BOOLEAN NOT NULL DEFAULT FALSE COMMENT "Composant consommé par le sort",
+    PRIMARY KEY (component_id),
+    UNIQUE KEY uk_spell_component (spell_id, component_type),
+    CONSTRAINT fk_spell_component_spell FOREIGN KEY (spell_id) REFERENCES srd_spell(spell_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Objets magiques
 CREATE TABLE srd_item (
     item_id INT(11) NOT NULL AUTO_INCREMENT,
@@ -661,9 +699,9 @@ CREATE TABLE srd_item (
     item_attunement_restriction TEXT NULL,
     item_weight DECIMAL(5,2) NULL COMMENT "Poids en livres",
     item_value_gp DECIMAL(10,2) NULL COMMENT "Valeur en pièces d'or",
-    item_armor_class INT(2) NULL COMMENT "Pour les armures",
-    item_strength_requirement INT(2) NULL COMMENT "Force requise pour porter",
-    item_stealth_disadvantage BOOLEAN NOT NULL DEFAULT FALSE,
+    item_is_magical BOOLEAN NOT NULL DEFAULT FALSE COMMENT "Objet magique ou mundane",
+    item_charges_max INT(11) NULL COMMENT "Charges max pour objets magiques",
+    item_charges_reset VARCHAR(50) NULL COMMENT "dawn, dusk, never, etc.",
     item_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     item_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (item_id),
@@ -701,6 +739,36 @@ CREATE TABLE item_weapon_damage (
     KEY idx_damage_type (damage_type_id),
     CONSTRAINT fk_item_damage_item FOREIGN KEY (item_id) REFERENCES srd_item(item_id) ON DELETE CASCADE,
     CONSTRAINT fk_item_damage_type FOREIGN KEY (damage_type_id) REFERENCES damage_type(damage_type_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Données spécifiques aux armes
+CREATE TABLE item_weapon (
+    weapon_id INT(11) NOT NULL AUTO_INCREMENT,
+    item_id INT(11) NOT NULL,
+    weapon_category VARCHAR(20) NOT NULL COMMENT "simple, martial",
+    weapon_range_normal INT(11) NULL COMMENT "Portée normale en pieds",
+    weapon_range_long INT(11) NULL COMMENT "Portée longue en pieds",
+    PRIMARY KEY (weapon_id),
+    UNIQUE KEY uk_item_weapon (item_id),
+    KEY idx_weapon_category (weapon_category),
+    CONSTRAINT fk_item_weapon_item_ref FOREIGN KEY (item_id) REFERENCES srd_item(item_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Données spécifiques aux armures
+CREATE TABLE item_armor (
+    armor_id INT(11) NOT NULL AUTO_INCREMENT,
+    item_id INT(11) NOT NULL,
+    armor_type VARCHAR(20) NOT NULL COMMENT "light, medium, heavy, shield",
+    armor_ac_base INT(2) NOT NULL,
+    armor_ac_max_dex INT(2) NULL COMMENT "Bonus Dex max, NULL = illimité",
+    armor_str_requirement INT(2) NULL COMMENT "Force minimum requise",
+    armor_stealth_disadvantage BOOLEAN NOT NULL DEFAULT FALSE,
+    armor_don_time INT(11) NULL COMMENT "Temps pour enfiler en minutes",
+    armor_doff_time INT(11) NULL COMMENT "Temps pour retirer en minutes",
+    PRIMARY KEY (armor_id),
+    UNIQUE KEY uk_item_armor (item_id),
+    KEY idx_armor_type (armor_type),
+    CONSTRAINT fk_item_armor_item FOREIGN KEY (item_id) REFERENCES srd_item(item_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Monstres
@@ -865,6 +933,39 @@ CREATE TABLE monster_spell (
     CONSTRAINT fk_monster_spell_spell FOREIGN KEY (spell_id) REFERENCES srd_spell(spell_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Sous-types de monstres (orc, goblinoid, shapechanger, etc.)
+CREATE TABLE monster_subtype (
+    subtype_id INT(11) NOT NULL AUTO_INCREMENT,
+    monster_id INT(11) NOT NULL,
+    subtype_name VARCHAR(50) NOT NULL COMMENT "orc, goblinoid, shapechanger, etc.",
+    PRIMARY KEY (subtype_id),
+    UNIQUE KEY uk_monster_subtype (monster_id, subtype_name),
+    CONSTRAINT fk_monster_subtype_monster FOREIGN KEY (monster_id) REFERENCES srd_monster(monster_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Langues des monstres (normalisé)
+CREATE TABLE monster_language (
+    monster_language_id INT(11) NOT NULL AUTO_INCREMENT,
+    monster_id INT(11) NOT NULL,
+    language_id INT(11) NOT NULL,
+    language_notes VARCHAR(250) NULL COMMENT "can't speak, telepathy 30ft, etc.",
+    PRIMARY KEY (monster_language_id),
+    UNIQUE KEY uk_monster_language (monster_id, language_id),
+    CONSTRAINT fk_monster_language_monster FOREIGN KEY (monster_id) REFERENCES srd_monster(monster_id) ON DELETE CASCADE,
+    CONSTRAINT fk_monster_language_lang FOREIGN KEY (language_id) REFERENCES language(language_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Environnements favoris des monstres
+CREATE TABLE monster_environment (
+    environment_id INT(11) NOT NULL AUTO_INCREMENT,
+    monster_id INT(11) NOT NULL,
+    environment_type VARCHAR(50) NOT NULL COMMENT "arctic, coastal, desert, forest, grassland, hill, mountain, swamp, underdark, underwater, urban",
+    PRIMARY KEY (environment_id),
+    UNIQUE KEY uk_monster_environment (monster_id, environment_type),
+    KEY idx_environment_type (environment_type),
+    CONSTRAINT fk_monster_environment_monster FOREIGN KEY (monster_id) REFERENCES srd_monster(monster_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Backgrounds
 CREATE TABLE srd_background (
     background_id INT(11) NOT NULL AUTO_INCREMENT,
@@ -956,6 +1057,31 @@ CREATE TABLE feat_ability_modifier (
     CONSTRAINT fk_feat_ability_feat FOREIGN KEY (feat_id) REFERENCES srd_feat(feat_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Prérequis des dons (structurés)
+CREATE TABLE feat_prerequisite (
+    prerequisite_id INT(11) NOT NULL AUTO_INCREMENT,
+    feat_id INT(11) NOT NULL,
+    prerequisite_type VARCHAR(50) NOT NULL COMMENT "ability_score, proficiency, race, class, level, spellcasting",
+    prerequisite_value VARCHAR(100) NOT NULL COMMENT "STR 13, Elf, Fighter, etc.",
+    PRIMARY KEY (prerequisite_id),
+    KEY idx_feat_id (feat_id),
+    KEY idx_prerequisite_type (prerequisite_type),
+    CONSTRAINT fk_feat_prerequisite_feat FOREIGN KEY (feat_id) REFERENCES srd_feat(feat_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Avantages mécaniques des dons
+CREATE TABLE feat_benefit (
+    benefit_id INT(11) NOT NULL AUTO_INCREMENT,
+    feat_id INT(11) NOT NULL,
+    benefit_type VARCHAR(50) NOT NULL COMMENT "skill, save, armor, weapon, spell, speed, hp, etc.",
+    benefit_value VARCHAR(250) NOT NULL,
+    benefit_description TEXT NULL,
+    PRIMARY KEY (benefit_id),
+    KEY idx_feat_id (feat_id),
+    KEY idx_benefit_type (benefit_type),
+    CONSTRAINT fk_feat_benefit_feat FOREIGN KEY (feat_id) REFERENCES srd_feat(feat_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ===================================
 -- TABLES DE PERSONNAGES
 -- ===================================
@@ -1027,7 +1153,6 @@ CREATE TABLE character_class_level (
     level_acquired_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT "Quand ce niveau a été pris",
     PRIMARY KEY (class_level_id),
     UNIQUE KEY uk_character_class (character_id, class_id),
-    UNIQUE KEY uk_character_primary_class (character_id, is_primary_class) WHERE is_primary_class = TRUE,
     UNIQUE KEY uk_character_level_order (character_id, level_order),
     KEY idx_class_id (class_id),
     KEY idx_is_primary_class (is_primary_class),
@@ -1276,8 +1401,8 @@ SELECT
     c.character_level,
     r.race_name,
     sr.subrace_name,
-    cl.class_name,
-    sc.subclass_name,
+    cl.class_name as primary_class_name,
+    sc.subclass_name as primary_subclass_name,
     b.background_name,
     c.character_str + COALESCE(ram_str.modifier_value, 0) + COALESCE(sam_str.modifier_value, 0) as str_total,
     c.character_dex + COALESCE(ram_dex.modifier_value, 0) + COALESCE(sam_dex.modifier_value, 0) as dex_total,
@@ -1293,8 +1418,9 @@ SELECT
 FROM character c
 JOIN srd_race r ON c.race_id = r.race_id
 LEFT JOIN srd_subrace sr ON c.subrace_id = sr.subrace_id
-JOIN srd_class cl ON c.class_id = cl.class_id
-LEFT JOIN srd_subclass sc ON c.subclass_id = sc.subclass_id
+LEFT JOIN character_class_level ccl_primary ON c.character_id = ccl_primary.character_id AND ccl_primary.is_primary_class = TRUE
+LEFT JOIN srd_class cl ON ccl_primary.class_id = cl.class_id
+LEFT JOIN srd_subclass sc ON ccl_primary.subclass_id = sc.subclass_id
 JOIN srd_background b ON c.background_id = b.background_id
 LEFT JOIN race_ability_modifier ram_str ON c.race_id = ram_str.race_id AND ram_str.ability_name = "STR"
 LEFT JOIN race_ability_modifier ram_dex ON c.race_id = ram_dex.race_id AND ram_dex.ability_name = "DEX"
@@ -1333,7 +1459,7 @@ CREATE VIEW monster_complete AS
 SELECT 
     m.monster_id,
     m.monster_name,
-    cs.size_name,
+    csz.size_name,
     ct.type_name,
     a.alignment_name,
     m.monster_ac,
@@ -1343,15 +1469,15 @@ SELECT
     COUNT(DISTINCT mt.trait_id) as trait_count,
     COUNT(DISTINCT ma.action_id) as action_count,
     COUNT(DISTINCT ms.sense_id) as sense_count,
-    cs.source_abbreviation
+    src.source_abbreviation
 FROM srd_monster m
-JOIN creature_size cs ON m.size_id = cs.size_id
+JOIN creature_size csz ON m.size_id = csz.size_id
 JOIN creature_type ct ON m.type_id = ct.type_id
 LEFT JOIN alignment a ON m.alignment_id = a.alignment_id
 LEFT JOIN monster_trait mt ON m.monster_id = mt.monster_id
 LEFT JOIN monster_action ma ON m.monster_id = ma.monster_id
 LEFT JOIN monster_sense ms ON m.monster_id = ms.monster_id
-JOIN content_source cs ON m.source_id = cs.source_id
+JOIN content_source src ON m.source_id = src.source_id
 GROUP BY m.monster_id;
 
 -- Vue pour retrouver l'interface simple (compatibilité)
@@ -1897,8 +2023,6 @@ CREATE FULLTEXT INDEX ft_item_search ON srd_item(item_name, item_description);
 
 -- Configuration MySQL pour les performances
 SET GLOBAL innodb_buffer_pool_size = 1073741824; -- 1GB
-SET GLOBAL query_cache_size = 268435456; -- 256MB
-SET GLOBAL query_cache_type = ON;
 SET GLOBAL slow_query_log = ON;
 SET GLOBAL long_query_time = 2;
 
@@ -1912,10 +2036,10 @@ SELECT
     c.*,
     r.race_name,
     sr.subrace_name,
-    cl.class_name,
-    sc.subclass_name,
+    cl.class_name as primary_class_name,
+    sc.subclass_name as primary_subclass_name,
     b.background_name,
-    u.user_username,
+    u.user_pseudo,
     g.game_name,
     (c.character_str + COALESCE(ram_str.modifier_value, 0) + COALESCE(sam_str.modifier_value, 0)) as str_total,
     (c.character_dex + COALESCE(ram_dex.modifier_value, 0) + COALESCE(sam_dex.modifier_value, 0)) as dex_total,
@@ -1928,8 +2052,9 @@ JOIN user u ON c.user_id = u.user_id
 LEFT JOIN game g ON c.game_id = g.game_id
 JOIN srd_race r ON c.race_id = r.race_id
 LEFT JOIN srd_subrace sr ON c.subrace_id = sr.subrace_id
-JOIN srd_class cl ON c.class_id = cl.class_id
-LEFT JOIN srd_subclass sc ON c.subclass_id = sc.subclass_id
+LEFT JOIN character_class_level ccl_primary ON c.character_id = ccl_primary.character_id AND ccl_primary.is_primary_class = TRUE
+LEFT JOIN srd_class cl ON ccl_primary.class_id = cl.class_id
+LEFT JOIN srd_subclass sc ON ccl_primary.subclass_id = sc.subclass_id
 JOIN srd_background b ON c.background_id = b.background_id
 LEFT JOIN race_ability_modifier ram_str ON c.race_id = ram_str.race_id AND ram_str.ability_name = "STR"
 LEFT JOIN race_ability_modifier ram_dex ON c.race_id = ram_dex.race_id AND ram_dex.ability_name = "DEX"
@@ -1948,9 +2073,9 @@ LEFT JOIN subrace_ability_modifier sam_cha ON c.subrace_id = sam_cha.subrace_id 
 CREATE VIEW game_with_players AS
 SELECT 
     g.*,
-    u.user_username as gm_username,
+    u.user_pseudo as gm_username,
     COUNT(gp.game_player_id) as player_count,
-    GROUP_CONCAT(up.user_username SEPARATOR ", ") as player_names
+    GROUP_CONCAT(up.user_pseudo SEPARATOR ", ") as player_names
 FROM game g
 JOIN user u ON g.game_master_id = u.user_id
 LEFT JOIN game_player gp ON g.game_id = gp.game_id AND gp.player_status = "active"
@@ -1980,7 +2105,7 @@ GROUP BY c.combat_id;
 -- ===================================
 
 -- Utilisateur de test (mot de passe hashé pour "password123")
-INSERT INTO user (user_username, user_email, user_password, user_roles, user_is_verified) VALUES
+INSERT INTO user (user_pseudo, user_email, user_password, user_roles, user_is_verified) VALUES
 ("testgm", "testgm@example.com", "$2y$13$5v8k1F2mQ9x7N3pL6hR8ZeK4W2sD1fG3nM8oP5tV9yU7iQ2eR6wS0a", "["ROLE_USER", "ROLE_GM"]", TRUE),
 ("testplayer1", "player1@example.com", "$2y$13$5v8k1F2mQ9x7N3pL6hR8ZeK4W2sD1fG3nM8oP5tV9yU7iQ2eR6wS0a", "["ROLE_USER"]", TRUE),
 ("testplayer2", "player2@example.com", "$2y$13$5v8k1F2mQ9x7N3pL6hR8ZeK4W2sD1fG3nM8oP5tV9yU7iQ2eR6wS0a", "["ROLE_USER"]", TRUE);

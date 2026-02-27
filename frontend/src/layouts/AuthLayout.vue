@@ -10,7 +10,7 @@
           <div
             class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center"
           >
-            <img style="width: 100%; height: 100%" src="/logo.png" alt="Logo OnlyRoll" />
+            <img style="width: 100%; height: 100%" src="/images/logo.png" alt="Logo OnlyRoll" />
           </div>
         </div>
         <h1 class="text-2xl font-bold text-secondary-50 mb-2 text-shadow-strong">OnlyRoll</h1>

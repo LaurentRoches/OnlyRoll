@@ -81,7 +81,6 @@ fi
 echo "Creating necessary directories..."
 mkdir -p var/cache var/log var/sessions public/uploads
 
-# Fix permissions for uploads directory (volume mount)
 echo "Fixing permissions for uploads directory..."
 chown -R www-data:www-data public/uploads
 chmod -R 775 public/uploads
@@ -93,13 +92,10 @@ if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
     echo "🔐 Generating JWT keys..."
     mkdir -p config/jwt
 
-    # Generate private key
     openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:4096 -pass pass:"${JWT_PASSPHRASE}"
 
-    # Generate public key from private key
     openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem -passin pass:"${JWT_PASSPHRASE}"
 
-    # Set proper permissions
     chmod 644 config/jwt/private.pem config/jwt/public.pem
 
     echo "✅ JWT keys generated successfully"
@@ -113,10 +109,8 @@ fi
 if [ "$APP_ENV" = "prod" ]; then
     echo "Warming up production cache..."
     
-    # Clear cache first
     rm -rf var/cache/prod/* 2>/dev/null || true
     
-    # Regenerate cache
     php bin/console cache:clear --env=prod --no-debug || {
         echo "Cache clear failed, but continuing..."
     }

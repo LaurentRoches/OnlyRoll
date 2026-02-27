@@ -38,41 +38,34 @@ class GameRepository extends ServiceEntityRepository
             ->leftJoin('g.gameMaster', 'gm')
             ->addSelect('gm');
 
-        // Exclure les parties archivées par défaut
         $qb->andWhere('g.status != :archived')
            ->setParameter('archived', GameStatus::ARCHIVED);
 
-        // Filtre: Recherche globale (search)
         if ($filters->search) {
             $qb->andWhere('g.name LIKE :search OR g.description LIKE :search')
                ->setParameter('search', '%' . $filters->search . '%');
         }
 
-        // Filtre: Titre spécifique
         if ($filters->title) {
             $qb->andWhere('g.name LIKE :title')
                ->setParameter('title', '%' . $filters->title . '%');
         }
 
-        // Filtre: Game Master (pseudo)
         if ($filters->gameMaster) {
             $qb->andWhere('gm.pseudo LIKE :gameMaster')
                ->setParameter('gameMaster', '%' . $filters->gameMaster . '%');
         }
 
-        // Filtre: Status
         if ($filters->status) {
             $qb->andWhere('g.status = :status')
                ->setParameter('status', $filters->status);
         }
 
-        // Compter le total AVANT pagination
         $countQb = clone $qb;
         $total = (int) $countQb->select('COUNT(DISTINCT g.id)')
                                 ->getQuery()
                                 ->getSingleScalarResult();
 
-        // Pagination
         $offset = ($filters->page - 1) * $filters->limit;
         $qb->setFirstResult($offset)
            ->setMaxResults($filters->limit)
@@ -155,13 +148,10 @@ class GameRepository extends ServiceEntityRepository
     public function findGameWithPlayers(int $id): ?Game
     {
         return $this->createQueryBuilder('g')
-            // Charger les joueurs de la partie
             ->leftJoin('g.gamePlayers', 'gp')
             ->addSelect('gp')
-            // Charger les utilisateurs des joueurs
             ->leftJoin('gp.user', 'u')
             ->addSelect('u')
-            // Charger le Game Master
             ->leftJoin('g.gameMaster', 'gm')
             ->addSelect('gm')
             ->where('g.id = :id')

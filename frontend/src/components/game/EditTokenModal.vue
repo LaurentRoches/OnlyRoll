@@ -19,7 +19,6 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore()
 
-// Formulaire
 const form = ref({
   name: '',
   type: TokenType.CHARACTER,
@@ -29,12 +28,10 @@ const form = ref({
 const isSubmitting = ref(false)
 const error = ref<string | null>(null)
 
-// Gestion de l'upload de fichier
 const selectedFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const uploadError = ref<string | null>(null)
 
-// Types de tokens disponibles
 const tokenTypes = [
   { value: TokenType.CHARACTER, label: 'Personnage', icon: '🧙', color: '#6366f1' },
   { value: TokenType.MONSTER, label: 'Monstre', icon: '👹', color: '#ef4444' },
@@ -42,7 +39,6 @@ const tokenTypes = [
   { value: TokenType.OBJECT, label: 'Objet', icon: '📦', color: '#f59e0b' },
 ]
 
-// Tailles disponibles
 const tokenSizes = [
   { value: 0.5, label: 'Petit (0.5)' },
   { value: 1, label: 'Moyen (1)' },
@@ -51,19 +47,16 @@ const tokenSizes = [
   { value: 4, label: 'Gigantesque (4)' },
 ]
 
-// Validation
 const isFormValid = computed(() => {
   return form.value.name.trim().length > 0
 })
 
-// Pré-remplir le formulaire avec les données du token
 function prefillForm() {
   if (props.token) {
     form.value.name = props.token.name
     form.value.type = props.token.type
     form.value.size = props.token.size
 
-    // Afficher l'image actuelle
     if (props.token.imageUrl) {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
       const baseUrl = apiUrl.replace(/\/api$/, '')
@@ -80,7 +73,6 @@ function prefillForm() {
   }
 }
 
-// Pré-remplir les champs quand la modal s'ouvre
 watch(
   () => props.show,
   (isShown) => {
@@ -91,7 +83,6 @@ watch(
   { immediate: true }
 )
 
-// Aussi pré-remplir si le token change
 watch(
   () => props.token,
   () => {
@@ -101,20 +92,17 @@ watch(
   }
 )
 
-// Gestion de la sélection de fichier
 function handleFileSelect(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
 
   if (!file) return
 
-  // Vérifier le type
   if (!file.type.startsWith('image/')) {
     uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
     return
   }
 
-  // Vérifier la taille (5 Mo max pour les tokens)
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
     uploadError.value = "L'image est trop volumineuse (max 5 Mo)"
@@ -131,13 +119,11 @@ function handleFileSelect(event: Event) {
   reader.readAsDataURL(file)
 }
 
-// Supprimer le fichier sélectionné
 function removeFile() {
   selectedFile.value = null
   imagePreview.value = null
 }
 
-// Handlers
 async function handleSubmit() {
   if (!isFormValid.value || !props.token) return
 
@@ -147,7 +133,6 @@ async function handleSubmit() {
   try {
     const formData = new FormData()
 
-    // Ajouter l'image seulement si une nouvelle a été sélectionnée
     if (selectedFile.value) {
       formData.append('image', selectedFile.value)
     }
@@ -174,7 +159,6 @@ async function handleSubmit() {
     const updatedToken = await response.json()
     console.log('Token mis à jour:', updatedToken)
 
-    // Recharger les tokens
     await mapStore.loadMapTokens(props.mapId)
 
     emit('success')

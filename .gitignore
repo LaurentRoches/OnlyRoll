@@ -20,6 +20,7 @@ frontend/.env.*.local
 # Docker
 .env.docker
 .env.docker.local
+docker-compose.override.yml
 
 # Fichiers d'environnement sensibles
 .env.local
@@ -30,4 +31,5 @@ frontend/.env.*.local
 # Clés JWT (générées localement)
 /backend/config/jwt/*.pem
 
-api_hostinger.json
+# Résultats des testes de charge
+tests/load/results/

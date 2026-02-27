@@ -34,11 +34,9 @@ class TokenControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
 
-        // Clear database before each test
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
 
-        // Truncate all relevant tables
         $connection->executeStatement('TRUNCATE TABLE game_token');
         $connection->executeStatement('TRUNCATE TABLE game_player');
         $connection->executeStatement('TRUNCATE TABLE game_map');
@@ -65,14 +63,12 @@ class TokenControllerTest extends WebTestCase
         $this->game->setGameMaster($this->gameMaster);
         $this->game->setIsPublic(false);
 
-        // Add game master as a player
         $gmPlayer = new GamePlayer();
         $gmPlayer->setGame($this->game);
         $gmPlayer->setUser($this->gameMaster);
         $gmPlayer->setStatus(PlayerStatus::ACTIVE);
         $this->game->addGamePlayer($gmPlayer);
 
-        // Add regular player
         $gamePlayer = new GamePlayer();
         $gamePlayer->setGame($this->game);
         $gamePlayer->setUser($this->player);
@@ -239,9 +235,9 @@ class TokenControllerTest extends WebTestCase
             [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode([
-                'name' => '', // Nom vide
+                'name' => '',
                 'type' => 'invalid_type',
-                'x' => -1, // Position négative
+                'x' => -1,
             ]),
         );
 
@@ -282,7 +278,6 @@ class TokenControllerTest extends WebTestCase
             json_encode(['x' => 15, 'y' => 20]),
         );
 
-        // Le token ne doit pas bouger
         $this->entityManager->refresh($token);
         $this->assertEquals(5, $token->getX());
         $this->assertEquals(5, $token->getY());
@@ -677,13 +672,11 @@ class TokenControllerTest extends WebTestCase
     {
         $token = $this->createToken('Test Token', true);
 
-        // Add permission first by setting it in the token settings
         $settings = $token->getSettings() ?? [];
         $settings['controllableBy'] = [$this->player->getId()];
         $token->setSettings($settings);
         $this->entityManager->flush();
 
-        // Remove permission
         $this->client->loginUser($this->gameMaster);
         $this->client->request(
             'POST',
@@ -843,7 +836,6 @@ class TokenControllerTest extends WebTestCase
     {
         $this->client->loginUser($this->gameMaster);
 
-        // For POST requests, use form parameters directly
         $this->client->request(
             'POST',
             $this->getTokenUrl(),

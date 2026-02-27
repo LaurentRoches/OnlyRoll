@@ -7,10 +7,10 @@ namespace App\Enum;
  */
 enum TokenType: string
 {
-    case CHARACTER = 'character';  // Personnage joueur
-    case MONSTER = 'monster';      // Monstre/ennemi
-    case NPC = 'npc';              // Personnage non-joueur
-    case OBJECT = 'object';        // Objet/décor
+    case CHARACTER = 'character';
+    case MONSTER = 'monster';
+    case NPC = 'npc';
+    case OBJECT = 'object';
 
     /**
      * Retourne le label français du type de token.

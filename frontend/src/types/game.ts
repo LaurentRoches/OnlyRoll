@@ -120,7 +120,6 @@ export interface GamePlayer {
   joinedAt: string
   leftAt?: string
 
-  // Relations
   game?: Game
 }
 
@@ -148,12 +147,10 @@ export interface GameMap {
   createdAt: string
   updatedAt?: string
 
-  // Méthodes métier exposées via serialization groups
   dimensions?: string
   tokensCount?: number
   totalCells?: number
 
-  // Relations
   game?: Game
   tokens?: GameToken[]
 }
@@ -183,11 +180,9 @@ export interface GameToken {
   createdAt: string
   updatedAt?: string
 
-  // Méthodes métier exposées
   position?: TokenPosition
   centerPosition?: { x: number; y: number }
 
-  // Relations
   map?: GameMap
 }
 
@@ -211,9 +206,14 @@ export const MESSAGE_TYPES = {
  */
 export interface DiceResult {
   formula: string
-  results: number[]
+  results: number[] // tous les dés lancés
+  keptRolls?: number[] // dés comptabilisés (absent = tous gardés)
+  dropped?: number[] // dés écartés
   total: number
   modifier: number
+  keepType?: 'kh' | 'kl' | null
+  keepCount?: number | null
+  sidesPerDie?: number // faces du dé (pour calcul min/max côté front)
 }
 
 /**
@@ -234,14 +234,12 @@ export interface GameMessage {
   isInCharacter: boolean
   createdAt: string
 
-  // Méthodes métier exposées
   diceTotal?: number
   formattedContent?: string
 
-  // Relations
   user: User
   game?: Game
-  recipient?: User // Pour les whispers
+  recipient?: User
 }
 
 // ===========================
@@ -334,10 +332,10 @@ export interface CreateMapDTO {
   name: string
   description?: string
   imageUrl?: string
-  gridSize?: number // Default: 50
-  gridType?: GridType // Default: 'square'
-  width?: number // Default: 20
-  height?: number // Default: 20
+  gridSize?: number
+  gridType?: GridType
+  width?: number
+  height?: number
   settings?: Record<string, unknown>
 }
 
@@ -380,13 +378,11 @@ export interface UpdateMapDTO {
  * - settings: Record<string, unknown> | undefined
  */
 export interface CreateTokenDTO {
-  // Champs obligatoires
   name: string
   type: TokenType
   x: number
   y: number
 
-  // Champs optionnels
   imageUrl?: string
   size?: number
   rotation?: number
@@ -434,9 +430,9 @@ export interface MoveTokenDTO {
  */
 export interface SendMessageDTO {
   type: MessageType
-  content: string // 1-2000 caractères
-  recipientId?: number // Pour les whispers (messages privés)
-  isInCharacter?: boolean // True = message "dans la peau du personnage"
+  content: string
+  recipientId?: number
+  isInCharacter?: boolean
   metadata?: Record<string, unknown>
 }
 
@@ -444,11 +440,11 @@ export interface SendMessageDTO {
  * DTO pour lancer des dés
  */
 export interface RollDiceDTO {
-  formula: string // Ex: "1d20+5", "3d6", "2d10-1"
-  reason?: string // Raison du lancer (ex: "Attaque", "Perception")
-  isInCharacter?: boolean // Lancer au nom du personnage ou du joueur
-  isVisible?: boolean // Visible par tous ou secret (MJ uniquement)
-  recipientId?: number // Pour les jets de dés privés (whisper)
+  formula: string
+  reason?: string
+  isInCharacter?: boolean
+  isVisible?: boolean
+  recipientId?: number
 }
 
 // ===========================
@@ -496,7 +492,7 @@ export interface TokenSettings {
   maxHealthPoints?: number
   armorClass?: number
   initiative?: number
-  conditions?: string[] // Ex: ['poisoned', 'stunned']
+  conditions?: string[]
   notes?: string
   aura?: {
     color: string

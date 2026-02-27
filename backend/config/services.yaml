@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
+    app.hostname: '%env(APP_HOSTNAME)%'
 
 services:
     # default configuration for services in *this* file
@@ -36,3 +37,13 @@ services:
     App\Service\MercureTokenService:
         arguments:
             $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
+
+    # Configuration du subscriber des headers de sécurité OWASP
+    App\EventSubscriber\SecurityHeadersSubscriber:
+        arguments:
+            $appEnv: '%kernel.environment%'
+
+    # Configuration du subscriber de rafraîchissement du cookie JWT (sliding session)
+    App\EventSubscriber\JwtCookieRefreshSubscriber:
+        arguments:
+            $appEnv: '%kernel.environment%'

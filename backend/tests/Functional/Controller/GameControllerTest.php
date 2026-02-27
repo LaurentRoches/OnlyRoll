@@ -112,7 +112,6 @@ class GameControllerTest extends WebTestCase
         $game1 = $this->createPublicGame('My Game 1', $this->testUser);
         $game2 = $this->createPublicGame('Other Game', $this->otherUser);
 
-        // Rejoindre une autre partie
         $this->addPlayerToGame($game2, $this->testUser, PlayerRole::PLAYER);
 
         $this->client->loginUser($this->testUser);
@@ -221,7 +220,7 @@ class GameControllerTest extends WebTestCase
         $this->client->request('POST', '/api/games', [], [], [
             'CONTENT_TYPE' => 'application/json',
         ], json_encode([
-            'name' => '', // Nom vide
+            'name' => '',
             'maxPlayers' => 6,
         ]));
 
@@ -651,17 +650,14 @@ class GameControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        // Désactiver temporairement les contraintes de clés étrangères
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
 
-        // Supprimer toutes les données des tables dans l'ordre
         $tables = ['game_message', 'game_token', 'game_player', 'game_map', 'game', 'user'];
         foreach ($tables as $table) {
             $connection->executeStatement("TRUNCATE TABLE $table");
         }
 
-        // Réactiver les contraintes de clés étrangères
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
     }
 }

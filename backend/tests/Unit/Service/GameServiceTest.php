@@ -205,7 +205,6 @@ class GameServiceTest extends TestCase
 
         $dto = new UpdateGameDTO();
         $dto->name = 'Updated Name';
-        // Les autres champs restent null
 
         $this->entityManager->expects($this->once())
             ->method('flush');

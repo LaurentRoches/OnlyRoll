@@ -54,7 +54,6 @@ class PresenceService
 
         $this->saveOnlineUsersToCache($gameId, $onlineUsers);
 
-        // Ne publier que si c'était une nouvelle connexion
         if (!$wasOnline) {
             $this->mercurePublisher->publishPresenceEvent(
                 $gameId,
@@ -117,15 +116,12 @@ class PresenceService
             return;
         }
 
-        // Nettoyer les utilisateurs inactifs
         $this->cleanupInactiveUsers($gameId);
 
-        // Mettre à jour le timestamp
         $onlineUsers = $this->getOnlineUsersFromCache($gameId);
         $onlineUsers[$userId] = new DateTimeImmutable();
         $this->saveOnlineUsersToCache($gameId, $onlineUsers);
 
-        // Publier la liste mise à jour
         $this->mercurePublisher->publishPresenceEvent(
             $gameId,
             $userId,
@@ -147,7 +143,6 @@ class PresenceService
      */
     public function getOnlineUserIds(int $gameId): array
     {
-        // Nettoyer les utilisateurs inactifs avant de retourner la liste
         $this->cleanupInactiveUsers($gameId);
 
         $onlineUsers = $this->getOnlineUsersFromCache($gameId);
@@ -174,14 +169,11 @@ class PresenceService
             return false;
         }
 
-        // Vérifier si le timestamp n'est pas trop ancien
         $lastSeen = $onlineUsers[$userId];
         $now = time();
 
         if (($now - $lastSeen) > self::TIMEOUT_SECONDS) {
-            // L'utilisateur a expiré
             unset($onlineUsers[$userId]);
-            // Recréer avec DateTimeImmutable pour la sauvegarde
             $onlineUsersWithDates = [];
             foreach ($onlineUsers as $uid => $timestamp) {
                 $onlineUsersWithDates[$uid] = (new DateTimeImmutable())->setTimestamp($timestamp);
@@ -215,16 +207,13 @@ class PresenceService
             }
         }
 
-        // Sauvegarder la liste mise à jour
         if (!empty($removedUsers)) {
-            // Recréer avec DateTimeImmutable pour la sauvegarde
             $onlineUsersWithDates = [];
             foreach ($onlineUsers as $uid => $timestamp) {
                 $onlineUsersWithDates[$uid] = (new DateTimeImmutable())->setTimestamp($timestamp);
             }
             $this->saveOnlineUsersToCache($gameId, $onlineUsersWithDates);
 
-            // Publier des événements de déconnexion pour les utilisateurs expirés
             foreach ($removedUsers as $userId) {
                 $this->mercurePublisher->publishPresenceEvent(
                     $gameId,
@@ -281,23 +270,20 @@ class PresenceService
         $cacheKey = self::CACHE_PREFIX . $gameId;
 
         try {
-            // Si plus personne n'est connecté, on supprime la clé
             if (empty($onlineUsers)) {
                 $this->presenceCache->deleteItem($cacheKey);
 
                 return;
             }
 
-            // Convertir les DateTimeImmutable en timestamps pour la sérialisation
             $data = [];
             foreach ($onlineUsers as $userId => $lastSeen) {
                 $data[$userId] = $lastSeen instanceof DateTimeImmutable ? $lastSeen->getTimestamp() : $lastSeen;
             }
 
-            // Sauvegarder dans Redis
             $item = $this->presenceCache->getItem($cacheKey);
             $item->set($data);
-            $item->expiresAfter(self::TIMEOUT_SECONDS * 2); // Expiration de sécurité
+            $item->expiresAfter(self::TIMEOUT_SECONDS * 2);
             $this->presenceCache->save($item);
 
             $this->logger->debug('Saved presence to cache', [
@@ -319,9 +305,6 @@ class PresenceService
     public function clearAll(): void
     {
         try {
-            // Supprimer toutes les clés de présence
-            // Note: CacheItemPoolInterface n'a pas de méthode clear() globale
-            // Pour simplifier, on log juste un avertissement
             $this->logger->warning('clearAll() called but not fully implemented - use Redis FLUSHDB if needed');
         }
         catch (Exception $e) {

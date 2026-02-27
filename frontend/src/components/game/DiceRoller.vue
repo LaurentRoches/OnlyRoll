@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useChatStore } from '@/stores/chatStore'
+import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
+import { getErrorMessage } from '@/utils/errorHelpers'
+import type { DiceResult } from '@/types/game'
 
 const props = defineProps<{
   gameId: number
@@ -8,16 +11,22 @@ const props = defineProps<{
 
 const chatStore = useChatStore()
 
-// État local
 const formula = ref('')
 const modifier = ref(0)
 const isInCharacter = ref(true)
-const lastResult = ref<{
-  formula: string
-  total: number
-  rolls: number[]
-  timestamp: string
-} | null>(null)
+const advantageMode = ref<'normal' | 'advantage' | 'disadvantage' | 'super'>('normal')
+
+const lastResult = ref<(DiceResult & { timestamp: string }) | null>(null)
+const rollError = ref<string | null>(null)
+let rollErrorTimer: ReturnType<typeof setTimeout> | null = null
+
+function showRollError(message: string) {
+  if (rollErrorTimer) clearTimeout(rollErrorTimer)
+  rollError.value = message
+  rollErrorTimer = setTimeout(() => {
+    rollError.value = null
+  }, 5000)
+}
 
 // ============================================
 // Dés rapides prédéfinis
@@ -33,11 +42,40 @@ const quickDice = [
 
 const commonRolls = [
   { label: 'Initiative', formula: '1d20', icon: '⚡' },
+  { label: 'Initiative (avantage)', formula: '2d20kh1', icon: '⚡' },
   { label: 'Attaque', formula: '1d20+5', icon: '⚔️' },
+  { label: 'Attaque (désavantage)', formula: '2d20kl1', icon: '⚔️' },
   { label: 'Dégâts (épée)', formula: '1d8+3', icon: '🗡️' },
   { label: 'Dégâts (arc)', formula: '1d6+2', icon: '🏹' },
   { label: 'Jet de sauvegarde', formula: '1d20+2', icon: '🛡️' },
   { label: 'Soin (potion)', formula: '2d4+2', icon: '💊' },
+]
+
+const advantageModes = [
+  {
+    key: 'normal' as const,
+    label: 'Normal',
+    color: 'bg-secondary-700 hover:bg-secondary-600',
+    activeColor: 'bg-secondary-500 ring-2 ring-white',
+  },
+  {
+    key: 'advantage' as const,
+    label: 'Avantage',
+    color: 'bg-green-700 hover:bg-green-600',
+    activeColor: 'bg-green-500 ring-2 ring-white',
+  },
+  {
+    key: 'disadvantage' as const,
+    label: 'Désavantage',
+    color: 'bg-red-700 hover:bg-red-600',
+    activeColor: 'bg-red-500 ring-2 ring-white',
+  },
+  {
+    key: 'super' as const,
+    label: 'Super-avantage',
+    color: 'bg-yellow-700 hover:bg-yellow-600',
+    activeColor: 'bg-yellow-500 ring-2 ring-white',
+  },
 ]
 
 // ============================================
@@ -46,14 +84,27 @@ const commonRolls = [
 const fullFormula = computed(() => {
   if (!formula.value) return ''
 
-  if (modifier.value === 0) return formula.value
+  const match = formula.value.match(/^(\d+)d(\d+)$/)
+  let base = formula.value
 
-  const sign = modifier.value > 0 ? '+' : ''
-  return `${formula.value}${sign}${modifier.value}`
+  if (match && advantageMode.value !== 'normal') {
+    const sides = match[2]
+    const mult = advantageMode.value === 'super' ? 3 : 2
+    const keep = advantageMode.value === 'disadvantage' ? 'kl1' : 'kh1'
+    base = `${mult}d${sides}${keep}`
+  }
+
+  if (modifier.value === 0) return base
+  return `${base}${modifier.value > 0 ? '+' : ''}${modifier.value}`
 })
 
 const canRoll = computed(() => {
   return formula.value.match(/^\d+d\d+/) !== null
+})
+
+const advantagePreview = computed(() => {
+  if (!formula.value || advantageMode.value === 'normal') return null
+  return fullFormula.value || null
 })
 
 // ============================================
@@ -67,22 +118,26 @@ async function rollDice() {
 
     const result = await chatStore.rollDice(props.gameId, fullFormula.value, isInCharacter.value)
 
-    // Sauvegarder le résultat pour l'affichage
     if (result.diceResult) {
       lastResult.value = {
         formula: fullFormula.value,
+        results: result.diceResult.results,
+        keptRolls: result.diceResult.keptRolls,
+        dropped: result.diceResult.dropped,
         total: result.diceResult.total,
-        rolls: result.diceResult.results,
+        modifier: result.diceResult.modifier,
+        keepType: result.diceResult.keepType,
+        keepCount: result.diceResult.keepCount,
+        sidesPerDie: result.diceResult.sidesPerDie,
         timestamp: result.createdAt,
       }
       console.log('✅ Résultat:', lastResult.value)
     }
 
-    // Réinitialiser le formulaire
     formula.value = ''
     modifier.value = 0
   } catch (error) {
-    console.error('❌ Erreur lors du lancer de dés:', error)
+    showRollError(getErrorMessage(error, 'Erreur lors du lancer de dés.'))
   }
 }
 
@@ -92,12 +147,14 @@ function useQuickDice(diceFormula: string) {
 
 async function useCommonRoll(rollFormula: string) {
   formula.value = rollFormula
+  advantageMode.value = 'normal'
   await rollDice()
 }
 
 function clearFormula() {
   formula.value = ''
   modifier.value = 0
+  advantageMode.value = 'normal'
 }
 
 function addToFormula(text: string) {
@@ -107,7 +164,6 @@ function addToFormula(text: string) {
 
 <template>
   <div class="flex-1 overflow-y-auto p-4">
-    <!-- Header -->
     <div class="mb-6">
       <h3 class="font-bold text-secondary-50 text-lg mb-2 flex items-center gap-2">
         <span>🎲</span>
@@ -116,8 +172,7 @@ function addToFormula(text: string) {
       <p class="text-sm text-secondary-400">Formule personnalisée ou raccourcis rapides</p>
     </div>
 
-    <!-- Dés rapides -->
-    <div class="mb-6">
+    <div class="mb-4">
       <label class="block text-sm font-medium text-secondary-300 mb-3"> Dés rapides </label>
       <div class="grid grid-cols-3 gap-2">
         <button
@@ -136,7 +191,29 @@ function addToFormula(text: string) {
       </div>
     </div>
 
-    <!-- Formule personnalisée -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-secondary-300 mb-2"> Mode </label>
+      <div class="grid grid-cols-2 gap-2">
+        <button
+          v-for="mode in advantageModes"
+          :key="mode.key"
+          @click="advantageMode = mode.key"
+          :title="
+            advantageMode === mode.key && advantagePreview ? `Formule : ${advantagePreview}` : ''
+          "
+          :class="[
+            'px-3 py-2 rounded-lg text-white text-sm font-medium transition-all',
+            advantageMode === mode.key ? mode.activeColor : mode.color,
+          ]"
+        >
+          {{ mode.label }}
+        </button>
+      </div>
+      <p v-if="advantagePreview" class="mt-1 text-xs text-secondary-400 font-mono text-center">
+        → {{ advantagePreview }}
+      </p>
+    </div>
+
     <div class="mb-4">
       <label class="block text-sm font-medium text-secondary-300 mb-2">
         Formule personnalisée
@@ -158,7 +235,6 @@ function addToFormula(text: string) {
         </button>
       </div>
 
-      <!-- Boutons pour construire la formule -->
       <div class="grid grid-cols-4 gap-2 mt-2">
         <button
           v-for="num in [1, 2, 3, 4]"
@@ -200,7 +276,6 @@ function addToFormula(text: string) {
       </div>
     </div>
 
-    <!-- Modificateur -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-secondary-300 mb-2"> Modificateur </label>
       <div class="flex items-center gap-2">
@@ -232,7 +307,6 @@ function addToFormula(text: string) {
       </div>
     </div>
 
-    <!-- Options -->
     <div class="mb-6">
       <label class="flex items-center gap-2 cursor-pointer">
         <input
@@ -244,7 +318,24 @@ function addToFormula(text: string) {
       </label>
     </div>
 
-    <!-- Bouton de lancer -->
+    <Transition name="slide-up">
+      <div
+        v-if="rollError"
+        class="flex items-start gap-2 mb-3 px-3 py-2 bg-red-900/40 border border-red-500/50 rounded-lg text-sm text-red-300"
+        role="alert"
+      >
+        <span class="flex-shrink-0">⚠️</span>
+        <span>{{ rollError }}</span>
+        <button
+          @click="rollError = null"
+          class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
+          aria-label="Fermer"
+        >
+          ✕
+        </button>
+      </div>
+    </Transition>
+
     <button
       @click="rollDice"
       :disabled="!canRoll || chatStore.isSending"
@@ -254,7 +345,6 @@ function addToFormula(text: string) {
       <span>Lancer {{ fullFormula || 'les dés' }}</span>
     </button>
 
-    <!-- Lancers communs -->
     <div class="mb-6">
       <label class="block text-sm font-medium text-secondary-300 mb-3"> Lancers courants </label>
       <div class="space-y-2">
@@ -275,20 +365,11 @@ function addToFormula(text: string) {
       </div>
     </div>
 
-    <!-- Dernier résultat -->
     <Transition name="slide-up">
-      <div v-if="lastResult" class="card bg-gradient-primary p-6 shadow-purple">
-        <div class="text-center">
-          <div class="text-sm text-primary-100 mb-2 font-medium">
-            {{ lastResult.formula }}
-          </div>
-          <div class="text-6xl font-bold text-white mb-3">
-            {{ lastResult.total }}
-          </div>
-          <div class="text-sm text-primary-100">Détails: {{ lastResult.rolls.join(' + ') }}</div>
-          <div class="text-xs text-primary-200 mt-2">
-            {{ new Date(lastResult.timestamp).toLocaleTimeString('fr-FR') }}
-          </div>
+      <div v-if="lastResult" class="card bg-gradient-primary p-4 shadow-purple">
+        <DiceResultDisplay :diceResult="lastResult" />
+        <div class="text-xs text-primary-200 mt-2 text-center">
+          {{ new Date(lastResult.timestamp).toLocaleTimeString('fr-FR') }}
         </div>
       </div>
     </Transition>

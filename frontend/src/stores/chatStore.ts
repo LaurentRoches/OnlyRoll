@@ -8,6 +8,7 @@ import { ref, computed } from 'vue'
 import { chatApi } from '@/services/api'
 import type { GameMessage, MessageType } from '@/types/game'
 import { logger } from '@/utils/logger'
+import { getErrorMessage } from '@/utils/errorHelpers'
 import type {
   MercureChatMessageData,
   MercureDiceRollData,
@@ -15,29 +16,19 @@ import type {
 } from '@/types/websocket'
 
 export const useChatStore = defineStore('chat', () => {
-  // ===========================
-  // État
-  // ===========================
-
   const messages = ref<GameMessage[]>([])
   const isLoading = ref(false)
   const isSending = ref(false)
   const error = ref<string | null>(null)
 
-  // Pagination
   const hasMore = ref(true)
   const oldestMessageId = ref<number | null>(null)
-
-  // ===========================
-  // Getters (computed)
-  // ===========================
 
   /**
    * Messages triés par date (plus récents en bas)
    * Protection contre messages undefined/null
    */
   const sortedMessages = computed(() => {
-    // Protection supplémentaire pour garantir que messages.value est un tableau
     if (!Array.isArray(messages.value)) {
       logger.error('messages.value is not an array:', messages.value)
       messages.value = []
@@ -102,10 +93,6 @@ export const useChatStore = defineStore('chat', () => {
     return sorted[sorted.length - 1]
   })
 
-  // ===========================
-  // Actions - Chargement
-  // ===========================
-
   /**
    * Charger les messages récents d'un jeu
    * Garantit que messages est toujours un tableau
@@ -119,12 +106,12 @@ export const useChatStore = defineStore('chat', () => {
 
       messages.value = Array.isArray(loadedMessages) ? loadedMessages : []
 
-      // Mettre à jour l'ID du plus ancien message pour la pagination
       if (messages.value.length > 0) {
-        oldestMessageId.value = messages.value[0].id
+        // Le backend retourne les messages DESC (plus récent en premier).
+        // Le dernier élément du tableau est donc le plus ancien → sert de curseur pour loadMoreMessages.
+        oldestMessageId.value = messages.value[messages.value.length - 1].id
       }
 
-      // Si on a moins de messages que demandé, il n'y en a plus
       hasMore.value = messages.value.length === limit
 
       logger.log('Messages chargés:', messages.value.length)
@@ -161,7 +148,8 @@ export const useChatStore = defineStore('chat', () => {
       if (Array.isArray(olderMessages) && olderMessages.length > 0) {
         messages.value.unshift(...olderMessages)
 
-        oldestMessageId.value = olderMessages[0].id
+        // olderMessages aussi en DESC → le dernier est le plus ancien du lot chargé.
+        oldestMessageId.value = olderMessages[olderMessages.length - 1].id
 
         hasMore.value = olderMessages.length === limit
       } else {
@@ -207,10 +195,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // ===========================
-  // Actions - Envoi de messages
-  // ===========================
-
   /**
    * Envoyer un message de chat
    */
@@ -223,11 +207,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi du message"
-      } else {
-        error.value = "Erreur lors de l'envoi du message"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message")
       logger.error('Erreur sendMessage:', e)
       throw e
     } finally {
@@ -247,11 +227,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi de l'émote"
-      } else {
-        error.value = "Erreur lors de l'envoi de l'émote"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi de l'émote")
       logger.error('Erreur sendEmote:', e)
       throw e
     } finally {
@@ -271,11 +247,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || "Erreur lors de l'envoi du chuchotement"
-      } else {
-        error.value = "Erreur lors de l'envoi du chuchotement"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du chuchotement")
       logger.error('Erreur sendWhisper:', e)
       throw e
     } finally {
@@ -295,12 +267,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value =
-          (e as { message: string }).message || "Erreur lors de l'envoi du message système"
-      } else {
-        error.value = "Erreur lors de l'envoi du message système"
-      }
+      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message système")
       logger.error('Erreur sendSystemMessage:', e)
       throw e
     } finally {
@@ -330,11 +297,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du lancer de dés'
-      } else {
-        error.value = 'Erreur lors du lancer de dés'
-      }
+      error.value = getErrorMessage(e, 'Erreur lors du lancer de dés')
       logger.error('Erreur rollDice:', e)
       throw e
     } finally {
@@ -362,10 +325,6 @@ export const useChatStore = defineStore('chat', () => {
       throw e
     }
   }
-
-  // ===========================
-  // Actions - Synchronisation Mercure
-  // ===========================
 
   /**
    * Gérer un message reçu via Mercure
@@ -430,10 +389,6 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // ===========================
-  // Helpers privés
-  // ===========================
-
   /**
    * Ajouter un message à la liste (évite les doublons)
    */
@@ -484,19 +439,13 @@ export const useChatStore = defineStore('chat', () => {
     oldestMessageId.value = null
   }
 
-  // ===========================
-  // Return (API publique du store)
-  // ===========================
-
   return {
-    // État
     messages,
     isLoading,
     isSending,
     error,
     hasMore,
 
-    // Getters
     sortedMessages,
     messagesByType,
     chatMessages,
@@ -505,12 +454,10 @@ export const useChatStore = defineStore('chat', () => {
     messagesCount,
     lastMessage,
 
-    // Actions - Chargement
     loadRecentMessages,
     loadMoreMessages,
     loadMessagesSince,
 
-    // Actions - Envoi
     sendMessage,
     sendEmote,
     sendWhisper,
@@ -518,12 +465,10 @@ export const useChatStore = defineStore('chat', () => {
     rollDice,
     deleteMessage,
 
-    // Actions - Mercure
     handleChatMessage,
     handleDiceRoll,
     handleMessageDeleted,
 
-    // Utils
     clearMessages,
     $reset,
   }

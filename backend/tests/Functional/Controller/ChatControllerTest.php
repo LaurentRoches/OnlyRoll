@@ -32,10 +32,8 @@ class ChatControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get('doctrine')->getManager();
 
-        // Nettoyer la base de données avant chaque test
         $this->cleanDatabase();
 
-        // Créer les utilisateurs de test
         $this->gameMaster = new User();
         $this->gameMaster->setPseudo('gamemaster');
         $this->gameMaster->setEmail('gm@test.com');
@@ -49,7 +47,6 @@ class ChatControllerTest extends WebTestCase
         $this->entityManager->persist($this->gameMaster);
         $this->entityManager->persist($this->player);
 
-        // Créer une partie de test
         $this->game = new Game();
         $this->game->setName('Test Game');
         $this->game->setGameMaster($this->gameMaster);
@@ -74,7 +71,6 @@ class ChatControllerTest extends WebTestCase
 
     private function cleanDatabase(): void
     {
-        // Supprimer toutes les données de test
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
 
@@ -118,7 +114,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testGetMessagesSuccess(): void
     {
-        // Créer quelques messages
         for ($i = 0; $i < 3; ++$i) {
             $message = new GameMessage();
             $message->setGame($this->game);
@@ -289,6 +284,92 @@ class ChatControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testRollDiceWithAdvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kh1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals(MessageType::DICE_ROLL->value, $data['type']);
+        $this->assertArrayHasKey('diceResult', $data);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(1, $data['diceResult']['dropped']);
+        $this->assertGreaterThanOrEqual(
+            $data['diceResult']['dropped'][0],
+            $data['diceResult']['keptRolls'][0],
+        );
+    }
+
+    public function testRollDiceWithDisadvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kl1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(1, $data['diceResult']['dropped']);
+        $this->assertLessThanOrEqual(
+            $data['diceResult']['dropped'][0],
+            $data['diceResult']['keptRolls'][0],
+        );
+    }
+
+    public function testRollDiceWithSuperAdvantage(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '3d20kh1']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $data = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('keptRolls', $data['diceResult']);
+        $this->assertArrayHasKey('dropped', $data['diceResult']);
+        $this->assertCount(1, $data['diceResult']['keptRolls']);
+        $this->assertCount(2, $data['diceResult']['dropped']);
+        $this->assertEquals('kh', $data['diceResult']['keepType']);
+    }
+
+    public function testRollDiceWithInvalidKeepCount(): void
+    {
+        $this->client->loginUser($this->player);
+        $this->client->request(
+            'POST',
+            '/api/games/' . $this->game->getId() . '/chat/roll-dice',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['formula' => '2d20kh2']),
+        );
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testGetStatsAsGameMaster(): void
     {
         $message = new GameMessage();
@@ -420,7 +501,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testGetDiceRollsWithCustomLimit(): void
     {
-        // Clean messages to ensure we have exactly 5
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('DELETE FROM game_message WHERE game_id = :gameId', [
             'gameId' => $this->game->getId()
@@ -634,7 +714,6 @@ class ChatControllerTest extends WebTestCase
 
     public function testRollDiceWithValidRecipient(): void
     {
-        // Create a second player and add them to the game
         $player2 = new User();
         $player2->setPseudo('player2');
         $player2->setEmail('player2@test.com');

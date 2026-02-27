@@ -2,6 +2,10 @@
 import { ref, nextTick, watch, onMounted, computed } from 'vue'
 import { useChatStore } from '@/stores/chatStore'
 import { useAuthStore } from '@/stores/auth'
+import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
+import SkeletonMessage from '@/components/game/SkeletonMessage.vue'
+import { getErrorMessage } from '@/utils/errorHelpers'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import type {
   GameMessage,
   MessageType,
@@ -19,13 +23,47 @@ const props = defineProps<{
 const chatStore = useChatStore()
 const authStore = useAuthStore()
 
-// État local
 const messageInput = ref('')
 const isInCharacter = ref(false)
 const chatContainer = ref<HTMLElement | null>(null)
 const isAtBottom = ref(true)
+const chatInputError = ref<string | null>(null)
+const loadOlderSentinel = ref<HTMLElement | null>(null)
 
-// État autocomplétion
+// Chargement de l'historique avec ancrage de position de scroll
+async function loadOlderMessages() {
+  if (!chatContainer.value) return
+  const prevHeight = chatContainer.value.scrollHeight
+  await chatStore.loadMoreMessages(props.gameId)
+  await nextTick()
+  // Maintenir la position de scroll après le prepend
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight - prevHeight
+  }
+}
+
+const infiniteScrollDisabled = computed(() => !chatStore.hasMore || chatStore.isLoading)
+
+useInfiniteScroll(loadOlderSentinel, loadOlderMessages, {
+  disabled: infiniteScrollDisabled,
+  rootMargin: '50px',
+})
+
+let errorClearTimer: ReturnType<typeof setTimeout> | null = null
+
+function showInputError(message: string) {
+  if (errorClearTimer) clearTimeout(errorClearTimer)
+  chatInputError.value = message
+  errorClearTimer = setTimeout(() => {
+    chatInputError.value = null
+  }, 5000)
+}
+
+function clearInputError() {
+  if (errorClearTimer) clearTimeout(errorClearTimer)
+  chatInputError.value = null
+}
+
 const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(0)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -38,13 +76,10 @@ const visibleMessages = computed(() => {
   if (!currentUserId) return props.messages
 
   return props.messages.filter((msg) => {
-    // Si le message a un destinataire (whisper ou dice_roll privé)
-    // Seuls l'expéditeur et le destinataire peuvent le voir
     if (msg.recipient) {
       return msg.user.id === currentUserId || msg.recipient.id === currentUserId
     }
 
-    // Sinon, tout le monde peut le voir
     return true
   })
 })
@@ -55,20 +90,17 @@ const visibleMessages = computed(() => {
 const filteredPlayers = computed(() => {
   if (!showSuggestions.value) return []
 
-  // Détecter si on est en train de taper /w ou /whisper
   const whisperMatch = messageInput.value.match(/^\/(w|whisper)\s+(\S*)$/)
   if (!whisperMatch) return []
 
   const searchTerm = whisperMatch[2].toLowerCase()
 
-  // Filtrer les joueurs par pseudo (exclure l'utilisateur actuel)
   return props.players
     .filter((p) => p.user.id !== authStore.user?.id)
     .filter((p) => p.user.pseudo.toLowerCase().includes(searchTerm))
-    .slice(0, 5) // Limiter à 5 suggestions
+    .slice(0, 5)
 })
 
-// Watcher pour détecter quand afficher l'autocomplétion
 watch(messageInput, (newValue) => {
   const whisperMatch = newValue.match(/^\/(w|whisper)\s+(\S*)$/)
   showSuggestions.value = !!whisperMatch
@@ -82,7 +114,6 @@ function selectPlayer(player: GamePlayer) {
   if (whisperMatch) {
     messageInput.value = `${whisperMatch[0]}${player.user.pseudo} `
     showSuggestions.value = false
-    // Focus sur le textarea
     nextTick(() => {
       textareaRef.value?.focus()
     })
@@ -119,28 +150,29 @@ onMounted(() => {
   scrollToBottom()
 })
 
+watch(messageInput, () => {
+  if (chatInputError.value) clearInputError()
+})
+
 // ============================================
 // Envoi de messages - Utilise chatStore
 // ============================================
 async function sendMessage() {
   if (!messageInput.value.trim()) return
 
+  clearInputError()
+
   try {
-    // Vérifier si c'est une commande de dés (/roll ou /r)
     if (messageInput.value.startsWith('/roll ') || messageInput.value.startsWith('/r ')) {
       const formula = messageInput.value.replace(/^\/(roll|r) /, '').trim()
       await chatStore.rollDice(props.gameId, formula, isInCharacter.value)
-      console.log('Dés lancés:', formula)
-    }
-    // Commande whisper (/whisper ou /w)
-    else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
+    } else if (messageInput.value.startsWith('/whisper ') || messageInput.value.startsWith('/w ')) {
       const content = messageInput.value.replace(/^\/(whisper|w) /, '').trim()
 
-      // Parser le nom du destinataire et le message
       const firstSpaceIndex = content.indexOf(' ')
       if (firstSpaceIndex === -1) {
-        console.error(
-          'Format invalide. Utilisez: /whisper <pseudo> <message> ou /whisper <pseudo> /r <formule>'
+        showInputError(
+          'Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>'
         )
         return
       }
@@ -149,56 +181,43 @@ async function sendMessage() {
       const message = content.substring(firstSpaceIndex + 1).trim()
 
       if (!message) {
-        console.error('Le message ne peut pas être vide')
+        showInputError('Le message ne peut pas être vide.')
         return
       }
 
-      // Chercher le joueur par son pseudo
       const recipient = props.players.find(
         (p) => p.user.pseudo.toLowerCase() === recipientPseudo.toLowerCase()
       )
 
       if (!recipient) {
-        console.error(`Joueur "${recipientPseudo}" introuvable`)
+        showInputError(`Joueur "${recipientPseudo}" introuvable dans cette partie.`)
         return
       }
 
-      // Vérifier si c'est un jet de dés privé (/w pseudo /r formule)
       if (message.startsWith('/roll ') || message.startsWith('/r ')) {
         const formula = message.replace(/^\/(roll|r) /, '').trim()
         if (!formula) {
-          console.error('La formule de dés ne peut pas être vide')
+          showInputError('La formule de dés ne peut pas être vide.')
           return
         }
         await chatStore.rollDice(props.gameId, formula, isInCharacter.value, recipient.user.id)
-        console.log('Dés privés lancés à', recipientPseudo, ':', formula)
-      }
-      // Sinon, c'est un whisper normal
-      else {
+      } else {
         await chatStore.sendWhisper(props.gameId, recipient.user.id, message)
-        console.log('Whisper envoyé à', recipientPseudo)
       }
-    }
-    // Commande emote
-    else if (messageInput.value.startsWith('/me ')) {
+    } else if (messageInput.value.startsWith('/me ')) {
       const content = messageInput.value.replace('/me ', '').trim()
       await chatStore.sendEmote(props.gameId, content)
-      console.log('Emote envoyée')
-    }
-    // Message normal
-    else {
+    } else {
       await chatStore.sendMessage(props.gameId, messageInput.value, isInCharacter.value)
-      console.log('Message envoyé')
     }
 
     messageInput.value = ''
   } catch (error) {
-    console.error('Erreur envoi message:', error)
+    showInputError(getErrorMessage(error, "Une erreur est survenue lors de l'envoi."))
   }
 }
 
 function handleKeyDown(event: KeyboardEvent) {
-  // Gestion de l'autocomplétion
   if (showSuggestions.value && filteredPlayers.value.length > 0) {
     if (event.key === 'ArrowDown') {
       event.preventDefault()
@@ -228,7 +247,6 @@ function handleKeyDown(event: KeyboardEvent) {
     }
   }
 
-  // Envoi de message normal
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault()
     sendMessage()
@@ -279,26 +297,33 @@ function getMessageIcon(type: MessageType) {
 function normalizeDiceResult(result: unknown): DiceResult | null {
   if (!result || typeof result !== 'object') return null
 
-  // Type guard pour la nouvelle structure (avec 'rolls' ou 'results')
-  // La nouvelle structure a 'formula' et 'modifier' directement accessibles
   if ('formula' in result && 'modifier' in result) {
     const newResult = result as {
       formula?: string
       rolls?: number[]
       results?: number[]
+      keptRolls?: number[]
+      dropped?: number[]
       total?: number
       modifier?: number
+      keepType?: 'kh' | 'kl' | null
+      keepCount?: number | null
+      sidesPerDie?: number
     }
 
     return {
       formula: newResult.formula || '',
       results: newResult.results || newResult.rolls || [],
+      keptRolls: newResult.keptRolls,
+      dropped: newResult.dropped,
       total: newResult.total || 0,
       modifier: newResult.modifier || 0,
+      keepType: newResult.keepType,
+      keepCount: newResult.keepCount,
+      sidesPerDie: newResult.sidesPerDie,
     }
   }
 
-  // Type guard pour l'ancienne structure (fixtures avec config.dice)
   if (
     'results' in result &&
     'config' in result &&
@@ -339,6 +364,14 @@ function getAvatarColor(userId: number): string {
   <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Messages -->
     <div ref="chatContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- Sentinel en haut : déclencheur du chargement de l'historique -->
+      <div ref="loadOlderSentinel" class="h-1" aria-hidden="true"></div>
+
+      <!-- Skeleton messages pendant le chargement de l'historique -->
+      <template v-if="chatStore.isLoading && chatStore.hasMore">
+        <SkeletonMessage v-for="n in 3" :key="`skel-${n}`" />
+      </template>
+
       <div
         v-for="msg in visibleMessages"
         :key="msg.id"
@@ -368,26 +401,12 @@ function getAvatarColor(userId: number): string {
         <!-- Contenu -->
         <p class="text-secondary-100 text-sm">{{ msg.content }}</p>
 
-        <!-- Résultat de dés - Avec sécurité -->
-        <div v-if="normalizeDiceResult(msg.diceResult)" class="mt-2 p-3 bg-black/30 rounded-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm text-secondary-400 mb-1">
-                🎲 {{ normalizeDiceResult(msg.diceResult)!.formula }}
-              </div>
-              <div class="text-xs text-secondary-500">
-                Lancés: {{ normalizeDiceResult(msg.diceResult)!.results.join(' + ') }}
-                <span v-if="normalizeDiceResult(msg.diceResult)!.modifier !== 0">
-                  {{ normalizeDiceResult(msg.diceResult)!.modifier > 0 ? '+' : ''
-                  }}{{ normalizeDiceResult(msg.diceResult)!.modifier }}
-                </span>
-              </div>
-            </div>
-            <div class="text-3xl font-bold text-white">
-              {{ normalizeDiceResult(msg.diceResult)!.total }}
-            </div>
-          </div>
-        </div>
+        <!-- Résultat de dés -->
+        <DiceResultDisplay
+          v-if="normalizeDiceResult(msg.diceResult)"
+          :diceResult="normalizeDiceResult(msg.diceResult)!"
+          class="mt-2 bg-black/30"
+        />
       </div>
 
       <!-- Message si pas de messages -->
@@ -431,6 +450,25 @@ function getAvatarColor(userId: number): string {
           action
         </div>
       </div>
+
+      <!-- Erreur d'envoi -->
+      <Transition name="fade">
+        <div
+          v-if="chatInputError"
+          class="flex items-start gap-2 mb-2 px-3 py-2 bg-red-900/40 border border-red-500/50 rounded-lg text-sm text-red-300"
+          role="alert"
+        >
+          <span class="flex-shrink-0 mt-0.5">⚠️</span>
+          <span>{{ chatInputError }}</span>
+          <button
+            @click="clearInputError"
+            class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+        </div>
+      </Transition>
 
       <!-- Input de message -->
       <div class="relative">

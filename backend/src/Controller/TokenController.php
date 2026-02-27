@@ -15,6 +15,7 @@ use App\Service\FileUploader;
 use App\Service\TokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,16 +52,13 @@ final class TokenController extends AbstractController
     {
         $contentType = $request->headers->get('Content-Type') ?? '';
 
-        // Extraire la boundary du Content-Type
         if (!preg_match('/boundary=(.+)$/i', $contentType, $matches)) {
             return null;
         }
 
         $boundary = trim($matches[1]);
-        // IMPORTANT: Ne pas consommer le stream - le rendre réutilisable
         $rawData = $request->getContent(false);
 
-        // Découper le contenu en parties
         $parts = preg_split('/--' . preg_quote($boundary, '/') . '/', $rawData);
 
         if (false === $parts) {
@@ -73,7 +71,6 @@ final class TokenController extends AbstractController
                 continue;
             }
 
-            // Séparer les headers du body avec \r\n\r\n ou \n\n
             $divider = str_contains($part, "\r\n\r\n") ? "\r\n\r\n" : "\n\n";
             $sections = explode($divider, $part, 2);
 
@@ -83,42 +80,34 @@ final class TokenController extends AbstractController
 
             [$headers, $body] = $sections;
 
-            // Parser le nom du champ depuis Content-Disposition
             if (preg_match('/name="([^"]+)"/', $headers, $nameMatch)) {
                 $name = $nameMatch[1];
 
-                // Vérifier si c'est un fichier
                 if (preg_match('/filename="([^"]*)"/', $headers, $filenameMatch)) {
-                    // C'est un fichier
                     $filename = $filenameMatch[1];
 
                     if (!empty($filename)) {
-                        // Extraire le type MIME
                         $mimeType = 'application/octet-stream';
                         if (preg_match('/Content-Type:\s*(.+)/i', $headers, $mimeMatch)) {
                             $mimeType = trim($mimeMatch[1]);
                         }
 
-                        // Créer un fichier temporaire
                         $tmpPath = tempnam(sys_get_temp_dir(), 'upload_');
                         $bodyContent = rtrim($body, "\r\n");
                         file_put_contents($tmpPath, $bodyContent);
 
-                        // Créer un UploadedFile
                         $uploadedFile = new \Symfony\Component\HttpFoundation\File\UploadedFile(
                             $tmpPath,
                             $filename,
                             $mimeType,
                             null,
-                            true, // test mode = true pour éviter les vérifications de sécurité
+                            true,
                         );
 
-                        // Ajouter au files bag
                         $request->files->set($name, $uploadedFile);
                     }
                 }
                 else {
-                    // C'est un champ texte normal
                     $value = rtrim($body, "\r\n");
                     $request->request->set($name, $value);
                 }
@@ -131,6 +120,21 @@ final class TokenController extends AbstractController
     /**
      * Liste tous les tokens d'une carte.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens',
+        summary: 'Liste les tokens d\'une carte',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des tokens'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie ou carte introuvable'),
+        ],
+    )]
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(int $gameId, int $mapId, Request $request): JsonResponse
     {
@@ -145,7 +149,6 @@ final class TokenController extends AbstractController
 
         $map = $this->mapRepository->find($mapId);
 
-        // Vérification null-safety pour PHPStan
         $mapGame = $map?->getGame();
         if (!$map || !$mapGame || $mapGame->getId() !== $gameId) {
             return $this->json(
@@ -164,7 +167,6 @@ final class TokenController extends AbstractController
             );
         }
 
-        // Les joueurs normaux ne voient que les tokens visibles
         $tokens = $game->isGameMaster($user)
             ? $this->tokenService->getTokensByMap($map)
             : $this->tokenService->getTokensByMap($map, $user);
@@ -180,6 +182,22 @@ final class TokenController extends AbstractController
     /**
      * Détails d'un token.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Détails d\'un token',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Détails du token'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -194,7 +212,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(
@@ -213,7 +230,6 @@ final class TokenController extends AbstractController
             );
         }
 
-        // Vérifier si le token est visible pour les joueurs normaux
         if (!$game->isGameMaster($user) && !$token->isVisible()) {
             return $this->json(
                 ['error' => 'Token introuvable'],
@@ -233,6 +249,38 @@ final class TokenController extends AbstractController
      * Créer un nouveau token.
      * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens',
+        summary: 'Créer un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string', enum: ['character', 'monster', 'npc', 'object']),
+                    new OA\Property(property: 'x', type: 'integer', default: 0),
+                    new OA\Property(property: 'y', type: 'integer', default: 0),
+                    new OA\Property(property: 'size', type: 'number', default: 1.0),
+                    new OA\Property(property: 'rotation', type: 'integer', default: 0),
+                    new OA\Property(property: 'isVisible', type: 'boolean', default: true),
+                    new OA\Property(property: 'isLocked', type: 'boolean', default: false),
+                    new OA\Property(property: 'layer', type: 'string', enum: ['tokens', 'background', 'foreground']),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Token créé'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+        ],
+    )]
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(int $gameId, int $mapId, Request $request): JsonResponse
     {
@@ -247,7 +295,6 @@ final class TokenController extends AbstractController
 
         $map = $this->mapRepository->find($mapId);
 
-        // Vérification null-safety pour PHPStan
         $mapGame = $map?->getGame();
         if (!$map || !$mapGame || $mapGame->getId() !== $gameId) {
             return $this->json(
@@ -277,7 +324,6 @@ final class TokenController extends AbstractController
             $contentType = $request->headers->get('Content-Type') ?? '';
 
             if (str_contains($contentType, 'multipart/form-data')) {
-                // Gestion du FormData
                 $dto = new CreateTokenDTO();
 
                 $name = $request->request->get('name');
@@ -309,7 +355,6 @@ final class TokenController extends AbstractController
                 $dto->imageUrl = $imageUrl;
             }
             else {
-                // Gestion du JSON
                 $dto = $this->serializer->deserialize(
                     $request->getContent(),
                     CreateTokenDTO::class,
@@ -349,6 +394,32 @@ final class TokenController extends AbstractController
     /**
      * Déplacer un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/move',
+        summary: 'Déplacer un token',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['x', 'y'],
+                properties: [
+                    new OA\Property(property: 'x', type: 'integer'),
+                    new OA\Property(property: 'y', type: 'integer'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Token déplacé'),
+            new OA\Response(response: 403, description: 'Permission refusée'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}/move', name: 'move', methods: ['POST'])]
     public function move(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -363,7 +434,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(
@@ -382,7 +452,6 @@ final class TokenController extends AbstractController
             );
         }
 
-        // Vérifier les permissions de contrôle du token
         if (!$this->tokenService->canControlToken($token, $user, $game)) {
             return $this->json(
                 ['error' => 'Vous n\'avez pas la permission de déplacer ce token'],
@@ -425,6 +494,22 @@ final class TokenController extends AbstractController
     /**
      * Basculer la visibilité d'un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/toggle-visibility',
+        summary: 'Basculer la visibilité d\'un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Visibilité modifiée'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}/toggle-visibility', name: 'toggle_visibility', methods: ['POST'])]
     public function toggleVisibility(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -439,7 +524,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(
@@ -479,6 +563,22 @@ final class TokenController extends AbstractController
     /**
      * Verrouiller/déverrouiller un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/toggle-lock',
+        summary: 'Verrouiller/déverrouiller un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Verrouillage modifié'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}/toggle-lock', name: 'toggle_lock', methods: ['POST'])]
     public function toggleLock(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -493,7 +593,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(
@@ -533,6 +632,33 @@ final class TokenController extends AbstractController
     /**
      * Gérer les permissions de contrôle d'un token.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}/permissions',
+        summary: 'Gérer les permissions de contrôle d\'un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['action', 'userId'],
+                properties: [
+                    new OA\Property(property: 'action', type: 'string', enum: ['add', 'remove']),
+                    new OA\Property(property: 'userId', type: 'integer'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Permissions modifiées'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}/permissions', name: 'permissions', methods: ['POST'])]
     public function managePermissions(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -547,7 +673,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(
@@ -566,9 +691,8 @@ final class TokenController extends AbstractController
             );
         }
 
-        // Récupérer les données de la requête
         $data = json_decode($request->getContent(), true);
-        $action = $data['action'] ?? null; // 'add' ou 'remove'
+        $action = $data['action'] ?? null;
         $userId = $data['userId'] ?? null;
 
         if (!\in_array($action, ['add', 'remove'], true) || !$userId) {
@@ -605,6 +729,36 @@ final class TokenController extends AbstractController
      * Mettre à jour un token.
      * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
+    #[OA\Patch(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Mettre à jour un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string', enum: ['character', 'monster', 'npc', 'object']),
+                    new OA\Property(property: 'x', type: 'integer'),
+                    new OA\Property(property: 'y', type: 'integer'),
+                    new OA\Property(property: 'size', type: 'number'),
+                    new OA\Property(property: 'rotation', type: 'integer'),
+                    new OA\Property(property: 'imageUrl', type: 'string'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Token mis à jour'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}', name: 'update', methods: ['PATCH', 'PUT'])]
     public function update(int $gameId, int $mapId, int $id, Request $request): JsonResponse
     {
@@ -648,7 +802,6 @@ final class TokenController extends AbstractController
         try {
             $contentType = $request->headers->get('Content-Type') ?? '';
 
-            // Parser le multipart/form-data pour PATCH/PUT AVANT de récupérer les fichiers
             if (str_contains($contentType, 'multipart/form-data') && \in_array($request->getMethod(), ['PUT', 'PATCH'], true)) {
                 try {
                     $this->parseMultipartFormData($request);
@@ -664,14 +817,12 @@ final class TokenController extends AbstractController
             $imageFile = $request->files->get('image');
 
             if ($imageFile) {
-                // Supprimer l'ancienne image si elle existe
                 if ($token->getImageUrl()) {
                     $this->fileUploader->deleteFile($token->getImageUrl());
                 }
                 $imageUrl = $this->fileUploader->uploadTokenImage($imageFile);
             }
 
-            // Mettre à jour uniquement les champs fournis
             if (str_contains($contentType, 'multipart/form-data')) {
 
                 $name = $request->request->get('name');
@@ -712,7 +863,6 @@ final class TokenController extends AbstractController
                 }
             }
             else {
-                // Gestion JSON
                 $data = json_decode($request->getContent(), true);
 
                 if (isset($data['name']) && \is_string($data['name'])) {
@@ -749,18 +899,14 @@ final class TokenController extends AbstractController
 
             $this->entityManager->flush();
 
-            // Recharger le token depuis la BDD pour éviter les problèmes de proxies
             $this->entityManager->refresh($token);
 
-            // Publier l'événement Mercure pour notifier les autres joueurs
             try {
                 $this->tokenService->publishTokenUpdate($token);
             }
             catch (Exception $mercureException) {
-                // Ignorer silencieusement les erreurs Mercure
             }
 
-            // Retourner une réponse JSON simple
             return new JsonResponse([
                 'id' => $token->getId(),
                 'name' => $token->getName(),
@@ -789,6 +935,22 @@ final class TokenController extends AbstractController
     /**
      * Supprimer un token.
      */
+    #[OA\Delete(
+        path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',
+        summary: 'Supprimer un token (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Tokens'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'mapId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Token supprimé'),
+            new OA\Response(response: 403, description: 'Réservé au MJ'),
+            new OA\Response(response: 404, description: 'Token introuvable'),
+        ],
+    )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $gameId, int $mapId, int $id): JsonResponse
     {
@@ -803,7 +965,6 @@ final class TokenController extends AbstractController
 
         $token = $this->tokenRepository->find($id);
 
-        // Vérification null-safety pour PHPStan
         $tokenMap = $token?->getMap();
         if (!$token || !$tokenMap || $tokenMap->getId() !== $mapId) {
             return $this->json(

@@ -22,7 +22,6 @@ class UserRepositoryTest extends KernelTestCase
         $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
         $this->repository = $this->entityManager->getRepository(User::class);
 
-        // Clean database
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
         $connection->executeStatement('TRUNCATE TABLE user');

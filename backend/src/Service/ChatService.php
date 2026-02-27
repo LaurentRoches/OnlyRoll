@@ -27,7 +27,6 @@ readonly class ChatService
 
     public function sendMessage(Game $game, User $user, SendMessageDTO $dto): GameMessage
     {
-        // Validation du type whisper
         $recipient = null;
         if (MessageType::WHISPER === $dto->type) {
             if (null === $dto->recipientId) {
@@ -39,20 +38,17 @@ readonly class ChatService
                 throw new BadRequestHttpException('Destinataire introuvable.');
             }
 
-            // Vérifier que le destinataire est dans la partie
             if (!$game->hasPlayer($recipient)) {
                 throw new BadRequestHttpException('Le destinataire doit être membre de la partie.');
             }
         }
 
-        // Validation messages système (seulement pour le GM)
         if (MessageType::SYSTEM === $dto->type) {
             if (!$game->isGameMaster($user)) {
                 throw new BadRequestHttpException('Seul le MJ peut envoyer des messages système.');
             }
         }
 
-        // Création du message
         $message = new GameMessage();
         $message->setGame($game);
         $message->setUser($user);
@@ -64,20 +60,17 @@ readonly class ChatService
             $message->setRecipient($recipient);
         }
 
-        // Appel manuel du hook PrePersist pour les tests unitaires
         $message->onPrePersist();
 
         $this->em->persist($message);
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $gameId = $game->getId();
         \assert(null !== $gameId, 'Game ID cannot be null after flush');
 
         $createdAt = $message->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null after flush');
 
-        // Publication via Mercure
         $this->mercurePublisher->publishChatMessage($gameId, [
             'messageId' => $message->getId(),
             'userId' => $user->getId(),
@@ -121,6 +114,16 @@ readonly class ChatService
     }
 
     /**
+     * Récupère les messages visibles pour un utilisateur antérieurs à un message donné (pagination scroll).
+     *
+     * @return GameMessage[]
+     */
+    public function getVisibleMessagesForUserBefore(Game $game, User $user, int $beforeId, int $limit = 20): array
+    {
+        return $this->messageRepository->findVisibleMessagesForUserBefore($game, $user, $beforeId, $limit);
+    }
+
+    /**
      * Récupère les messages d'un type spécifique.
      *
      * @return GameMessage[]
@@ -143,20 +146,17 @@ readonly class ChatService
         $message->setType(MessageType::SYSTEM);
         $message->setIsInCharacter(false);
 
-        // Appel manuel du hook PrePersist pour les tests unitaires
         $message->onPrePersist();
 
         $this->em->persist($message);
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $gameId = $game->getId();
         \assert(null !== $gameId, 'Game ID cannot be null after flush');
 
         $createdAt = $message->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null after flush');
 
-        // Publication Mercure
         $this->mercurePublisher->publishChatMessage($gameId, [
             'messageId' => $message->getId(),
             'userId' => null,
@@ -203,25 +203,21 @@ readonly class ChatService
         $message->setIsInCharacter(true);
         $message->setDiceResult($results);
 
-        // Si c'est un jet privé, définir le destinataire
         if (null !== $recipient) {
             $message->setRecipient($recipient);
         }
 
-        // Appel manuel du hook PrePersist pour les tests unitaires
         $message->onPrePersist();
 
         $this->em->persist($message);
         $this->em->flush();
 
-        // Vérifications pour PHPStan
         $gameId = $game->getId();
         \assert(null !== $gameId, 'Game ID cannot be null after flush');
 
         $createdAt = $message->getCreatedAt();
         \assert(null !== $createdAt, 'CreatedAt cannot be null after flush');
 
-        // Publication via Mercure (utilise publishChatMessage pour cohérence avec les autres messages)
         $this->mercurePublisher->publishChatMessage($gameId, [
             'messageId' => $message->getId(),
             'userId' => $user->getId(),
@@ -269,11 +265,9 @@ readonly class ChatService
     public function getMessagesSince(Game $game, DateTimeInterface $since, ?User $user = null): array
     {
         if ($user) {
-            // Si un utilisateur est fourni, on filtre les messages visibles pour lui
             return $this->messageRepository->findVisibleSince($game, $since, $user);
         }
 
-        // Sinon, on retourne tous les messages depuis cette date
         return $this->messageRepository->findSince($game, $since);
     }
 }

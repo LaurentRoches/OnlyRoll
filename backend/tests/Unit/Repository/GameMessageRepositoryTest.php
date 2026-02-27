@@ -28,7 +28,6 @@ class GameMessageRepositoryTest extends KernelTestCase
         $this->entityManager = $kernel->getContainer()->get('doctrine')->getManager();
         $this->repository = $this->entityManager->getRepository(GameMessage::class);
 
-        // Clean database
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 0');
         $connection->executeStatement('TRUNCATE TABLE game_message');
@@ -36,7 +35,6 @@ class GameMessageRepositoryTest extends KernelTestCase
         $connection->executeStatement('TRUNCATE TABLE user');
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
 
-        // Create test data
         $this->user = new User();
         $this->user->setEmail('user@test.com');
         $this->user->setPseudo('user');
@@ -66,7 +64,6 @@ class GameMessageRepositoryTest extends KernelTestCase
 
     public function testFindRecentMessages(): void
     {
-        // Create messages
         for ($i = 0; $i < 60; $i++) {
             $message = new GameMessage();
             $message->setGame($this->game);
@@ -79,10 +76,8 @@ class GameMessageRepositoryTest extends KernelTestCase
 
         $messages = $this->repository->findRecentMessages($this->game);
 
-        // Verify we get exactly 50 messages (the default limit)
         $this->assertCount(50, $messages);
 
-        // Verify all returned messages belong to this game and are of type CHAT
         foreach ($messages as $message) {
             $this->assertSame($this->game, $message->getGame());
             $this->assertEquals(MessageType::CHAT, $message->getType());
@@ -349,7 +344,6 @@ class GameMessageRepositoryTest extends KernelTestCase
         $this->entityManager->persist($message);
         $this->entityManager->flush();
 
-        // Test deleting messages older than a future date (should delete all)
         $deleted = $this->repository->deleteOldMessages($this->game, $now->modify('+1 day'));
 
         $this->assertEquals(1, $deleted);

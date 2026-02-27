@@ -49,12 +49,10 @@ const statusConfig = computed(() => {
 
 const isFull = computed(() => props.game.currentPlayersCount >= props.game.maxPlayers)
 
-// Extraction du niveau de campagne depuis settings (si disponible)
 const campaignLevel = computed(() => {
-  return props.game.settings?.campaignLevel || 6 // Valeur par défaut
+  return props.game.settings?.campaignLevel || 6
 })
 
-// Nombre de joueurs actuellement connectés en temps réel
 const onlinePlayersCount = computed(() => {
   return presenceStore.getOnlineCount(props.game.id)
 })

@@ -52,7 +52,6 @@ final class CorsListenerTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
         $this->assertSame(200, $response->getStatusCode());
 
-        // Vérifie les headers CORS
         $this->assertSame('http://localhost:5173', $response->headers->get('Access-Control-Allow-Origin'));
         $this->assertSame('GET, POST, PUT, PATCH, DELETE, OPTIONS', $response->headers->get('Access-Control-Allow-Methods'));
         $this->assertSame('Content-Type, Authorization, X-Requested-With, Accept', $response->headers->get('Access-Control-Allow-Headers'));
@@ -71,7 +70,6 @@ final class CorsListenerTest extends TestCase
 
         $this->listener->onKernelRequest($event);
 
-        // Vérifie qu'aucune réponse n'a été définie
         $this->assertNull($event->getResponse());
     }
 
@@ -86,7 +84,6 @@ final class CorsListenerTest extends TestCase
 
         $this->listener->onKernelRequest($event);
 
-        // Vérifie qu'aucune réponse n'a été définie pour une sub-request
         $this->assertNull($event->getResponse());
     }
 
@@ -105,7 +102,6 @@ final class CorsListenerTest extends TestCase
 
         $this->listener->onKernelResponse($event);
 
-        // Vérifie les headers CORS
         $this->assertSame('http://localhost:5173', $response->headers->get('Access-Control-Allow-Origin'));
         $this->assertSame('GET, POST, PUT, PATCH, DELETE, OPTIONS', $response->headers->get('Access-Control-Allow-Methods'));
         $this->assertSame('Content-Type, Authorization, X-Requested-With, Accept', $response->headers->get('Access-Control-Allow-Headers'));
@@ -126,7 +122,6 @@ final class CorsListenerTest extends TestCase
 
         $this->listener->onKernelResponse($event);
 
-        // Vérifie qu'aucun header CORS n'a été ajouté
         $this->assertNull($response->headers->get('Access-Control-Allow-Origin'));
     }
 
@@ -145,7 +140,6 @@ final class CorsListenerTest extends TestCase
 
         $this->listener->onKernelResponse($event);
 
-        // Vérifie qu'aucun header CORS n'a été ajouté pour une sub-request
         $this->assertNull($response->headers->get('Access-Control-Allow-Origin'));
     }
 }

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import type { AxiosInstance } from 'axios'
 
-// Import apiClient directly to test it
 let apiClient: AxiosInstance
 let get: <T>(url: string) => Promise<T>
 let post: <T>(url: string, data?: unknown) => Promise<T>
@@ -15,7 +14,6 @@ describe('apiClient', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
 
-    // Dynamic import to get fresh instance
     const module = await import('@/services/api/apiClient')
     apiClient = module.apiClient
     get = module.get

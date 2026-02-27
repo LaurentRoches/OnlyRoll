@@ -9,8 +9,11 @@ use App\Enum\MessageType;
 use App\Repository\GameRepository;
 use App\Repository\UserRepository;
 use App\Service\ChatService;
+use App\Service\DiceService;
 use DateTimeImmutable;
 use Exception;
+use InvalidArgumentException;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +32,7 @@ final class ChatController extends AbstractController
 {
     public function __construct(
         private readonly ChatService $chatService,
+        private readonly DiceService $diceService,
         private readonly GameRepository $gameRepository,
         private readonly UserRepository $userRepository,
         private readonly SerializerInterface $serializer,
@@ -39,6 +43,21 @@ final class ChatController extends AbstractController
     /**
      * Liste les messages récents du chat.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages',
+        summary: 'Liste les messages récents du chat',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50, minimum: 1, maximum: 200)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des messages'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+            new OA\Response(response: 404, description: 'Partie introuvable'),
+        ],
+    )]
     #[Route('/messages', name: 'messages', methods: ['GET'])]
     public function getMessages(int $gameId, Request $request): JsonResponse
     {
@@ -64,8 +83,14 @@ final class ChatController extends AbstractController
         $limit = (int) $request->query->get('limit', 50);
         $limit = max(1, min($limit, 200)); // Entre 1 et 200
 
-        // Récupérer uniquement les messages visibles pour l'utilisateur
-        $messages = $this->chatService->getVisibleMessagesForUser($game, $user, $limit);
+        $beforeId = (int) $request->query->get('before', 0);
+
+        if ($beforeId > 0) {
+            $messages = $this->chatService->getVisibleMessagesForUserBefore($game, $user, $beforeId, $limit);
+        }
+        else {
+            $messages = $this->chatService->getVisibleMessagesForUser($game, $user, $limit);
+        }
 
         return $this->json(
             $messages,
@@ -78,6 +103,31 @@ final class ChatController extends AbstractController
     /**
      * Envoie un message dans le chat.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/chat/messages',
+        summary: 'Envoie un message dans le chat',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content'],
+                properties: [
+                    new OA\Property(property: 'content', type: 'string'),
+                    new OA\Property(property: 'type', type: 'string'),
+                    new OA\Property(property: 'recipientId', type: 'integer'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Message envoyé'),
+            new OA\Response(response: 400, description: 'Données invalides'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ],
+    )]
     #[Route('/messages', name: 'send_message', methods: ['POST'])]
     public function sendMessage(int $gameId, Request $request): JsonResponse
     {
@@ -143,6 +193,22 @@ final class ChatController extends AbstractController
     /**
      * Récupère les messages par type.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages/type/{type}',
+        summary: 'Récupère les messages par type',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'type', in: 'path', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 50, minimum: 1, maximum: 200)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Messages filtrés par type'),
+            new OA\Response(response: 400, description: 'Type invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ],
+    )]
     #[Route('/messages/type/{type}', name: 'messages_by_type', methods: ['GET'])]
     public function getMessagesByType(int $gameId, string $type, Request $request): JsonResponse
     {
@@ -197,6 +263,20 @@ final class ChatController extends AbstractController
     /**
      * Récupère uniquement les lancers de dés.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/dice-rolls',
+        summary: 'Récupère les lancers de dés',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 20, minimum: 1, maximum: 100)),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Liste des lancers de dés'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ],
+    )]
     #[Route('/dice-rolls', name: 'dice_rolls', methods: ['GET'])]
     public function getDiceRolls(int $gameId, Request $request): JsonResponse
     {
@@ -235,6 +315,30 @@ final class ChatController extends AbstractController
     /**
      * Lancer des dés et publier le résultat.
      */
+    #[OA\Post(
+        path: '/api/games/{gameId}/chat/roll-dice',
+        summary: 'Lancer des dés (format XdY ou XdY+Z)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['formula'],
+                properties: [
+                    new OA\Property(property: 'formula', type: 'string', example: '2d6+3'),
+                    new OA\Property(property: 'recipientId', type: 'integer'),
+                ],
+            ),
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Résultat du lancer de dés'),
+            new OA\Response(response: 400, description: 'Formule invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ],
+    )]
     #[Route('/roll-dice', name: 'roll_dice', methods: ['POST'])]
     public function rollDice(int $gameId, Request $request): JsonResponse
     {
@@ -270,43 +374,16 @@ final class ChatController extends AbstractController
         $recipientId = $data['recipientId'] ?? null;
 
         try {
-            // Format attendu: "2d6+3" ou "1d20"
-            if (!preg_match('/^(\d+)d(\d+)([+-]\d+)?$/i', $formula, $matches)) {
-                return $this->json(
-                    ['error' => 'Format de dés invalide. Utilisez le format XdY ou XdY+Z'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
+            $parsed = $this->diceService->parseFormula($formula);
+            $allRolls = $this->diceService->rollDice($parsed['numberOfDice'], $parsed['sidesPerDie']);
+            $kept = $this->diceService->applyKeep(
+                $allRolls,
+                $parsed['keepType'],
+                $parsed['keepCount'],
+                $parsed['sidesPerDie'],
+                $parsed['modifier'],
+            );
 
-            $numberOfDice = (int) $matches[1];
-            $sidesPerDie = (int) $matches[2];
-            $modifier = isset($matches[3]) ? (int) $matches[3] : 0;
-
-            if ($numberOfDice < 1 || $numberOfDice > 100) {
-                return $this->json(
-                    ['error' => 'Le nombre de dés doit être entre 1 et 100'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            if ($sidesPerDie < 2 || $sidesPerDie > 1000) {
-                return $this->json(
-                    ['error' => 'Le nombre de faces doit être entre 2 et 1000'],
-                    Response::HTTP_BAD_REQUEST,
-                );
-            }
-
-            // Lancer les dés
-            $results = [];
-            $total = $modifier;
-
-            for ($i = 0; $i < $numberOfDice; ++$i) {
-                $roll = random_int(1, $sidesPerDie);
-                $results[] = $roll;
-                $total += $roll;
-            }
-
-            // Récupérer le destinataire si c'est un jet privé
             $recipient = null;
             if (null !== $recipientId) {
                 $recipient = $this->userRepository->find($recipientId);
@@ -317,7 +394,6 @@ final class ChatController extends AbstractController
                     );
                 }
 
-                // Vérifier que le destinataire fait partie de la partie
                 if (!$game->hasPlayer($recipient)) {
                     return $this->json(
                         ['error' => 'Le destinataire doit faire partie de la partie'],
@@ -326,22 +402,32 @@ final class ChatController extends AbstractController
                 }
             }
 
-            // Créer le message de lancer de dés
             $message = $this->chatService->createDiceRollMessage(
                 $game,
                 $user,
                 $formula,
                 [
-                    'rolls' => $results,
-                    'total' => $total,
-                    'modifier' => $modifier,
+                    'rolls' => $allRolls,
+                    'keptRolls' => $kept['keptRolls'],
+                    'dropped' => $kept['dropped'],
+                    'total' => $kept['total'],
+                    'modifier' => $parsed['modifier'],
                     'formula' => $formula,
+                    'keepType' => $parsed['keepType'],
+                    'keepCount' => $parsed['keepCount'],
+                    'sidesPerDie' => $parsed['sidesPerDie'],
                 ],
                 false,
                 $recipient,
             );
 
             return $this->json($message, Response::HTTP_CREATED, [], ['groups' => 'message:read']);
+        }
+        catch (InvalidArgumentException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                Response::HTTP_BAD_REQUEST,
+            );
         }
         catch (Exception $e) {
             return $this->json(
@@ -354,6 +440,19 @@ final class ChatController extends AbstractController
     /**
      * Récupère les statistiques du chat.
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/stats',
+        summary: 'Statistiques du chat (MJ uniquement)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Statistiques du chat'),
+            new OA\Response(response: 403, description: 'Réservé au maître du jeu'),
+        ],
+    )]
     #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function getStats(int $gameId): JsonResponse
     {
@@ -387,6 +486,21 @@ final class ChatController extends AbstractController
     /**
      * Récupère les messages depuis une date donnée (polling).
      */
+    #[OA\Get(
+        path: '/api/games/{gameId}/chat/messages/since',
+        summary: 'Messages depuis une date (polling)',
+        security: [['BearerAuth' => []]],
+        tags: ['Chat'],
+        parameters: [
+            new OA\Parameter(name: 'gameId', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'since', in: 'query', required: true, schema: new OA\Schema(type: 'string', format: 'date-time')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Messages depuis la date spécifiée'),
+            new OA\Response(response: 400, description: 'Paramètre since manquant ou invalide'),
+            new OA\Response(response: 403, description: 'Accès refusé'),
+        ],
+    )]
     #[Route('/messages/since', name: 'messages_since', methods: ['GET'])]
     public function getMessagesSince(int $gameId, Request $request): JsonResponse
     {

@@ -121,12 +121,10 @@ class GameMessage
 
     public function canBeSeenBy(User $user): bool
     {
-        // Les messages système sont visibles par tous
         if ($this->isSystemMessage()) {
             return true;
         }
 
-        // Les chuchotements ne sont visibles que par l'expéditeur et le destinataire
         if ($this->isWhisper()) {
             $userId = $user->getId();
             $senderId = $this->user?->getId();
@@ -139,7 +137,6 @@ class GameMessage
             return $userId === $senderId || $userId === $recipientId;
         }
 
-        // Les autres messages sont visibles par tous les joueurs de la partie
         return true;
     }
 

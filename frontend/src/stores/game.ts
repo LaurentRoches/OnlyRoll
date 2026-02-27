@@ -226,7 +226,6 @@ export const useGameStore = defineStore('game', () => {
     try {
       const updatedGame = await gameApi.start(id)
 
-      // Mise à jour
       if (currentGame.value?.id === id) {
         currentGame.value = updatedGame
       }
@@ -246,12 +245,35 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  const hasMoreGames = computed(() => pagination.value.page < pagination.value.totalPages)
+
+  async function appendPublicGames(filters?: GameFilters) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await gameApi.listPublic(filters)
+      games.value.push(...response.data)
+
+      pagination.value = {
+        total: response.meta?.total ?? 0,
+        page: response.meta?.page ?? 1,
+        limit: response.meta?.limit ?? 15,
+        totalPages: response.meta?.totalPages ?? 0,
+      }
+    } catch (e: unknown) {
+      error.value = getErrorMessage(e) || 'Erreur lors du chargement des parties'
+      logger.error('Error appending games:', e)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   function clearError() {
     error.value = null
   }
 
   return {
-    // State
     games,
     currentGame,
     myGames,
@@ -259,17 +281,17 @@ export const useGameStore = defineStore('game', () => {
     error,
     pagination,
 
-    // Getters
     publicGames,
     isGameMaster,
     isPlayerInGame,
     canStartGame,
     canModifyGame,
+    hasMoreGames,
 
-    // Actions
     fetchPublicGames,
     fetchMyGames,
     fetchGameById,
+    appendPublicGames,
     createGame,
     updateGame,
     deleteGame,

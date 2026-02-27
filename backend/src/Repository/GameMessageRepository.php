@@ -132,6 +132,33 @@ class GameMessageRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve les messages visibles pour un utilisateur antérieurs à un message donné (pagination).
+     *
+     * @return GameMessage[]
+     */
+    public function findVisibleMessagesForUserBefore(Game $game, User $user, int $beforeId, int $limit = 20): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.user', 'u')
+            ->addSelect('u')
+            ->leftJoin('m.recipient', 'r')
+            ->addSelect('r')
+            ->where('m.game = :game')
+            ->andWhere('m.id < :beforeId')
+            ->andWhere(
+                'm.type != :whisper OR m.user = :user OR m.recipient = :user',
+            )
+            ->setParameter('game', $game)
+            ->setParameter('beforeId', $beforeId)
+            ->setParameter('whisper', MessageType::WHISPER)
+            ->setParameter('user', $user)
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Alias pour findVisibleMessagesForUser (requis par ChatService).
      *
      * @return GameMessage[]

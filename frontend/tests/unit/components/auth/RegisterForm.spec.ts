@@ -10,7 +10,6 @@ import { nextTick } from 'vue'
 import RegisterForm from '@/components/auth/RegisterForm.vue'
 import { useAuth } from '@/composables/useAuth'
 
-// Mock du composable useAuth
 vi.mock('@/composables/useAuth', () => ({
   useAuth: vi.fn(),
 }))
@@ -74,7 +73,7 @@ describe('RegisterForm.vue', () => {
 
   it('should toggle password visibility', async () => {
     const passwordInput = wrapper.find('#password')
-    const toggleButton = wrapper.findAll('button[type="button"]')[0]
+    const toggleButton = wrapper.findAll('button[type="button"]')[1]
 
     expect((passwordInput.element as HTMLInputElement).type).toBe('password')
 
@@ -91,7 +90,7 @@ describe('RegisterForm.vue', () => {
 
   it('should toggle confirm password visibility', async () => {
     const confirmPasswordInput = wrapper.find('#confirmPassword')
-    const toggleButton = wrapper.findAll('button[type="button"]')[1]
+    const toggleButton = wrapper.findAll('button[type="button"]')[2]
 
     expect((confirmPasswordInput.element as HTMLInputElement).type).toBe('password')
 
@@ -106,20 +105,21 @@ describe('RegisterForm.vue', () => {
   it('should calculate password strength correctly', async () => {
     const passwordInput = wrapper.find('#password')
 
-    // Weak password
     await passwordInput.setValue('weak')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe faible')
 
-    // Medium password
-    await passwordInput.setValue('Medium1')
+    await passwordInput.setValue('Medium1test')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe moyen')
 
-    // Strong password
-    await passwordInput.setValue('Strong1Password!')
+    await passwordInput.setValue('Strong1Pass!')
     await nextTick()
     expect(wrapper.text()).toContain('Mot de passe fort')
+
+    await passwordInput.setValue('Strong1Password!')
+    await nextTick()
+    expect(wrapper.text()).toContain('Mot de passe excellent')
   })
 
   it('should display password rules validation', async () => {
@@ -129,25 +129,24 @@ describe('RegisterForm.vue', () => {
     await nextTick()
 
     const rulesText = wrapper.text()
-    expect(rulesText).toContain('Au moins 8 caractères')
+    expect(rulesText).toContain('Au moins 12 caractères')
     expect(rulesText).toContain('Une minuscule')
     expect(rulesText).toContain('Une majuscule')
     expect(rulesText).toContain('Un chiffre')
+    expect(rulesText).toContain('Un caractère spécial')
   })
 
   it('should validate password rules individually', async () => {
     const passwordInput = wrapper.find('#password')
 
-    // Test minlength
     await passwordInput.setValue('Short1A')
     await nextTick()
     expect(wrapper.html()).toContain('text-success')
 
-    // Test lowercase
     await passwordInput.setValue('PASSWORD123')
     await nextTick()
     const html = wrapper.html()
-    expect(html).toContain('○') // Some rules not met
+    expect(html).toContain('○')
   })
 
   // ========== VALIDATION ==========
@@ -195,8 +194,8 @@ describe('RegisterForm.vue', () => {
   it('should not submit form when passwords do not match', async () => {
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
-    await wrapper.find('#password').setValue('Password123')
-    await wrapper.find('#confirmPassword').setValue('DifferentPassword123')
+    await wrapper.find('#password').setValue('Password123!')
+    await wrapper.find('#confirmPassword').setValue('DifferentPass1!')
     await wrapper.find('#acceptTerms').setValue(true)
 
     await wrapper.find('form').trigger('submit.prevent')
@@ -207,10 +206,12 @@ describe('RegisterForm.vue', () => {
   })
 
   it('should not submit form without accepting terms', async () => {
+    const validPassword = 'Password123!'
+
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
-    await wrapper.find('#password').setValue('Password123')
-    await wrapper.find('#confirmPassword').setValue('Password123')
+    await wrapper.find('#password').setValue(validPassword)
+    await wrapper.find('#confirmPassword').setValue(validPassword)
 
     await wrapper.find('form').trigger('submit.prevent')
     await nextTick()
@@ -237,10 +238,12 @@ describe('RegisterForm.vue', () => {
   it('should submit form with valid data', async () => {
     mockAuth.register.mockResolvedValueOnce(undefined)
 
+    const validPassword = 'Password123!'
+
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
-    await wrapper.find('#password').setValue('Password123')
-    await wrapper.find('#confirmPassword').setValue('Password123')
+    await wrapper.find('#password').setValue(validPassword)
+    await wrapper.find('#confirmPassword').setValue(validPassword)
     await wrapper.find('#acceptTerms').setValue(true)
 
     await wrapper.find('form').trigger('submit.prevent')
@@ -249,8 +252,8 @@ describe('RegisterForm.vue', () => {
     expect(mockAuth.register).toHaveBeenCalledWith({
       pseudo: 'TestUser',
       email: 'test@example.com',
-      password: 'Password123',
-      confirmPassword: 'Password123',
+      password: validPassword,
+      confirmPassword: validPassword,
     })
   })
 
@@ -259,7 +262,6 @@ describe('RegisterForm.vue', () => {
   it('should display error from store', async () => {
     mockAuth.error = 'Email already exists'
 
-    // Remount the component to pick up the new error value
     wrapper = mount(RegisterForm, {
       global: {
         stubs: {
@@ -335,14 +337,12 @@ describe('RegisterForm.vue', () => {
   it('should validate email format', async () => {
     const emailInput = wrapper.find('#email')
 
-    // Invalid email
     await emailInput.setValue('notanemail')
     await emailInput.trigger('blur')
     await nextTick()
 
     expect(wrapper.text()).toContain("L'email n'est pas valide")
 
-    // Valid email
     await emailInput.setValue('valid@example.com')
     await emailInput.trigger('blur')
     await nextTick()
@@ -355,14 +355,12 @@ describe('RegisterForm.vue', () => {
   it('should validate pseudo length', async () => {
     const pseudoInput = wrapper.find('#pseudo')
 
-    // Too short
     await pseudoInput.setValue('ab')
     await pseudoInput.trigger('blur')
     await nextTick()
 
     expect(wrapper.text()).toContain('Le pseudo doit faire au moins 3 caractères')
 
-    // Valid length
     await pseudoInput.setValue('ValidPseudo')
     await pseudoInput.trigger('blur')
     await nextTick()
@@ -375,15 +373,16 @@ describe('RegisterForm.vue', () => {
   it('should disable submit button when form is invalid', async () => {
     const submitButton = wrapper.find('button[type="submit"]')
 
-    // Form is empty initially
     expect((submitButton.element as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('should enable submit button when form is valid', async () => {
+    const validPassword = 'Password123!'
+
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
-    await wrapper.find('#password').setValue('Password123')
-    await wrapper.find('#confirmPassword').setValue('Password123')
+    await wrapper.find('#password').setValue(validPassword)
+    await wrapper.find('#confirmPassword').setValue(validPassword)
     await wrapper.find('#acceptTerms').setValue(true)
 
     await nextTick()
@@ -398,10 +397,12 @@ describe('RegisterForm.vue', () => {
     const registerError = new Error('Registration failed')
     mockAuth.register.mockRejectedValueOnce(registerError)
 
+    const validPassword = 'Password123!'
+
     await wrapper.find('#pseudo').setValue('TestUser')
     await wrapper.find('#email').setValue('test@example.com')
-    await wrapper.find('#password').setValue('Password123')
-    await wrapper.find('#confirmPassword').setValue('Password123')
+    await wrapper.find('#password').setValue(validPassword)
+    await wrapper.find('#confirmPassword').setValue(validPassword)
     await wrapper.find('#acceptTerms').setValue(true)
 
     await wrapper.find('form').trigger('submit.prevent')

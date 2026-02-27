@@ -22,7 +22,6 @@ class GameFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // Créer des utilisateurs
         $users = [];
         for ($i = 1; $i <= 5; ++$i) {
             $user = new User();
@@ -35,7 +34,6 @@ class GameFixtures extends Fixture
             $users[] = $user;
         }
 
-        // Créer des parties
         $games = [];
         for ($i = 1; $i <= 3; ++$i) {
             $game = new Game();
@@ -48,7 +46,6 @@ class GameFixtures extends Fixture
             $manager->persist($game);
             $games[] = $game;
 
-            // Ajouter le GM
             $gmPlayer = new GamePlayer();
             $gmPlayer->setGame($game)
                 ->setUser($users[0])
@@ -56,7 +53,6 @@ class GameFixtures extends Fixture
                 ->setStatus(PlayerStatus::ACTIVE);
             $manager->persist($gmPlayer);
 
-            // Ajouter quelques joueurs
             for ($j = 1; $j <= min(3, \count($users) - 1); ++$j) {
                 $player = new GamePlayer();
                 $player->setGame($game)
@@ -67,10 +63,8 @@ class GameFixtures extends Fixture
             }
         }
 
-        // Créer des cartes pour la première partie (en cours)
         $this->createMapsForGame($manager, $games[0]);
 
-        // Créer des messages de chat pour la première partie
         $this->createMessagesForGame($manager, $games[0], $users);
 
         $manager->flush();
@@ -81,7 +75,6 @@ class GameFixtures extends Fixture
      */
     private function createMapsForGame(ObjectManager $manager, Game $game): void
     {
-        // Carte 1 : Taverne (active)
         $tavern = new GameMap();
         $tavern->setGame($game)
             ->setName('La Taverne du Dragon Vert')
@@ -99,10 +92,8 @@ class GameFixtures extends Fixture
             ]);
         $manager->persist($tavern);
 
-        // Tokens pour la taverne
         $this->createTokensForMap($manager, $tavern);
 
-        // Carte 2 : Donjon (inactive)
         $dungeon = new GameMap();
         $dungeon->setGame($game)
             ->setName('Les Cryptes Oubliées')
@@ -120,7 +111,6 @@ class GameFixtures extends Fixture
             ]);
         $manager->persist($dungeon);
 
-        // Tokens pour le donjon
         $tokens = [
             ['name' => 'Squelette', 'type' => TokenType::MONSTER, 'x' => 15, 'y' => 10],
             ['name' => 'Zombie', 'type' => TokenType::MONSTER, 'x' => 18, 'y' => 12],
@@ -142,7 +132,6 @@ class GameFixtures extends Fixture
             $manager->persist($token);
         }
 
-        // Carte 3 : Forêt (inactive)
         $forest = new GameMap();
         $forest->setGame($game)
             ->setName('La Forêt Enchantée')
@@ -166,7 +155,6 @@ class GameFixtures extends Fixture
      */
     private function createTokensForMap(ObjectManager $manager, GameMap $map): void
     {
-        // Personnages des joueurs
         $characters = [
             [
                 'name' => 'Thorin Barbe-de-Fer',
@@ -228,7 +216,6 @@ class GameFixtures extends Fixture
             $manager->persist($token);
         }
 
-        // NPCs
         $npcs = [
             ['name' => 'Aubergiste', 'type' => TokenType::NPC, 'x' => 15, 'y' => 8],
             ['name' => 'Marchand', 'type' => TokenType::NPC, 'x' => 18, 'y' => 10],
@@ -249,7 +236,6 @@ class GameFixtures extends Fixture
             $manager->persist($token);
         }
 
-        // Monstres (cachés par défaut)
         $monsters = [
             ['name' => 'Gobelin Archer', 'type' => TokenType::MONSTER, 'x' => 25, 'y' => 15, 'visible' => false],
             ['name' => 'Gobelin Guerrier', 'type' => TokenType::MONSTER, 'x' => 26, 'y' => 16, 'visible' => false],
@@ -276,7 +262,6 @@ class GameFixtures extends Fixture
             $manager->persist($token);
         }
 
-        // Objets
         $objects = [
             ['name' => 'Table', 'type' => TokenType::OBJECT, 'x' => 5, 'y' => 5, 'size' => 2.0],
             ['name' => 'Chaise', 'type' => TokenType::OBJECT, 'x' => 5, 'y' => 7, 'size' => 1.0],

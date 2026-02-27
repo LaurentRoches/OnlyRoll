@@ -7,10 +7,10 @@ namespace App\Enum;
  */
 enum TokenLayer: string
 {
-    case BACKGROUND = 'background';  // Arrière-plan (sol, terrain)
-    case OBJECTS = 'objects';        // Objets et décors
-    case TOKENS = 'tokens';          // Tokens principaux (personnages, monstres)
-    case EFFECTS = 'effects';        // Effets visuels (sorts, auras)
+    case BACKGROUND = 'background';
+    case OBJECTS = 'objects';
+    case TOKENS = 'tokens';
+    case EFFECTS = 'effects';
 
     /**
      * Retourne le label français du calque.
@@ -68,7 +68,7 @@ enum TokenLayer: string
     {
         return match ($this) {
             self::BACKGROUND, self::OBJECTS, self::TOKENS => true,
-            self::EFFECTS => true,  // Les effets sont généralement visibles
+            self::EFFECTS => true,
         };
     }
 
