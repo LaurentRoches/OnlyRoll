@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\User;
 use App\Service\MercureTokenService;
+use DateTimeImmutable;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\UnencryptedToken;
@@ -14,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 class MercureTokenServiceTest extends TestCase
 {
     private MercureTokenService $mercureTokenService;
+
     private string $mercureJwtSecret = 'test-secret-key-for-mercure-min-32-chars-required';
 
     protected function setUp(): void
@@ -37,8 +39,8 @@ class MercureTokenServiceTest extends TestCase
         /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
-        $this->assertTrue($parsedToken->hasBeenIssuedBefore(new \DateTimeImmutable('+1 minute')));
-        $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
+        $this->assertTrue($parsedToken->hasBeenIssuedBefore(new DateTimeImmutable('+1 minute')));
+        $this->assertFalse($parsedToken->isExpired(new DateTimeImmutable()));
 
         $mercureClaim = $parsedToken->claims()->get('mercure');
         $this->assertIsArray($mercureClaim);
@@ -72,8 +74,8 @@ class MercureTokenServiceTest extends TestCase
         /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
-        $this->assertTrue($parsedToken->hasBeenIssuedBefore(new \DateTimeImmutable('+1 minute')));
-        $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
+        $this->assertTrue($parsedToken->hasBeenIssuedBefore(new DateTimeImmutable('+1 minute')));
+        $this->assertFalse($parsedToken->isExpired(new DateTimeImmutable()));
 
         $mercureClaim = $parsedToken->claims()->get('mercure');
         $this->assertIsArray($mercureClaim);
@@ -120,8 +122,8 @@ class MercureTokenServiceTest extends TestCase
         /** @var UnencryptedToken $parsedToken */
         $parsedToken = $parser->parse($token);
 
-        $this->assertFalse($parsedToken->isExpired(new \DateTimeImmutable()));
+        $this->assertFalse($parsedToken->isExpired(new DateTimeImmutable()));
 
-        $this->assertTrue($parsedToken->isExpired(new \DateTimeImmutable('+2 hours')));
+        $this->assertTrue($parsedToken->isExpired(new DateTimeImmutable('+2 hours')));
     }
 }

@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 class GameRepositoryTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+
     private GameRepository $repository;
 
     protected function setUp(): void
@@ -318,7 +319,7 @@ class GameRepositoryTest extends KernelTestCase
         string $name,
         User $gameMaster,
         bool $isPublic = true,
-        GameStatus $status = GameStatus::IN_PROGRESS
+        GameStatus $status = GameStatus::IN_PROGRESS,
     ): Game {
         $game = new Game();
         $game->setName($name);

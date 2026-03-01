@@ -52,7 +52,7 @@
         Se connecter
       </RouterLink>
 
-      <!-- Bouton pour renvoyer l'email (futur) -->
+      <!-- Bouton pour renvoyer l'email -->
       <button
         type="button"
         @click="resendEmail"
@@ -63,6 +63,9 @@
         <span v-else-if="cooldown > 0">Renvoyer dans {{ cooldown }}s</span>
         <span v-else>Renvoyer l'email de vérification</span>
       </button>
+
+      <!-- Erreur renvoi -->
+      <p v-if="resendError" class="text-sm text-error text-center">{{ resendError }}</p>
     </div>
 
     <!-- Message d'aide -->
@@ -83,33 +86,40 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { authApi } from '@/services/api/authApi'
 
 const route = useRoute()
 
-const email = ref((route.query.email as string) || 'votre-email@exemple.com')
+const email = ref((route.query.email as string) || '')
 
 const isResending = ref(false)
 const cooldown = ref(0)
+const resendError = ref('')
 let cooldownTimer: ReturnType<typeof setInterval> | null = null
 
 const resendEmail = async () => {
   if (isResending.value || cooldown.value > 0) return
 
   isResending.value = true
+  resendError.value = ''
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
+    await authApi.resendVerification(email.value || undefined)
     startCooldown()
-  } catch (error) {
-    console.error("Erreur lors du renvoi de l'email:", error)
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: { error?: string }; status?: number } }
+    if (err.response?.status === 429) {
+      resendError.value = 'Veuillez attendre 2 minutes avant de renvoyer un email.'
+    } else {
+      resendError.value = err.response?.data?.error ?? "Erreur lors du renvoi de l'email."
+    }
   } finally {
     isResending.value = false
   }
 }
 
 const startCooldown = () => {
-  cooldown.value = 60
+  cooldown.value = 120
 
   cooldownTimer = setInterval(() => {
     cooldown.value--

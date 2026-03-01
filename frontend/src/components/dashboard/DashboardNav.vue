@@ -3,10 +3,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Logo -->
-        <RouterLink to="/dashboard" class="flex items-center space-x-3">
-          <div
-            class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center"
-          >
+        <RouterLink to="/" class="flex items-center space-x-3">
+          <div class="w-8 h-8 flex items-center justify-center">
             <img style="width: 100%; height: 100%" src="/images/logo.png" />
           </div>
           <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
@@ -50,55 +48,177 @@
           </RouterLink>
         </div>
 
-        <!-- Menu utilisateur — desktop -->
-        <div class="hidden md:flex items-center space-x-4">
-          <UserProfileBadge />
+        <!-- Contrôles droite (cloche toujours visible + desktop user menu + burger mobile) -->
+        <div class="flex items-center gap-1">
+          <!-- Cloche de notifications — visible sur tous les écrans -->
+          <div class="relative" ref="bellRef">
+            <button
+              @click="toggleNotifications"
+              class="relative p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
+              title="Notifications"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <!-- Badge rouge -->
+              <span
+                v-if="notificationStore.invitationCount > 0"
+                class="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+              >
+                {{
+                  notificationStore.invitationCount > 9 ? '9+' : notificationStore.invitationCount
+                }}
+              </span>
+            </button>
+
+            <!-- Drawer notifications (dropdown) -->
+            <Transition name="fade-down">
+              <div
+                v-if="showNotifications"
+                class="absolute right-0 top-12 w-80 sm:w-96 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50"
+              >
+                <div class="p-4 border-b border-secondary-700 flex items-center justify-between">
+                  <h3 class="font-semibold text-secondary-50">Invitations en attente</h3>
+                  <button
+                    @click="showNotifications = false"
+                    class="text-secondary-400 hover:text-secondary-200 transition-colors"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="max-h-96 overflow-y-auto">
+                  <!-- Chargement -->
+                  <div
+                    v-if="notificationStore.isLoading"
+                    class="p-6 text-center text-secondary-400"
+                  >
+                    <div
+                      class="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"
+                    ></div>
+                    Chargement...
+                  </div>
+
+                  <!-- Aucune invitation -->
+                  <div
+                    v-else-if="notificationStore.invitations.length === 0"
+                    class="p-6 text-center text-secondary-400"
+                  >
+                    <div class="text-3xl mb-2">🔔</div>
+                    <p class="text-sm">Aucune invitation en attente</p>
+                  </div>
+
+                  <!-- Liste des invitations -->
+                  <div v-else class="divide-y divide-secondary-700">
+                    <div
+                      v-for="invitation in notificationStore.invitations"
+                      :key="invitation.id"
+                      class="p-4 hover:bg-secondary-700/50 transition-colors"
+                    >
+                      <div class="mb-3">
+                        <p class="font-medium text-secondary-50 text-sm">
+                          {{ invitation.game.name }}
+                        </p>
+                        <p class="text-xs text-secondary-400 mt-0.5">
+                          MJ : {{ invitation.gameMaster.pseudo }}
+                        </p>
+                      </div>
+                      <div class="flex gap-2">
+                        <button
+                          @click="handleAccept(invitation)"
+                          :disabled="processingId === invitation.id"
+                          class="flex-1 px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
+                        >
+                          Rejoindre
+                        </button>
+                        <button
+                          @click="handleDecline(invitation)"
+                          :disabled="processingId === invitation.id"
+                          class="flex-1 px-3 py-1.5 bg-secondary-600 text-secondary-200 text-sm rounded-lg hover:bg-secondary-500 transition-colors disabled:opacity-50"
+                        >
+                          Refuser
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </div>
+
+          <!-- Menu utilisateur — desktop uniquement -->
+          <div class="hidden md:flex items-center space-x-4 ml-2">
+            <UserProfileBadge />
+            <button
+              @click="handleLogout"
+              class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
+            >
+              Déconnexion
+            </button>
+          </div>
+
+          <!-- Burger button — mobile uniquement -->
           <button
-            @click="handleLogout"
-            class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
+            class="md:hidden p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
+            :aria-expanded="isMobileMenuOpen"
+            aria-label="Menu de navigation"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
-            Déconnexion
+            <svg
+              v-if="!isMobileMenuOpen"
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+            <svg
+              v-else
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           </button>
         </div>
-
-        <!-- Burger button — mobile uniquement -->
-        <button
-          class="md:hidden p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
-          :aria-expanded="isMobileMenuOpen"
-          aria-label="Menu de navigation"
-          @click="isMobileMenuOpen = !isMobileMenuOpen"
-        >
-          <svg
-            v-if="!isMobileMenuOpen"
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-          <svg
-            v-else
-            class="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -154,27 +274,96 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notificationStore'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
+import type { GameInvitation } from '@/types/game'
 
 const route = useRoute()
+const router = useRouter()
 const { logout } = useAuth()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 const isAdmin = computed(() => authStore.isAdmin)
 const isMobileMenuOpen = ref(false)
+const showNotifications = ref(false)
+const processingId = ref<number | null>(null)
+const bellRef = ref<HTMLElement | null>(null)
 
 watch(
   () => route.path,
   () => {
     isMobileMenuOpen.value = false
+    showNotifications.value = false
   }
 )
+
+onMounted(async () => {
+  await notificationStore.fetchInvitations()
+  await notificationStore.connectToNotifications()
+
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  notificationStore.disconnectFromNotifications()
+  document.removeEventListener('click', handleClickOutside)
+})
+
+function handleClickOutside(event: MouseEvent) {
+  if (bellRef.value && !bellRef.value.contains(event.target as Node)) {
+    showNotifications.value = false
+  }
+}
+
+function toggleNotifications() {
+  showNotifications.value = !showNotifications.value
+}
+
+async function handleAccept(invitation: GameInvitation) {
+  processingId.value = invitation.id
+  try {
+    await notificationStore.acceptInvitation(invitation.game.id)
+    showNotifications.value = false
+    router.push(`/games/${invitation.game.id}/play`)
+  } catch {
+    alert("Erreur lors de l'acceptation de l'invitation")
+  } finally {
+    processingId.value = null
+  }
+}
+
+async function handleDecline(invitation: GameInvitation) {
+  processingId.value = invitation.id
+  try {
+    await notificationStore.declineInvitation(invitation.game.id)
+  } catch {
+    alert("Erreur lors du refus de l'invitation")
+  } finally {
+    processingId.value = null
+  }
+}
 
 const handleLogout = async () => {
   await logout()
 }
 </script>
+
+<style scoped>
+.fade-down-enter-active,
+.fade-down-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.fade-down-enter-from,
+.fade-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

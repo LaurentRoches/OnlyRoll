@@ -24,7 +24,7 @@ class GameToken
     #[Groups(['token:list', 'token:read', 'map:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: GameMap::class)]
+    #[ORM\ManyToOne(targetEntity: GameMap::class, inversedBy: 'tokens')]
     #[ORM\JoinColumn(
         name: 'map_id',
         referencedColumnName: 'map_id',
@@ -65,7 +65,7 @@ class GameToken
     #[Groups(['token:list', 'token:read', 'token:write', 'map:read'])]
     private int $y = 0;
 
-    #[ORM\Column(name: 'token_size', type: Types::DECIMAL, precision: 3, scale: 1)]
+    #[ORM\Column(name: 'token_size', type: Types::FLOAT)]
     #[Assert\Range(
         min: 0.1,
         max: 10.0,

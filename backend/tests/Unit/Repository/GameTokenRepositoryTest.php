@@ -17,6 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 class GameTokenRepositoryTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+
     private GameTokenRepository $repository;
 
     protected function setUp(): void

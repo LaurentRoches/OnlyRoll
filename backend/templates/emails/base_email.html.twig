@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block subject %}OnlyRoll{% endblock %}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #e2e8f0;
+        }
+        .wrapper {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #1e2235;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2d3561;
+        }
+        .header {
+            background: linear-gradient(135deg, #6d28d9, #4f46e5);
+            padding: 32px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+        .body {
+            padding: 40px;
+        }
+        .body p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin: 0 0 16px;
+        }
+        .cta-button {
+            display: inline-block;
+            margin: 24px 0;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #6d28d9, #4f46e5);
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .cta-button:hover {
+            opacity: 0.9;
+        }
+        .url-fallback {
+            font-size: 13px;
+            color: #64748b;
+            word-break: break-all;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+        .footer {
+            border-top: 1px solid #2d3561;
+            padding: 24px 40px;
+            text-align: center;
+        }
+        .footer p {
+            margin: 0;
+            font-size: 13px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <h1>OnlyRoll</h1>
+        <p>La plateforme de jeu de rôle en ligne</p>
+    </div>
+    <div class="body">
+        {% block body %}{% endblock %}
+    </div>
+    <div class="footer">
+        <p>© {{ "now"|date("Y") }} OnlyRoll — Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+    </div>
+</div>
+</body>
+</html>

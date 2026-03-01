@@ -172,6 +172,49 @@ readonly class MercurePublisher
     }
 
     /**
+     * Publie une notification personnelle à un utilisateur spécifique.
+     *
+     * @param int $userId ID de l'utilisateur destinataire
+     * @param array<string, mixed> $data Données de la notification
+     */
+    public function publishUserNotification(int $userId, array $data): bool
+    {
+        try {
+            $topic = \sprintf('user/%d/notification', $userId);
+
+            $payload = [
+                'type' => 'notification',
+                'userId' => $userId,
+                'data' => $data,
+                'timestamp' => (new DateTimeImmutable())->format('c'),
+            ];
+
+            $update = new Update(
+                topics: [$topic],
+                data: json_encode($payload, \JSON_THROW_ON_ERROR),
+                private: true,
+            );
+
+            $this->hub->publish($update);
+
+            $this->logger->info('User notification published', [
+                'topic' => $topic,
+                'userId' => $userId,
+            ]);
+
+            return true;
+        }
+        catch (Exception $e) {
+            $this->logger->error('Failed to publish user notification', [
+                'error' => $e->getMessage(),
+                'userId' => $userId,
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Publie un événement de présence (join/leave/heartbeat).
      *
      * @param int $gameId ID de la partie

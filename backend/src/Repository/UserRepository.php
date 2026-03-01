@@ -130,6 +130,34 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * Recherche des utilisateurs par pseudo (autocomplétion pour invitations).
+     *
+     * @param string $pseudo Pseudo à rechercher (partial match)
+     * @param int $limit Nombre maximum de résultats
+     * @param User|null $excludeUser Utilisateur à exclure (ex: l'utilisateur courant)
+     *
+     * @return User[]
+     */
+    public function searchByPseudo(string $pseudo, int $limit = 10, ?User $excludeUser = null): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->where('u.pseudo LIKE :pseudo')
+            ->andWhere('u.isActive = :active')
+            ->andWhere('u.deletedAt IS NULL')
+            ->setParameter('pseudo', '%' . $pseudo . '%')
+            ->setParameter('active', true)
+            ->orderBy('u.pseudo', 'ASC')
+            ->setMaxResults($limit);
+
+        if ($excludeUser) {
+            $qb->andWhere('u.id != :excludeId')
+                ->setParameter('excludeId', $excludeUser->getId());
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Récupère les statistiques des utilisateurs.
      *
      * @return array<string, int>

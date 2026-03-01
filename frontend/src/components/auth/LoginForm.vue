@@ -6,9 +6,76 @@
       <p class="text-sm text-secondary-400">Accédez à votre table virtuelle</p>
     </div>
 
-    <!-- Affichage des erreurs -->
+    <!-- Compte supprimé -->
     <div
-      v-if="error || validationErrors.length > 0"
+      v-if="parsedError?.code === 'account_deleted'"
+      class="bg-warning/10 border border-warning/20 rounded-lg p-4"
+    >
+      <div class="flex items-start space-x-3">
+        <svg
+          class="w-5 h-5 text-warning flex-shrink-0 mt-0.5"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <div class="text-sm space-y-1">
+          <p class="text-warning font-medium">Compte supprimé</p>
+          <p class="text-secondary-300">Ce compte a été supprimé et n'est plus accessible.</p>
+          <p class="text-secondary-400">
+            Pour toute demande de restauration, contactez&nbsp;:
+            <a
+              :href="`mailto:${parsedError.adminEmail}`"
+              class="text-primary-400 hover:text-primary-300 transition-colors underline"
+            >
+              {{ parsedError.adminEmail }}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compte non vérifié -->
+    <div
+      v-else-if="parsedError?.code === 'account_not_verified'"
+      class="bg-info/10 border border-info/20 rounded-lg p-4"
+    >
+      <div class="flex items-start space-x-3">
+        <svg
+          class="w-5 h-5 text-info flex-shrink-0 mt-0.5"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <div class="text-sm space-y-1">
+          <p class="text-info font-medium">Email non vérifié</p>
+          <p class="text-secondary-300">
+            Veuillez vérifier votre adresse email avant de vous connecter.
+          </p>
+          <RouterLink
+            :to="{ name: 'register-success', query: { email: parsedError.email } }"
+            class="text-primary-400 hover:text-primary-300 transition-colors underline"
+          >
+            Renvoyer l'email de vérification
+          </RouterLink>
+        </div>
+      </div>
+    </div>
+
+    <!-- Affichage des erreurs génériques -->
+    <div
+      v-else-if="error || validationErrors.length > 0"
       class="bg-error/10 border border-error/20 rounded-lg p-4"
     >
       <div class="flex items-start space-x-3">
@@ -167,21 +234,6 @@
       </svg>
       {{ isLoading ? 'Connexion...' : 'Se connecter' }}
     </button>
-
-    <!-- Message de démonstration -->
-    <div class="text-center pt-4 border-t border-secondary-700">
-      <p class="text-xs text-secondary-500 mb-2">
-        Mode développement - Utilisez les identifiants de test
-      </p>
-      <button
-        type="button"
-        @click="fillTestCredentials"
-        :disabled="isLoading"
-        class="text-xs text-primary-400 hover:text-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Remplir avec les données de test
-      </button>
-    </div>
   </form>
 </template>
 
@@ -214,10 +266,19 @@ const isFormValid = computed(() => {
   )
 })
 
-const fillTestCredentials = () => {
-  form.value.email = 'test@onlyroll.com'
-  form.value.password = 'password123'
-}
+const parsedError = computed<{
+  code: string
+  message: string
+  adminEmail: string
+  email: string
+} | null>(() => {
+  if (!error.value) return null
+  try {
+    return JSON.parse(error.value)
+  } catch {
+    return null
+  }
+})
 
 const validateForm = (): boolean => {
   return validateFields([

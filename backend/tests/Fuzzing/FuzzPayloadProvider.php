@@ -26,8 +26,8 @@ class FuzzPayloadProvider
             [['nested' => 'array']],
             3.14,
             -1,
-            PHP_INT_MAX,
-            PHP_INT_MIN,
+            \PHP_INT_MAX,
+            \PHP_INT_MIN,
         ];
     }
 
@@ -41,10 +41,10 @@ class FuzzPayloadProvider
             "' OR '1'='1",
             "'; DROP TABLE users;--",
             "' UNION SELECT * FROM users--",
-            "1; SELECT * FROM users",
+            '1; SELECT * FROM users',
             "admin'--",
             "' OR 1=1#",
-            "\" OR \"1\"=\"1",
+            '" OR "1"="1',
         ];
     }
 
@@ -89,10 +89,10 @@ class FuzzPayloadProvider
             "💀🎲\x00\n\t\r",
             "\u{0000}",
             "\u{FEFF}",
-            "Ωåß∂ƒ©˙∆˚¬",
-            "%00%0d%0a",
+            'Ωåß∂ƒ©˙∆˚¬',
+            '%00%0d%0a',
             "\xff\xfe",
-            "İ",
+            'İ',
         ];
     }
 

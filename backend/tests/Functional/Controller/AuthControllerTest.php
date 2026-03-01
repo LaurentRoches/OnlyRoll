@@ -57,7 +57,7 @@ class AuthControllerTest extends WebTestCase
 
         $this->assertNotNull($user);
         $this->assertSame('TestUser', $user->getPseudo());
-        $this->assertTrue($user->isVerified());
+        $this->assertFalse($user->isVerified());
     }
 
     public function testRegisterWithExistingEmail(): void
@@ -282,5 +282,6 @@ class AuthControllerTest extends WebTestCase
         $this->entityManager->getConnection()->executeStatement('TRUNCATE TABLE user');
 
         $this->entityManager->getConnection()->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        $this->entityManager->clear();
     }
 }

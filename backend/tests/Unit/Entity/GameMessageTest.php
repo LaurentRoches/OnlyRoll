@@ -208,7 +208,6 @@ class GameMessageTest extends TestCase
     {
         $reflection = new ReflectionClass($object);
         $property = $reflection->getProperty($property);
-        $property->setAccessible(true);
         $property->setValue($object, $value);
     }
 }

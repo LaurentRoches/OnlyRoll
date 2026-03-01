@@ -7,8 +7,6 @@ namespace App\Tests\Functional\Controller;
 use App\DTO\Game\CreateGameDTO;
 use App\Entity\Game;
 use App\Entity\User;
-use App\Enum\PlayerRole;
-use App\Repository\GameRepository;
 use App\Repository\UserRepository;
 use App\Service\GameService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,8 +19,11 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class PresenceControllerTest extends WebTestCase
 {
     private KernelBrowser $client;
+
     private EntityManagerInterface $entityManager;
+
     private User $user;
+
     private Game $game;
 
     protected function setUp(): void
@@ -143,5 +144,4 @@ final class PresenceControllerTest extends WebTestCase
         $this->assertArrayHasKey('error', $data);
         $this->assertSame('Partie introuvable', $data['error']);
     }
-
 }

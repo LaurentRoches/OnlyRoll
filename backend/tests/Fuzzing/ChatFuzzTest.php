@@ -100,7 +100,7 @@ class ChatFuzzTest extends WebTestCase
                 '@' . str_repeat('user', 500),
                 "Ligne1\nLigne2\nLigne3",
                 "\x00message\x00",
-            ]
+            ],
         );
 
         foreach ($payloads as $payload) {
@@ -110,17 +110,17 @@ class ChatFuzzTest extends WebTestCase
                 [],
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
-                json_encode(['content' => $payload, 'type' => 'chat'], JSON_INVALID_UTF8_SUBSTITUTE)
+                json_encode(['content' => $payload, 'type' => 'chat'], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf(
-                    "content=%s → HTTP %d | %s",
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf(
+                    'content=%s → HTTP %d | %s',
                     json_encode(substr((string) $payload, 0, 60)),
                     $statusCode,
-                    substr($this->client->getResponse()->getContent(), 0, 150)
+                    substr($this->client->getResponse()->getContent(), 0, 150),
                 );
             }
         }
@@ -153,13 +153,13 @@ class ChatFuzzTest extends WebTestCase
                 [],
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
-                json_encode(['content' => 'Test message', 'type' => $type], JSON_INVALID_UTF8_SUBSTITUTE)
+                json_encode(['content' => 'Test message', 'type' => $type], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf("type=%s → HTTP %d", json_encode($type), $statusCode);
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf('type=%s → HTTP %d', json_encode($type), $statusCode);
             }
         }
 

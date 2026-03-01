@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 class UserRepositoryTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+
     private UserRepository $repository;
 
     protected function setUp(): void

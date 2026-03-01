@@ -14,6 +14,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 final class UserChecker implements UserCheckerInterface
 {
+    public function __construct(
+        private readonly string $adminEmail = 'admin@onlyroll.fr',
+    ) {
+    }
+
     /**
      * Vérifie l'utilisateur avant l'authentification (vérification du mot de passe).
      */
@@ -25,7 +30,11 @@ final class UserChecker implements UserCheckerInterface
 
         if ($user->isDeleted()) {
             throw new CustomUserMessageAccountStatusException(
-                'Ce compte a été supprimé.',
+                json_encode([
+                    'code' => 'account_deleted',
+                    'message' => 'Ce compte a été supprimé.',
+                    'adminEmail' => $this->adminEmail,
+                ]),
             );
         }
 
@@ -38,6 +47,15 @@ final class UserChecker implements UserCheckerInterface
         if ($user->isLocked()) {
             throw new CustomUserMessageAccountStatusException(
                 'Ce compte est temporairement verrouillé. Veuillez réessayer plus tard.',
+            );
+        }
+
+        if (!$user->isVerified()) {
+            throw new CustomUserMessageAccountStatusException(
+                json_encode([
+                    'code' => 'account_not_verified',
+                    'email' => $user->getEmail(),
+                ]),
             );
         }
     }

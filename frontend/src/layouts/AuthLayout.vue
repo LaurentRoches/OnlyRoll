@@ -7,9 +7,7 @@
       <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center mb-4">
           <!-- Logo OnlyRoll -->
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-400 rounded-lg flex items-center justify-center"
-          >
+          <div class="w-12 h-12 flex items-center justify-center">
             <img style="width: 100%; height: 100%" src="/images/logo.png" alt="Logo OnlyRoll" />
           </div>
         </div>

@@ -54,4 +54,41 @@ export const authApi = {
   async logout(): Promise<{ message: string }> {
     return apiClient.post<{ message: string }>('/logout').then((res) => res.data)
   },
+
+  /**
+   * Vérifie un token de validation d'email
+   */
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    return apiClient
+      .post<{ message: string }>('/auth/verify-email', { token })
+      .then((res) => res.data)
+  },
+
+  /**
+   * Renvoie l'email de vérification.
+   * Passer l'email si l'utilisateur n'est pas connecté (ex: post-inscription).
+   */
+  async resendVerification(email?: string): Promise<{ message: string }> {
+    return apiClient
+      .post<{ message: string }>('/auth/resend-verification', email ? { email } : {})
+      .then((res) => res.data)
+  },
+
+  /**
+   * Demande de réinitialisation de mot de passe
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return apiClient
+      .post<{ message: string }>('/auth/forgot-password', { email })
+      .then((res) => res.data)
+  },
+
+  /**
+   * Réinitialisation du mot de passe via token
+   */
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+    return apiClient
+      .post<{ message: string }>('/auth/reset-password', { token, password })
+      .then((res) => res.data)
+  },
 }

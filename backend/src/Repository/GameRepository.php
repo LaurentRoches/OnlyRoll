@@ -8,6 +8,7 @@ use App\DTO\Game\GameFilterDTO;
 use App\Entity\Game;
 use App\Entity\User;
 use App\Enum\GameStatus;
+use App\Enum\PlayerStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -136,7 +137,9 @@ class GameRepository extends ServiceEntityRepository
             ->leftJoin('g.gameMaster', 'gm')
             ->addSelect('gm')
             ->where('gp.user = :user')
+            ->andWhere('gp.status IN (:statuses)')
             ->setParameter('user', $user)
+            ->setParameter('statuses', [PlayerStatus::ACTIVE, PlayerStatus::INACTIVE])
             ->orderBy('g.updatedAt', 'DESC')
             ->getQuery()
             ->getResult();

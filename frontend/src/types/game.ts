@@ -243,6 +243,35 @@ export interface GameMessage {
 }
 
 // ===========================
+// INVITATIONS & NOTIFICATIONS
+// ===========================
+
+/**
+ * Invitation reçue par un joueur (statut PENDING dans GamePlayer)
+ */
+export interface GameInvitation {
+  id: number
+  game: {
+    id: number
+    name: string
+  }
+  gameMaster: {
+    id: number
+    pseudo: string
+  }
+  invitedAt: string
+}
+
+/**
+ * Résultat de recherche d'utilisateur (pour invitations)
+ */
+export interface UserSearchResult {
+  id: number
+  pseudo: string
+  avatar?: string
+}
+
+// ===========================
 // TYPES HELPERS
 // ===========================
 

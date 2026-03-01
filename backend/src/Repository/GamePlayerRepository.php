@@ -191,6 +191,41 @@ class GamePlayerRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve toutes les invitations en attente pour un utilisateur donné.
+     *
+     * @return GamePlayer[]
+     */
+    public function findPendingInvitationsForUser(User $user): array
+    {
+        return $this->createQueryBuilder('gp')
+            ->leftJoin('gp.game', 'g')
+            ->leftJoin('g.gameMaster', 'gm')
+            ->addSelect('g', 'gm')
+            ->where('gp.user = :user')
+            ->andWhere('gp.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', PlayerStatus::PENDING)
+            ->orderBy('gp.joinedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les joueurs actifs + inactifs + en attente (pour vérifier la capacité avant invitation).
+     */
+    public function countActiveAndPendingPlayers(Game $game): int
+    {
+        return (int) $this->createQueryBuilder('gp')
+            ->select('COUNT(gp.id)')
+            ->where('gp.game = :game')
+            ->andWhere('gp.status IN (:statuses)')
+            ->setParameter('game', $game)
+            ->setParameter('statuses', [PlayerStatus::ACTIVE, PlayerStatus::INACTIVE, PlayerStatus::PENDING])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Compte le nombre total de joueurs dans une partie (tous statuts confondus).
      */
     public function countTotalPlayers(Game $game): int

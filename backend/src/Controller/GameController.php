@@ -9,7 +9,9 @@ use App\DTO\Game\GameFilterDTO;
 use App\DTO\Game\JoinGameDTO;
 use App\DTO\Game\UpdateGameDTO;
 use App\Enum\GameStatus;
+use App\Repository\GamePlayerRepository;
 use App\Repository\GameRepository;
+use App\Repository\UserRepository;
 use App\Service\GameService;
 use App\Service\MercureTokenService;
 use Exception;
@@ -28,12 +30,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * Contrôleur de gestion des parties de jeu.
  */
 #[Route('/api/games', name: 'api_game_')]
-#[IsGranted('ROLE_USER')]
 final class GameController extends AbstractController
 {
     public function __construct(
         private readonly GameService $gameService,
         private readonly GameRepository $gameRepository,
+        private readonly GamePlayerRepository $gamePlayerRepository,
+        private readonly UserRepository $userRepository,
         private readonly SerializerInterface $serializer,
         private readonly ValidatorInterface $validator,
         private readonly MercureTokenService $mercureTokenService,
@@ -62,6 +65,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('', name: 'list', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function list(Request $request): JsonResponse
     {
         $filterDTO = new GameFilterDTO();
@@ -104,6 +108,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/my-games', name: 'my_games', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function myGames(): JsonResponse
     {
         /** @var \App\Entity\User $user */
@@ -131,6 +136,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function show(int $id): JsonResponse
     {
         $game = $this->gameRepository->findGameWithPlayers($id);
@@ -176,6 +182,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function create(Request $request): JsonResponse
     {
         try {
@@ -196,6 +203,13 @@ final class GameController extends AbstractController
 
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+
+        if (!$user->isVerified()) {
+            return $this->json(
+                ['error' => 'Vérifiez votre adresse email avant de créer une partie.', 'code' => 'email_not_verified'],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
 
         try {
             $game = $this->gameService->createGame($dto, $user);
@@ -240,6 +254,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_USER')]
     public function update(int $id, Request $request): JsonResponse
     {
         $game = $this->gameRepository->find($id);
@@ -298,6 +313,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/join', name: 'join_by_code', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function joinByCode(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -323,6 +339,13 @@ final class GameController extends AbstractController
 
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+
+        if (!$user->isVerified()) {
+            return $this->json(
+                ['error' => 'Vérifiez votre adresse email avant de rejoindre une partie.', 'code' => 'email_not_verified'],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
 
         try {
             $gameId = $game->getId();
@@ -369,6 +392,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}/join', name: 'join', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function join(int $id, Request $request): JsonResponse
     {
         $dto = $this->serializer->deserialize(
@@ -384,6 +408,13 @@ final class GameController extends AbstractController
 
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+
+        if (!$user->isVerified()) {
+            return $this->json(
+                ['error' => 'Vérifiez votre adresse email avant de rejoindre une partie.', 'code' => 'email_not_verified'],
+                Response::HTTP_FORBIDDEN,
+            );
+        }
 
         try {
             $gamePlayer = $this->gameService->joinGame($id, $user, $dto->password);
@@ -412,6 +443,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}/leave', name: 'leave', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function leave(int $id): JsonResponse
     {
         $game = $this->gameRepository->find($id);
@@ -450,6 +482,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
     public function delete(int $id): JsonResponse
     {
         $game = $this->gameRepository->find($id);
@@ -472,6 +505,129 @@ final class GameController extends AbstractController
     }
 
     /**
+     * Inviter un utilisateur à rejoindre une partie (MJ uniquement).
+     */
+    #[Route('/{id}/invite', name: 'invite', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function invite(int $id, Request $request): JsonResponse
+    {
+        $game = $this->gameRepository->find($id);
+
+        if (!$game) {
+            return $this->json(['error' => 'Partie introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $targetUserId = $data['userId'] ?? null;
+
+        if (!$targetUserId) {
+            return $this->json(['error' => 'userId requis'], Response::HTTP_BAD_REQUEST);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        $targetUser = $this->userRepository->find($targetUserId);
+
+        if (!$targetUser) {
+            return $this->json(['error' => 'Utilisateur introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $this->gameService->invitePlayer($game, $user, $targetUser);
+
+            return $this->json(['message' => 'Invitation envoyée'], Response::HTTP_OK);
+        }
+        catch (Exception $e) {
+            return $this->json(['error' => $e->getMessage()], $e->getCode() ?: Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Accepter une invitation à rejoindre une partie.
+     */
+    #[Route('/{id}/accept-invitation', name: 'accept_invitation', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function acceptInvitation(int $id): JsonResponse
+    {
+        $game = $this->gameRepository->find($id);
+
+        if (!$game) {
+            return $this->json(['error' => 'Partie introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        try {
+            $this->gameService->acceptInvitation($game, $user);
+
+            return $this->json(['message' => 'Invitation acceptée'], Response::HTTP_OK);
+        }
+        catch (Exception $e) {
+            return $this->json(['error' => $e->getMessage()], $e->getCode() ?: Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Refuser une invitation à rejoindre une partie.
+     */
+    #[Route('/{id}/decline-invitation', name: 'decline_invitation', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function declineInvitation(int $id): JsonResponse
+    {
+        $game = $this->gameRepository->find($id);
+
+        if (!$game) {
+            return $this->json(['error' => 'Partie introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        try {
+            $this->gameService->declineInvitation($game, $user);
+
+            return $this->json(['message' => 'Invitation refusée'], Response::HTTP_OK);
+        }
+        catch (Exception $e) {
+            return $this->json(['error' => $e->getMessage()], $e->getCode() ?: Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Expulser un joueur de la partie (MJ uniquement).
+     */
+    #[Route('/{id}/players/{playerId}/kick', name: 'kick_player', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function kickPlayer(int $id, int $playerId): JsonResponse
+    {
+        $game = $this->gameRepository->find($id);
+
+        if (!$game) {
+            return $this->json(['error' => 'Partie introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $gamePlayer = $this->gamePlayerRepository->find($playerId);
+
+        if (!$gamePlayer || $gamePlayer->getGame()?->getId() !== $id) {
+            return $this->json(['error' => 'Joueur introuvable dans cette partie'], Response::HTTP_NOT_FOUND);
+        }
+
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        try {
+            $this->gameService->kickPlayer($game, $user, $gamePlayer);
+
+            return $this->json(['message' => 'Joueur expulsé'], Response::HTTP_OK);
+        }
+        catch (Exception $e) {
+            return $this->json(['error' => $e->getMessage()], $e->getCode() ?: Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
      * Obtenir un token JWT Mercure pour s'abonner aux événements de la partie.
      */
     #[OA\Get(
@@ -489,6 +645,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/{id}/mercure-token', name: 'mercure_token', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function getMercureToken(int $id): JsonResponse
     {
         $game = $this->gameRepository->find($id);
@@ -551,6 +708,7 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('/mercure-presence-token', name: 'mercure_presence_token', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function getMercurePresenceToken(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

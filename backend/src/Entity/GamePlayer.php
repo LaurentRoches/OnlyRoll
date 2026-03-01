@@ -21,7 +21,7 @@ class GamePlayer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'game_player_id')]
-    #[Groups(['game:read'])]
+    #[Groups(['game:read', 'game:list'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Game::class, inversedBy: 'gamePlayers')]
@@ -40,15 +40,15 @@ class GamePlayer
         nullable: false,
         onDelete: 'CASCADE',
     )]
-    #[Groups(['game:read'])]
+    #[Groups(['game:read', 'game:list'])]
     private ?User $user = null;
 
     #[ORM\Column(name: 'game_player_role', enumType: PlayerRole::class)]
-    #[Groups(['game:read'])]
+    #[Groups(['game:read', 'game:list'])]
     private PlayerRole $role = PlayerRole::PLAYER;
 
     #[ORM\Column(name: 'game_player_status', enumType: PlayerStatus::class)]
-    #[Groups(['game:read'])]
+    #[Groups(['game:read', 'game:list'])]
     private PlayerStatus $status = PlayerStatus::PENDING;
 
     #[ORM\Column(name: 'game_player_joined_at', type: Types::DATETIME_IMMUTABLE)]

@@ -19,6 +19,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class CorsListenerTest extends TestCase
 {
     private CorsListener $listener;
+
     private HttpKernelInterface $kernel;
 
     protected function setUp(): void
@@ -43,7 +44,7 @@ final class CorsListenerTest extends TestCase
         $event = new RequestEvent(
             $this->kernel,
             $request,
-            HttpKernelInterface::MAIN_REQUEST
+            HttpKernelInterface::MAIN_REQUEST,
         );
 
         $this->listener->onKernelRequest($event);
@@ -65,7 +66,7 @@ final class CorsListenerTest extends TestCase
         $event = new RequestEvent(
             $this->kernel,
             $request,
-            HttpKernelInterface::MAIN_REQUEST
+            HttpKernelInterface::MAIN_REQUEST,
         );
 
         $this->listener->onKernelRequest($event);
@@ -79,7 +80,7 @@ final class CorsListenerTest extends TestCase
         $event = new RequestEvent(
             $this->kernel,
             $request,
-            HttpKernelInterface::SUB_REQUEST
+            HttpKernelInterface::SUB_REQUEST,
         );
 
         $this->listener->onKernelRequest($event);
@@ -97,7 +98,7 @@ final class CorsListenerTest extends TestCase
             $this->kernel,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
-            $response
+            $response,
         );
 
         $this->listener->onKernelResponse($event);
@@ -117,7 +118,7 @@ final class CorsListenerTest extends TestCase
             $this->kernel,
             $request,
             HttpKernelInterface::MAIN_REQUEST,
-            $response
+            $response,
         );
 
         $this->listener->onKernelResponse($event);
@@ -135,7 +136,7 @@ final class CorsListenerTest extends TestCase
             $this->kernel,
             $request,
             HttpKernelInterface::SUB_REQUEST,
-            $response
+            $response,
         );
 
         $this->listener->onKernelResponse($event);
