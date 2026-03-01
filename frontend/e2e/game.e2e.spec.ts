@@ -62,11 +62,19 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
           body = msg.Content?.Body ?? ''
         }
 
-        const match = body.match(/token=([a-f0-9]+)/)
+        // Remove quoted-printable soft line breaks before matching
+        const decodedBody = body.replace(/=\r?\n/g, '')
+        const match = decodedBody.match(/token=([a-f0-9]+)/)
         if (match) {
-          await request.post(`${BACKEND_API}/auth/verify-email`, {
+          const verifyResponse = await request.post(`${BACKEND_API}/auth/verify-email`, {
             data: { token: match[1] },
           })
+          if (!verifyResponse.ok()) {
+            const errorText = await verifyResponse.text()
+            throw new Error(
+              `Email verification API failed (${verifyResponse.status()}): ${errorText}`
+            )
+          }
           return
         }
       }
