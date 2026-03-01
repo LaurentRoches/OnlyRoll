@@ -46,25 +46,36 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
       const data = await response.json()
       const messages = data.items ?? []
       if (messages.length > 0) {
-        const msg = messages[0]
-        // Extract token from the email body (HTML part contains the verification URL)
-        const bodyParts = msg.MIME?.Parts ?? []
+        // Use the most recent email to avoid stale/invalidated tokens
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const msg = messages[messages.length - 1] as any
+
+        // Flatten top-level MIME parts + one level of nesting (multipart/mixed > multipart/alternative)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const topParts: any[] = msg.MIME?.Parts ?? []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const allParts: any[] = [...topParts, ...topParts.flatMap((p: any) => p.MIME?.Parts ?? [])]
+
         let body = ''
-        for (const part of bodyParts) {
-          const contentType = part.Headers?.['Content-Type']?.[0] ?? ''
-          if (contentType.includes('text/html') || contentType.includes('text/plain')) {
+        for (const part of allParts) {
+          const ct: string = part.Headers?.['Content-Type']?.[0] ?? ''
+          if (ct.includes('text/plain') || ct.includes('text/html')) {
             body = part.Body ?? ''
             break
           }
         }
-        // Fallback to raw body
+        // Fallback to raw body (QP-encoded)
         if (!body) {
           body = msg.Content?.Body ?? ''
         }
 
-        // Remove quoted-printable soft line breaks before matching
-        const decodedBody = body.replace(/=\r?\n/g, '')
-        const match = decodedBody.match(/token=([a-f0-9]+)/)
+        // Decode Quoted-Printable encoding:
+        // 1. Remove soft line breaks (=\r\n per RFC 2045)
+        // 2. Decode =3D → = (QP encoding of the = sign, as output by PHP's Symfony Mailer)
+        const decodedBody = body.replace(/=\r?\n/g, '').replace(/=3D/g, '=')
+
+        // Token is exactly 100 lowercase hex chars — bin2hex(random_bytes(50))
+        const match = decodedBody.match(/[?&]token=([a-f0-9]{100})/)
         if (match) {
           const verifyResponse = await request.post(`${BACKEND_API}/auth/verify-email`, {
             data: { token: match[1] },
