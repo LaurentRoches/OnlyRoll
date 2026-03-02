@@ -1,0 +1,20 @@
+{% extends 'emails/base_email.html.twig' %}
+
+{% block subject %}Vérifiez votre adresse email — OnlyRoll{% endblock %}
+
+{% block body %}
+    <p>Bonjour <strong>{{ pseudo }}</strong>,</p>
+    <p>
+        Merci de vous être inscrit sur <strong>OnlyRoll</strong> !
+        Pour activer votre compte et rejoindre des aventures, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous.
+    </p>
+    <p style="text-align: center;">
+        <a href="{{ verification_url }}" class="cta-button">Vérifier mon email</a>
+    </p>
+    <p>Ce lien est valable <strong>24 heures</strong>. Passé ce délai, vous pourrez en demander un nouveau depuis votre tableau de bord.</p>
+    <p>Si vous n'avez pas créé de compte sur OnlyRoll, vous pouvez ignorer cet email en toute sécurité.</p>
+    <p class="url-fallback">
+        Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
+        {{ verification_url }}
+    </p>
+{% endblock %}

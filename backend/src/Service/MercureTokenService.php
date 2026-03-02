@@ -60,6 +60,28 @@ readonly class MercureTokenService
     }
 
     /**
+     * Génère un token JWT Mercure pour s'abonner aux notifications personnelles d'un utilisateur.
+     *
+     * @param User $user Utilisateur dont on veut recevoir les notifications
+     *
+     * @return string Token JWT signé
+     */
+    public function generateTokenForUserNotifications(User $user): string
+    {
+        $now = new DateTimeImmutable();
+
+        $token = $this->jwtConfig->builder()
+            ->issuedAt($now)
+            ->expiresAt($now->modify('+1 hour'))
+            ->withClaim('mercure', [
+                'subscribe' => [\sprintf('user/%d/notification', $user->getId())],
+            ])
+            ->getToken($this->jwtConfig->signer(), $this->jwtConfig->signingKey());
+
+        return $token->toString();
+    }
+
+    /**
      * Génère un token JWT Mercure pour les événements de présence de plusieurs parties.
      *
      * @param User $user Utilisateur qui se connecte

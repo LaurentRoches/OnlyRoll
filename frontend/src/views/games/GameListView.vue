@@ -8,6 +8,7 @@ import { gameApi } from '@/services/api/gameApi'
 import { presenceApi } from '@/services/api/presenceApi'
 import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
+import { useRouter } from 'vue-router'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
 import GameCard from '@/components/game/GameCard.vue'
 import SkeletonCard from '@/components/game/SkeletonCard.vue'
@@ -19,10 +20,11 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const presenceStore = usePresenceStore()
+const router = useRouter()
 const showCreateModal = ref(false)
 const showJoinModal = ref(false)
 const selectedGame = ref<Game | null>(null)
-const activeTab = ref<'public' | 'my-games'>('public')
+const activeTab = ref<'public' | 'my-games' | 'player-games'>('public')
 const showFilters = ref(true)
 const connectedGameIds = ref<number[]>([])
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -103,25 +105,33 @@ async function connectToPresence() {
 }
 
 onMounted(async () => {
-  mercureService.on('presence', handlePresenceEvent)
+  if (authStore.isAuthenticated) {
+    mercureService.on('presence', handlePresenceEvent)
+  }
 
   await loadGames()
-  connectToPresence()
+
+  if (authStore.isAuthenticated) {
+    connectToPresence()
+  }
 })
 
 onUnmounted(() => {
-  mercureService.off('presence', handlePresenceEvent)
-  mercureService.disconnect()
+  if (authStore.isAuthenticated) {
+    mercureService.off('presence', handlePresenceEvent)
+    mercureService.disconnect()
+  }
 })
 
 async function loadGames() {
   filters.value.page = 1
   if (activeTab.value === 'public') {
-    await Promise.all([
-      gameStore.fetchMyGames(),
-      gameStore.fetchPublicGames({ ...filters.value, page: 1 }),
-    ])
-  } else {
+    const fetches: Promise<unknown>[] = [gameStore.fetchPublicGames({ ...filters.value, page: 1 })]
+    if (authStore.isAuthenticated) {
+      fetches.push(gameStore.fetchMyGames())
+    }
+    await Promise.all(fetches)
+  } else if (authStore.isAuthenticated) {
     await gameStore.fetchMyGames()
   }
 }
@@ -135,6 +145,12 @@ async function loadMorePublicGames() {
 const infiniteScrollDisabled = computed(
   () => !gameStore.hasMoreGames || activeTab.value !== 'public' || gameStore.isLoading
 )
+
+// Parties où l'utilisateur est joueur (pas MJ)
+const playerGames = computed(() => {
+  if (!authStore.user) return []
+  return gameStore.myGames.filter((game) => game.gameMaster.id !== authStore.user!.id)
+})
 
 const { isLoading: isScrollLoading } = useInfiniteScroll(loadMoreSentinel, loadMorePublicGames, {
   disabled: infiniteScrollDisabled,
@@ -159,7 +175,7 @@ watch(
   }
 )
 
-function handleTabChange(tab: 'public' | 'my-games') {
+function handleTabChange(tab: 'public' | 'my-games' | 'player-games') {
   activeTab.value = tab
   filters.value = {
     search: '',
@@ -187,6 +203,10 @@ function resetFilters() {
 }
 
 function handleJoinGame(game: Game) {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: '/games' } })
+    return
+  }
   selectedGame.value = game
   showJoinModal.value = true
 }
@@ -195,11 +215,19 @@ function handleJoinSuccess() {
   loadGames()
 }
 
+async function handleGameDeleted() {
+  await gameStore.fetchMyGames()
+}
+
 // ============================================
 // Tri et filtrage personnalisé pour "Toutes"
 // ============================================
 const sortedGamesForAllTab = computed(() => {
-  if (!authStore.user) return []
+  if (!authStore.isAuthenticated) {
+    return [...gameStore.games].sort((a, b) =>
+      (a.title || a.name).toLowerCase().localeCompare((b.title || b.name).toLowerCase())
+    )
+  }
 
   const allGames: Game[] = []
   const seenIds = new Set<number>()
@@ -245,41 +273,41 @@ const sortedGamesForAllTab = computed(() => {
 })
 
 const displayedGames = computed(() => {
-  if (!authStore.user) return []
-
-  if (activeTab.value === 'my-games') {
-    let gmGames = gameStore.myGames.filter((game) => game.gameMaster.id === authStore.user!.id)
-
+  const applyLocalFilters = (list: typeof gameStore.myGames) => {
+    let result = list
     if (filters.value.search) {
       const searchTerm = filters.value.search.toLowerCase()
-      gmGames = gmGames.filter((game) =>
-        (game.title || game.name).toLowerCase().includes(searchTerm)
-      )
+      result = result.filter((game) => (game.title || game.name).toLowerCase().includes(searchTerm))
     }
-
     if (filters.value.title) {
       const titleFilter = filters.value.title.toLowerCase()
-      gmGames = gmGames.filter((game) =>
+      result = result.filter((game) =>
         (game.title || game.name).toLowerCase().includes(titleFilter)
       )
     }
-
     if (filters.value.status) {
-      gmGames = gmGames.filter((game) => game.status === filters.value.status)
+      result = result.filter((game) => game.status === filters.value.status)
     }
-
-    return gmGames.sort((a, b) => {
-      const titleA = (a.title || a.name).toLowerCase()
-      const titleB = (b.title || b.name).toLowerCase()
-      return titleA.localeCompare(titleB)
-    })
-  } else {
-    return sortedGamesForAllTab.value
+    return result.sort((a, b) =>
+      (a.title || a.name).toLowerCase().localeCompare((b.title || b.name).toLowerCase())
+    )
   }
+
+  if (activeTab.value === 'my-games') {
+    if (!authStore.user) return []
+    const gmGames = gameStore.myGames.filter((game) => game.gameMaster.id === authStore.user!.id)
+    return applyLocalFilters(gmGames)
+  }
+
+  if (activeTab.value === 'player-games') {
+    return applyLocalFilters(playerGames.value)
+  }
+
+  return sortedGamesForAllTab.value
 })
 
 watch(displayedGames, () => {
-  if (displayedGames.value.length > 0) {
+  if (authStore.isAuthenticated && displayedGames.value.length > 0) {
     connectToPresence()
   }
 })
@@ -295,23 +323,39 @@ watch(displayedGames, () => {
       <div class="flex items-center justify-between mb-8">
         <div>
           <h1 class="text-3xl font-bold text-secondary-50">
-            {{ activeTab === 'public' ? 'Parties Publiques' : 'Mes Parties' }}
+            {{
+              activeTab === 'public'
+                ? 'Parties Publiques'
+                : activeTab === 'my-games'
+                  ? 'Mes Parties (M.J.)'
+                  : 'Mes Parties (Joueur)'
+            }}
           </h1>
           <p class="text-secondary-400 mt-1">
             {{
               activeTab === 'public'
                 ? 'Découvrez et rejoignez des parties en cours'
-                : 'Gérez vos parties actives et archivées'
+                : activeTab === 'my-games'
+                  ? 'Gérez vos parties actives et archivées'
+                  : 'Les parties auxquelles vous participez en tant que joueur'
             }}
           </p>
         </div>
         <button
+          v-if="authStore.isAuthenticated"
           @click="showCreateModal = true"
           class="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-purple hover:shadow-purple-lg"
         >
           <PlusIcon class="w-5 h-5" />
           Nouvelle
         </button>
+        <RouterLink
+          v-else
+          :to="{ name: 'login', query: { redirect: '/games' } }"
+          class="px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+        >
+          Se connecter
+        </RouterLink>
       </div>
 
       <!-- Tabs -->
@@ -329,6 +373,7 @@ watch(displayedGames, () => {
             Toutes
           </button>
           <button
+            v-if="authStore.isAuthenticated"
             @click="handleTabChange('my-games')"
             :class="[
               'px-6 py-2 rounded-md font-medium transition-all duration-200',
@@ -338,6 +383,18 @@ watch(displayedGames, () => {
             ]"
           >
             M.J.
+          </button>
+          <button
+            v-if="authStore.isAuthenticated"
+            @click="handleTabChange('player-games')"
+            :class="[
+              'px-6 py-2 rounded-md font-medium transition-all duration-200',
+              activeTab === 'player-games'
+                ? 'bg-primary-500 text-white shadow-purple'
+                : 'text-secondary-400 hover:text-secondary-50',
+            ]"
+          >
+            Mes parties
           </button>
         </div>
 
@@ -457,7 +514,9 @@ watch(displayedGames, () => {
               :key="game.id"
               :game="game"
               :show-join-button="activeTab === 'public'"
+              :show-delete-button="activeTab === 'my-games'"
               @join="handleJoinGame"
+              @deleted="handleGameDeleted"
             />
           </div>
 
@@ -471,7 +530,9 @@ watch(displayedGames, () => {
               {{
                 activeTab === 'public'
                   ? 'Aucune partie publique ne correspond à vos critères'
-                  : 'Vous ne participez à aucune partie pour le moment'
+                  : activeTab === 'my-games'
+                    ? 'Vous ne gérez aucune partie pour le moment'
+                    : 'Vous ne participez à aucune partie en tant que joueur'
               }}
             </p>
             <button
@@ -483,7 +544,7 @@ watch(displayedGames, () => {
               Créer votre première partie
             </button>
             <button
-              v-else
+              v-else-if="activeTab === 'public'"
               @click="resetFilters"
               class="px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg transition-colors"
             >

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useGameStore } from '@/stores/game'
+import { useAuthStore } from '@/stores/auth'
 import { useMapStore } from '@/stores/mapStore'
 import { useChatStore } from '@/stores/chatStore'
 import { usePresenceStore } from '@/stores/presenceStore'
@@ -26,12 +27,14 @@ import EmptyMapState from '@/components/game/EmptyMapState.vue'
 import UploadMapModal from '@/components/game/UploadMapModal.vue'
 import EditMapModal from '@/components/game/EditMapModal.vue'
 import CreateTokenModal from '@/components/game/CreateTokenModal.vue'
+import GameSettingsModal from '@/components/game/GameSettingsModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const gameId = computed(() => Number(route.params.id))
 
 const gameStore = useGameStore()
+const authStore = useAuthStore()
 const mapStore = useMapStore()
 const chatStore = useChatStore()
 const presenceStore = usePresenceStore()
@@ -52,6 +55,8 @@ const editingMap = ref<GameMapType | null>(null)
 
 const showCreateTokenModal = ref(false)
 const tokenCreationPosition = ref<{ x: number; y: number } | null>(null)
+
+const showSettingsModal = ref(false)
 
 const gameMapRef = ref<InstanceType<typeof GameMap> | null>(null)
 
@@ -125,6 +130,12 @@ async function initializeGame() {
       messages: chatStore.messages.length,
     })
 
+    // Guard : seuls les joueurs inscrits et le MJ peuvent accéder à la partie
+    if (!gameStore.isGameMaster && !gameStore.isPlayerInGame) {
+      router.push({ name: 'games' })
+      return
+    }
+
     try {
       const response = await presenceApi.join(gameId.value)
       if (response.onlineUsers) {
@@ -186,9 +197,17 @@ async function setupMercure() {
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  mercureService.on('player', (event: any) => {
+  mercureService.on('player', async (event: any) => {
     console.log('Player event:', event.data)
-    gameStore.fetchGameById(gameId.value)
+
+    if (event.data?.action === 'kicked' && event.data?.userId === authStore.user?.id) {
+      mercureService.disconnect()
+      presenceStore.clearGamePresence(gameId.value)
+      router.push({ name: 'games' })
+      return
+    }
+
+    await gameStore.fetchGameById(gameId.value)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -337,7 +356,9 @@ async function handleGridSettingsChanged(settings: {
 }
 
 function handleOpenSettings() {
-  console.log('Ouvrir les paramètres')
+  if (isGameMaster.value) {
+    showSettingsModal.value = true
+  }
 }
 
 function handleGoBack() {
@@ -474,6 +495,9 @@ async function handleTokenCreated() {
             v-if="activeTab === 'players'"
             :players="currentGame?.gamePlayers || []"
             :game-master-id="currentGame?.gameMaster?.id"
+            :max-players="currentGame?.maxPlayers"
+            @player-kicked="gameStore.fetchGameById(gameId)"
+            @player-invited="gameStore.fetchGameById(gameId)"
           />
 
           <DiceRoller v-if="activeTab === 'dice'" :game-id="gameId" />
@@ -534,6 +558,14 @@ async function handleTokenCreated() {
       :map-id="activeMap?.id || 0"
       @close="showCreateTokenModal = false"
       @success="handleTokenCreated"
+    />
+
+    <GameSettingsModal
+      v-if="isGameMaster && currentGame"
+      :show="showSettingsModal"
+      :game="currentGame"
+      @close="showSettingsModal = false"
+      @updated="gameStore.fetchGameById(gameId)"
     />
   </div>
 </template>

@@ -4,7 +4,7 @@ import type { Game, CreateGameDTO, UpdateGameDTO, GameFilters, PaginationMeta } 
 import { getErrorMessage } from '@/types/errors'
 import { gameApi } from '@/services/api/gameApi'
 import { useAuthStore } from './auth'
-import { GameStatus } from '@/types/game'
+import { GameStatus, PlayerStatus } from '@/types/game'
 import { logger } from '@/utils/logger'
 
 export const useGameStore = defineStore('game', () => {
@@ -35,7 +35,11 @@ export const useGameStore = defineStore('game', () => {
   const isPlayerInGame = computed(() => {
     const authStore = useAuthStore()
     if (!currentGame.value || !authStore.user) return false
-    return currentGame.value.gamePlayers.some((gp) => gp.user.id === authStore.user!.id)
+    return currentGame.value.gamePlayers.some(
+      (gp) =>
+        gp.user.id === authStore.user!.id &&
+        (gp.status === PlayerStatus.ACTIVE || gp.status === PlayerStatus.INACTIVE)
+    )
   })
 
   const canStartGame = computed(() => {

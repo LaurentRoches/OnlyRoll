@@ -86,7 +86,7 @@ class Game
         cascade: ['persist', 'remove'],
         orphanRemoval: true,
     )]
-    #[Groups(['game:read'])]
+    #[Groups(['game:read', 'game:list'])]
     private Collection $gamePlayers;
 
     #[ORM\Column(name: 'game_created_at', type: Types::DATETIME_IMMUTABLE)]
@@ -148,7 +148,8 @@ class Game
         }
 
         return $this->gamePlayers->exists(
-            fn ($key, GamePlayer $player) => $player->getUser()?->getId() === $userId,
+            fn ($key, GamePlayer $player) => $player->getUser()?->getId() === $userId
+                && $player->getStatus()->canAccessGame(),
         );
     }
 

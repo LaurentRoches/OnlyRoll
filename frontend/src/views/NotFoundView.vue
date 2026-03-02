@@ -5,9 +5,7 @@
     <div class="text-center max-w-2xl mx-auto">
       <!-- Animation du dé qui roule -->
       <div class="mb-12">
-        <div
-          class="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-primary-500 to-primary-900 rounded-2xl shadow-2xl animate-bounce-gentle"
-        >
+        <div class="inline-flex items-center justify-center w-32 h-32 animate-bounce-gentle">
           <img style="width: 100%; height: 100%" src="/images/logo.png" />
         </div>
       </div>

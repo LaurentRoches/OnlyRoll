@@ -14,8 +14,10 @@ use App\Exception\Game\AccessDeniedException;
 use App\Exception\Game\GameFullException;
 use App\Exception\Game\GameNotFoundException;
 use App\Exception\Game\InvalidPasswordException;
+use App\Repository\GameMapRepository;
 use App\Repository\GamePlayerRepository;
 use App\Repository\GameRepository;
+use App\Service\FileUploader;
 use App\Service\GameService;
 use App\Service\MercurePublisher;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,9 +34,13 @@ class GameServiceTest extends TestCase
 
     private GamePlayerRepository&MockObject $gamePlayerRepository;
 
+    private GameMapRepository&MockObject $gameMapRepository;
+
     private LoggerInterface&MockObject $logger;
 
     private MercurePublisher&MockObject $mercurePublisher;
+
+    private FileUploader&MockObject $fileUploader;
 
     private GameService $gameService;
 
@@ -43,15 +49,19 @@ class GameServiceTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->gameRepository = $this->createMock(GameRepository::class);
         $this->gamePlayerRepository = $this->createMock(GamePlayerRepository::class);
+        $this->gameMapRepository = $this->createMock(GameMapRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->mercurePublisher = $this->createMock(MercurePublisher::class);
+        $this->fileUploader = $this->createMock(FileUploader::class);
 
         $this->gameService = new GameService(
             $this->entityManager,
             $this->gameRepository,
             $this->gamePlayerRepository,
+            $this->gameMapRepository,
             $this->logger,
             $this->mercurePublisher,
+            $this->fileUploader,
         );
     }
 

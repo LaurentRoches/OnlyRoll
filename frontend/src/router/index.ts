@@ -30,6 +30,23 @@ const router = createRouter({
           component: () => import('@/views/auth/RegisterView.vue'),
           meta: { requiresGuest: true },
         },
+        {
+          path: 'verify-email',
+          name: 'verify-email',
+          component: () => import('@/views/auth/VerifyEmailView.vue'),
+        },
+        {
+          path: 'forgot-password',
+          name: 'forgot-password',
+          component: () => import('@/views/auth/ForgotPasswordView.vue'),
+          meta: { requiresGuest: true },
+        },
+        {
+          path: 'reset-password',
+          name: 'reset-password',
+          component: () => import('@/views/auth/ResetPasswordView.vue'),
+          meta: { requiresGuest: true },
+        },
       ],
     },
     {
@@ -47,12 +64,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    // ========== GESTION DES PARTIES (PROTÉGÉ) ==========
+    // ========== GESTION DES PARTIES (PUBLIC - liste visible sans auth) ==========
     {
       path: '/games',
       name: 'games',
       component: () => import('@/views/games/GameListView.vue'),
-      meta: { requiresAuth: true, title: 'Parties' },
+      meta: { title: 'Parties' },
     },
     {
       path: '/games/:id/play',

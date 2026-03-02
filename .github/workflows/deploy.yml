@@ -149,6 +149,11 @@ jobs:
           MERCURE_PUBLIC_URL=https://onlyroll.cloud/.well-known/mercure
           MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}
           CORS_ALLOW_ORIGIN=https://onlyroll.cloud
+          APP_HOSTNAME=${{ secrets.APP_HOSTNAME }}
+          APP_FRONTEND_URL=${{ secrets.APP_FRONTEND_URL }}
+          APP_ADMIN_EMAIL=${{ secrets.APP_ADMIN_EMAIL }}
+          MAILER_DSN=${{ secrets.MAILER_DSN }}
+          MAILER_FROM=${{ secrets.MAILER_FROM }}
           BACKENDENVEOF
             
             echo ".env files created"

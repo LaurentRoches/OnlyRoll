@@ -38,12 +38,12 @@ class AuthFuzzTest extends WebTestCase
                 [],
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
-                json_encode(['email' => $payload, 'password' => 'ValidPass123!'], JSON_INVALID_UTF8_SUBSTITUTE)
+                json_encode(['email' => $payload, 'password' => 'ValidPass123!'], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
                 $issues[] = $this->formatIssue('login.email', $payload, $statusCode, $client->getResponse()->getContent());
             }
         }
@@ -66,12 +66,12 @@ class AuthFuzzTest extends WebTestCase
                 [],
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
-                json_encode(['email' => 'user@test.com', 'password' => $payload], JSON_INVALID_UTF8_SUBSTITUTE)
+                json_encode(['email' => 'user@test.com', 'password' => $payload], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
                 $issues[] = $this->formatIssue('login.password', $payload, $statusCode, $client->getResponse()->getContent());
             }
         }
@@ -102,12 +102,12 @@ class AuthFuzzTest extends WebTestCase
             $client->request('POST', '/api/login', [], [], ['CONTENT_TYPE' => 'application/json'], $body);
             $statusCode = $client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf(
-                    "body=%s → HTTP %d | %s",
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf(
+                    'body=%s → HTTP %d | %s',
                     substr($body, 0, 80),
                     $statusCode,
-                    substr($client->getResponse()->getContent(), 0, 200)
+                    substr($client->getResponse()->getContent(), 0, 200),
                 );
             }
         }
@@ -136,16 +136,16 @@ class AuthFuzzTest extends WebTestCase
         foreach ($invalidTokens as $authHeader) {
             $client->request('GET', '/api/games', [], [], [
                 'HTTP_AUTHORIZATION' => $authHeader,
-                'CONTENT_TYPE'       => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
             ]);
 
             $statusCode = $client->getResponse()->getStatusCode();
 
             if ($statusCode === Response::HTTP_INTERNAL_SERVER_ERROR) {
-                $issues[] = sprintf(
-                    "Authorization: %s → HTTP %d",
+                $issues[] = \sprintf(
+                    'Authorization: %s → HTTP %d',
                     substr($authHeader, 0, 60),
-                    $statusCode
+                    $statusCode,
                 );
             }
         }
@@ -169,17 +169,17 @@ class AuthFuzzTest extends WebTestCase
                 // Email et pseudo uniques par itération pour éviter les 409
                 // quand un payload valide enregistre effectivement un compte
                 $body = [
-                    'email'    => "fuzz-reg-{$i}@test.com",
-                    'pseudo'   => "fuzzreguser{$i}",
+                    'email' => "fuzz-reg-{$i}@test.com",
+                    'pseudo' => "fuzzreguser{$i}",
                     'password' => 'ValidPass123!',
                 ];
                 $body[$field] = $payload;
                 ++$i;
 
-                $client->request('POST', '/api/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($body, JSON_INVALID_UTF8_SUBSTITUTE));
+                $client->request('POST', '/api/register', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($body, \JSON_INVALID_UTF8_SUBSTITUTE));
                 $statusCode = $client->getResponse()->getStatusCode();
 
-                if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
                     $issues[] = $this->formatIssue("register.$field", $payload, $statusCode, $client->getResponse()->getContent());
                 }
             }
@@ -190,12 +190,12 @@ class AuthFuzzTest extends WebTestCase
 
     private function formatIssue(string $field, mixed $payload, int $status, string $response): string
     {
-        return sprintf(
-            "[%s] payload=%s → HTTP %d | response=%s",
+        return \sprintf(
+            '[%s] payload=%s → HTTP %d | response=%s',
             $field,
             json_encode($payload),
             $status,
-            substr($response, 0, 200)
+            substr($response, 0, 200),
         );
     }
 }

@@ -75,15 +75,15 @@ class PathFuzzTest extends WebTestCase
 
         foreach ($endpoints as $endpoint) {
             foreach ($fuzzIds as $fuzzId) {
-                $url = sprintf($endpoint, urlencode($fuzzId));
+                $url = \sprintf($endpoint, urlencode($fuzzId));
                 $this->client->request('GET', $url);
                 $statusCode = $this->client->getResponse()->getStatusCode();
 
                 if ($statusCode === 500) {
-                    $issues[] = sprintf(
-                        "GET %s → HTTP 500 | %s",
+                    $issues[] = \sprintf(
+                        'GET %s → HTTP 500 | %s',
                         $url,
-                        substr($this->client->getResponse()->getContent(), 0, 200)
+                        substr($this->client->getResponse()->getContent(), 0, 200),
                     );
                 }
             }

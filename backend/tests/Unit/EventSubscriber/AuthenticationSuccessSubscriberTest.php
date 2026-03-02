@@ -21,7 +21,9 @@ use Symfony\Component\HttpFoundation\Response;
 final class AuthenticationSuccessSubscriberTest extends TestCase
 {
     private RequestStack $requestStack;
+
     private EntityManagerInterface&MockObject $entityManager;
+
     private AuthenticationSuccessSubscriber $subscriber;
 
     protected function setUp(): void
@@ -35,6 +37,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $user->method('getUserIdentifier')->willReturn('test@example.com');
+
         return $user;
     }
 
@@ -72,7 +75,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['rememberMe' => true])
+            json_encode(['rememberMe' => true]),
         );
         $this->requestStack->push($request);
 
@@ -124,7 +127,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['rememberMe' => false])
+            json_encode(['rememberMe' => false]),
         );
         $this->requestStack->push($request);
 
@@ -190,7 +193,7 @@ final class AuthenticationSuccessSubscriberTest extends TestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            'invalid json'
+            'invalid json',
         );
         $this->requestStack->push($request);
 

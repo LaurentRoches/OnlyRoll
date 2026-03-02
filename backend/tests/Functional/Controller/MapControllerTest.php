@@ -39,6 +39,7 @@ class MapControllerTest extends WebTestCase
         $connection->executeStatement('TRUNCATE TABLE user');
 
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
+        $this->entityManager->clear();
 
         $this->gameMaster = new User();
         $this->gameMaster->setPseudo('gamemaster');

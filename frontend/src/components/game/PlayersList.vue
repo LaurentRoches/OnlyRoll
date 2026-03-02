@@ -1,30 +1,70 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePresenceStore } from '@/stores/presenceStore'
+import { useAuthStore } from '@/stores/auth'
+import { gameApi } from '@/services/api/gameApi'
 import type { GamePlayer } from '@/types/game'
 import { PlayerRole, PlayerStatus } from '@/types/game'
+import InvitePlayerModal from './InvitePlayerModal.vue'
 
 const props = defineProps<{
   players: GamePlayer[]
   gameMasterId: number | undefined
+  maxPlayers?: number
+}>()
+
+const emit = defineEmits<{
+  playerKicked: []
+  playerInvited: []
 }>()
 
 const route = useRoute()
 const gameId = computed(() => Number(route.params.id))
 const presenceStore = usePresenceStore()
+const authStore = useAuthStore()
+
+const showInviteModal = ref(false)
+const kickingPlayerId = ref<number | null>(null)
 
 // ============================================
 // Computed
 // ============================================
+const isGameMaster = computed(() => {
+  if (!authStore.user || !props.gameMasterId) return false
+  return authStore.user.id === props.gameMasterId
+})
+
+// Joueurs actifs + en attente pour le comptage de capacité
+const activeAndPendingCount = computed(() => {
+  return props.players.filter(
+    (p) =>
+      p.status === PlayerStatus.ACTIVE ||
+      p.status === PlayerStatus.INACTIVE ||
+      p.status === PlayerStatus.PENDING
+  ).length
+})
+
+const isAtCapacity = computed(() => {
+  if (!props.maxPlayers) return false
+  return activeAndPendingCount.value >= props.maxPlayers
+})
+
 const sortedPlayers = computed(() => {
-  return [...props.players].sort((a, b) => {
-    if (a.role === PlayerRole.GAME_MASTER) return -1
-    if (b.role === PlayerRole.GAME_MASTER) return 1
-    if (a.status === PlayerStatus.ACTIVE && b.status !== PlayerStatus.ACTIVE) return -1
-    if (b.status === PlayerStatus.ACTIVE && a.status !== PlayerStatus.ACTIVE) return 1
-    return 0
-  })
+  return [...props.players]
+    .filter(
+      (p) =>
+        p.status === PlayerStatus.ACTIVE ||
+        p.status === PlayerStatus.INACTIVE ||
+        p.status === PlayerStatus.PENDING
+    )
+    .sort((a, b) => {
+      if (a.role === PlayerRole.GAME_MASTER) return -1
+      if (b.role === PlayerRole.GAME_MASTER) return 1
+      if (a.status === PlayerStatus.ACTIVE && b.status !== PlayerStatus.ACTIVE) return -1
+      if (b.status === PlayerStatus.ACTIVE && a.status !== PlayerStatus.ACTIVE) return 1
+      return 0
+    })
 })
 
 const onlinePlayers = computed(() => {
@@ -50,17 +90,6 @@ const playersByRole = computed(() => {
 // ============================================
 // Helpers
 // ============================================
-function getStatusLabel(status: PlayerStatus): string {
-  const labels = {
-    [PlayerStatus.ACTIVE]: 'Membre',
-    [PlayerStatus.INACTIVE]: 'Inactif',
-    [PlayerStatus.PENDING]: 'En attente',
-    [PlayerStatus.KICKED]: 'Exclu',
-    [PlayerStatus.LEFT]: 'Parti',
-  }
-  return labels[status] || 'Inconnu'
-}
-
 function getRoleLabel(role: PlayerRole): string {
   const labels = {
     [PlayerRole.GAME_MASTER]: 'MJ',
@@ -106,6 +135,25 @@ function formatJoinedAt(dateString: string): string {
   const diffDays = Math.floor(diffHours / 24)
   return `Il y a ${diffDays}j`
 }
+
+function isCurrentUserGameMaster(player: GamePlayer): boolean {
+  return player.role === PlayerRole.GAME_MASTER
+}
+
+async function handleKick(player: GamePlayer) {
+  if (!confirm(`Êtes-vous sûr de vouloir expulser ${player.user.pseudo} de la partie ?`)) return
+
+  kickingPlayerId.value = player.id
+  try {
+    await gameApi.kickPlayer(gameId.value, player.id)
+    emit('playerKicked')
+  } catch (e) {
+    console.error("Erreur lors de l'expulsion:", e)
+    alert("Impossible d'expulser ce joueur")
+  } finally {
+    kickingPlayerId.value = null
+  }
+}
 </script>
 
 <template>
@@ -138,7 +186,8 @@ function formatJoinedAt(dateString: string): string {
       <div
         v-for="player in sortedPlayers"
         :key="player.id"
-        class="card p-3 hover:bg-secondary-700 transition-all cursor-pointer group"
+        class="card p-3 hover:bg-secondary-700 transition-all group"
+        :class="{ 'opacity-70': player.status === PlayerStatus.PENDING }"
       >
         <div class="flex items-center gap-3">
           <!-- Avatar -->
@@ -162,7 +211,7 @@ function formatJoinedAt(dateString: string): string {
 
           <!-- Infos -->
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 mb-1">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
               <span class="font-semibold text-secondary-50 truncate">
                 {{ player.user.pseudo }}
               </span>
@@ -176,6 +225,14 @@ function formatJoinedAt(dateString: string): string {
               >
                 {{ getRoleLabel(player.role) }}
               </span>
+
+              <!-- Badge "En attente" pour les invités -->
+              <span
+                v-if="player.status === PlayerStatus.PENDING"
+                class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap bg-accent-amber/20 text-accent-amber border border-accent-amber/30"
+              >
+                En attente
+              </span>
             </div>
 
             <!-- Détails -->
@@ -184,27 +241,39 @@ function formatJoinedAt(dateString: string): string {
                 {{ isPlayerOnline(player) ? 'En ligne' : 'Hors ligne' }}
               </span>
               <span>•</span>
-              <span>{{ getStatusLabel(player.status) }}</span>
-              <span>•</span>
               <span>{{ formatJoinedAt(player.joinedAt) }}</span>
             </div>
           </div>
 
-          <!-- Actions (visible au hover pour les MJ) -->
-          <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-            <button class="p-1.5 hover:bg-secondary-600 rounded transition-colors" title="Options">
+          <!-- Actions MJ : bouton expulsion (sauf sur le MJ lui-même) -->
+          <div
+            v-if="isGameMaster && !isCurrentUserGameMaster(player)"
+            class="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <button
+              @click="handleKick(player)"
+              :disabled="kickingPlayerId === player.id"
+              class="p-1.5 hover:bg-error/20 rounded transition-colors text-secondary-400 hover:text-error disabled:opacity-50"
+              title="Expulser ce joueur"
+            >
               <svg
+                v-if="kickingPlayerId !== player.id"
                 xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4 text-secondary-400"
+                class="w-4 h-4"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="12" cy="5" r="1"></circle>
-                <circle cx="12" cy="19" r="1"></circle>
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path>
               </svg>
+              <div
+                v-else
+                class="animate-spin w-4 h-4 border-2 border-error border-t-transparent rounded-full"
+              ></div>
             </button>
           </div>
         </div>
@@ -212,10 +281,30 @@ function formatJoinedAt(dateString: string): string {
     </div>
 
     <!-- Message si aucun joueur -->
-    <div v-if="players.length === 0" class="text-center py-12 text-secondary-400">
+    <div v-if="sortedPlayers.length === 0" class="text-center py-8 text-secondary-400">
       <div class="text-4xl mb-3">👥</div>
       <p class="text-lg">Aucun joueur dans la partie</p>
       <p class="text-sm mt-1">Invitez vos amis à vous rejoindre</p>
+    </div>
+
+    <!-- Bouton Inviter un joueur (MJ uniquement, si pas à capacité max) -->
+    <div v-if="isGameMaster" class="mt-4">
+      <button
+        v-if="!isAtCapacity"
+        @click="showInviteModal = true"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-500/20 border border-primary-500/40 text-primary-300 rounded-lg hover:bg-primary-500/30 transition-colors text-sm font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Inviter un joueur
+      </button>
+      <div
+        v-else
+        class="w-full text-center py-2 text-secondary-400 text-xs bg-secondary-700/50 rounded-lg"
+      >
+        Partie complète ({{ activeAndPendingCount }}/{{ maxPlayers }})
+      </div>
     </div>
 
     <!-- Section Spectateurs si présents -->
@@ -242,6 +331,16 @@ function formatJoinedAt(dateString: string): string {
         </div>
       </div>
     </div>
+
+    <!-- Modale d'invitation -->
+    <InvitePlayerModal
+      v-if="showInviteModal"
+      :game-id="gameId"
+      :max-players="maxPlayers ?? 6"
+      :current-players="players"
+      @success="emit('playerInvited')"
+      @close="showInviteModal = false"
+    />
   </div>
 </template>
 

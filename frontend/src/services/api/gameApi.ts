@@ -128,6 +128,34 @@ export const gameApi = {
   },
 
   /**
+   * Inviter un utilisateur à rejoindre une partie (MJ uniquement)
+   */
+  async invite(gameId: number, userId: number): Promise<void> {
+    await post<void>(`/games/${gameId}/invite`, { userId })
+  },
+
+  /**
+   * Accepter une invitation à rejoindre une partie
+   */
+  async acceptInvitation(gameId: number): Promise<void> {
+    await post<void>(`/games/${gameId}/accept-invitation`)
+  },
+
+  /**
+   * Refuser une invitation à rejoindre une partie
+   */
+  async declineInvitation(gameId: number): Promise<void> {
+    await post<void>(`/games/${gameId}/decline-invitation`)
+  },
+
+  /**
+   * Expulser un joueur de la partie (MJ uniquement)
+   */
+  async kickPlayer(gameId: number, playerId: number): Promise<void> {
+    await post<void>(`/games/${gameId}/players/${playerId}/kick`)
+  },
+
+  /**
    * Obtenir un token JWT Mercure pour s'abonner aux événements temps réel de la partie
    */
   async getMercureToken(id: number): Promise<{ token: string; expiresIn: number }> {

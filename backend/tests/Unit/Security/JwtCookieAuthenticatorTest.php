@@ -18,6 +18,7 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 class JwtCookieAuthenticatorTest extends TestCase
 {
     private JWTTokenManagerInterface&MockObject $jwtManager;
+
     private JwtCookieAuthenticator $authenticator;
 
     protected function setUp(): void
