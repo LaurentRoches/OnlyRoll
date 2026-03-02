@@ -168,8 +168,8 @@ test.describe.serial('E2E - Création, rejoindre une partie et poster un message
     const gameCard = page.locator('article').filter({ hasText: GAME_NAME })
     await expect(gameCard).toBeVisible({ timeout: 10_000 })
 
-    // Cliquer sur "Jouer" pour ouvrir le modal de participation
-    await gameCard.getByRole('button', { name: 'Jouer' }).click()
+    // Cliquer sur "Rejoindre" pour ouvrir le modal de participation
+    await gameCard.getByRole('button', { name: 'Rejoindre' }).click()
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 })
 
     // Rejoindre la partie (publique → pas de mot de passe requis)
