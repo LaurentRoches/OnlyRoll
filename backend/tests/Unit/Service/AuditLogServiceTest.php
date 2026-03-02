@@ -8,6 +8,7 @@ use App\Entity\AuditLog;
 use App\Entity\User;
 use App\Enum\AuditAction;
 use App\Service\AuditLogService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -252,7 +253,7 @@ class AuditLogServiceTest extends TestCase
     {
         $user = $this->createUser(1);
         $admin = $this->createUser(2);
-        $lockedUntil = new \DateTimeImmutable('+1 hour');
+        $lockedUntil = new DateTimeImmutable('+1 hour');
         $user->method('getLockedUntil')->willReturn($lockedUntil);
 
         $this->requestStack->method('getCurrentRequest')->willReturn(null);

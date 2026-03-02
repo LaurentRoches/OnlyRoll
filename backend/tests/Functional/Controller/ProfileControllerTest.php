@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -263,10 +264,12 @@ class ProfileControllerTest extends WebTestCase
         foreach ($tables as $table) {
             try {
                 $connection->executeStatement("TRUNCATE TABLE $table");
-            } catch (\Exception $e) {
+            }
+            catch (Exception $e) {
             }
         }
 
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        $this->entityManager->clear();
     }
 }

@@ -80,6 +80,7 @@ class ChatControllerTest extends WebTestCase
         }
 
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        $this->entityManager->clear();
     }
 
     public function testGetMessagesWithoutAuthentication(): void
@@ -503,7 +504,7 @@ class ChatControllerTest extends WebTestCase
     {
         $connection = $this->entityManager->getConnection();
         $connection->executeStatement('DELETE FROM game_message WHERE game_id = :gameId', [
-            'gameId' => $this->game->getId()
+            'gameId' => $this->game->getId(),
         ]);
 
         for ($i = 0; $i < 5; ++$i) {
@@ -511,7 +512,7 @@ class ChatControllerTest extends WebTestCase
             $message->setGame($this->game);
             $message->setUser($this->player);
             $message->setType(MessageType::DICE_ROLL);
-            $message->setContent("1d20");
+            $message->setContent('1d20');
             $message->setDiceResult(['total' => 15, 'rolls' => [15]]);
             $this->entityManager->persist($message);
         }

@@ -60,7 +60,7 @@ class GameFuzzTest extends WebTestCase
         $issues = [];
 
         $extremeValues = [
-            0, -1, -999, PHP_INT_MAX, PHP_INT_MIN,
+            0, -1, -999, \PHP_INT_MAX, \PHP_INT_MIN,
             1.5, 'ten', null, '', true, false,
             '9999999999999999999',
             0x7FFFFFFF,
@@ -74,16 +74,16 @@ class GameFuzzTest extends WebTestCase
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
                 json_encode([
-                    'name'       => 'Fuzz Test Game',
+                    'name' => 'Fuzz Test Game',
                     'maxPlayers' => $value,
-                    'isPublic'   => true,
-                ], JSON_INVALID_UTF8_SUBSTITUTE)
+                    'isPublic' => true,
+                ], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf("maxPlayers=%s → HTTP %d", json_encode($value), $statusCode);
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf('maxPlayers=%s → HTTP %d', json_encode($value), $statusCode);
             }
         }
 
@@ -107,20 +107,20 @@ class GameFuzzTest extends WebTestCase
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
                 json_encode([
-                    'name'       => $payload,
+                    'name' => $payload,
                     'maxPlayers' => 5,
-                    'isPublic'   => true,
-                ], JSON_INVALID_UTF8_SUBSTITUTE)
+                    'isPublic' => true,
+                ], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf(
-                    "name=%s → HTTP %d | %s",
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf(
+                    'name=%s → HTTP %d | %s',
                     json_encode($payload),
                     $statusCode,
-                    substr($this->client->getResponse()->getContent(), 0, 150)
+                    substr($this->client->getResponse()->getContent(), 0, 150),
                 );
             }
         }
@@ -142,7 +142,7 @@ class GameFuzzTest extends WebTestCase
         $codes = array_merge(
             FuzzPayloadProvider::sqlInjectionPayloads(),
             FuzzPayloadProvider::pathTraversalPayloads(),
-            ['', null, str_repeat('A', 1000), '00000000', '../../../../']
+            ['', null, str_repeat('A', 1000), '00000000', '../../../../'],
         );
 
         foreach ($codes as $code) {
@@ -152,14 +152,14 @@ class GameFuzzTest extends WebTestCase
                 [],
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
-                json_encode(['inviteCode' => $code], JSON_INVALID_UTF8_SUBSTITUTE)
+                json_encode(['inviteCode' => $code], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
             $acceptableCodes = array_merge(FuzzPayloadProvider::acceptableHttpCodes(), [404]);
-            if (!in_array($statusCode, $acceptableCodes)) {
-                $issues[] = sprintf("inviteCode=%s → HTTP %d", json_encode($code), $statusCode);
+            if (!\in_array($statusCode, $acceptableCodes)) {
+                $issues[] = \sprintf('inviteCode=%s → HTTP %d', json_encode($code), $statusCode);
             }
         }
 

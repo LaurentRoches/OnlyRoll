@@ -16,6 +16,7 @@ use App\Exception\Game\AccessDeniedException;
 use App\Exception\Game\GameFullException;
 use App\Exception\Game\GameNotFoundException;
 use App\Exception\Game\InvalidPasswordException;
+use App\Repository\GameMapRepository;
 use App\Repository\GamePlayerRepository;
 use App\Repository\GameRepository;
 use DateTimeImmutable;
@@ -32,8 +33,10 @@ final class GameService
         private readonly EntityManagerInterface $entityManager,
         private readonly GameRepository $gameRepository,
         private readonly GamePlayerRepository $gamePlayerRepository,
+        private readonly GameMapRepository $gameMapRepository,
         private readonly LoggerInterface $logger,
         private readonly MercurePublisher $mercurePublisher,
+        private readonly FileUploader $fileUploader,
     ) {
     }
 
@@ -177,9 +180,7 @@ final class GameService
             throw new AccessDeniedException('Le MJ ne peut pas quitter sa propre partie');
         }
 
-        $gamePlayer->setStatus(PlayerStatus::LEFT)
-                   ->setLeftAt(new DateTimeImmutable());
-
+        $this->entityManager->remove($gamePlayer);
         $this->entityManager->flush();
 
         $this->logger->info('User left game', [
@@ -198,7 +199,7 @@ final class GameService
     }
 
     /**
-     * Supprime une partie (soft delete).
+     * Supprime une partie définitivement (hard delete + nettoyage fichiers).
      */
     public function deleteGame(Game $game, User $user): void
     {
@@ -206,10 +207,179 @@ final class GameService
             throw new AccessDeniedException();
         }
 
-        $game->setStatus(GameStatus::ARCHIVED);
+        $gameId = $game->getId();
+
+        $maps = $this->gameMapRepository->findMapsByGame($game);
+        foreach ($maps as $map) {
+            $imageUrl = $map->getImageUrl();
+            if ($imageUrl) {
+                $this->fileUploader->deleteFile($imageUrl);
+            }
+        }
+
+        $this->entityManager->remove($game);
         $this->entityManager->flush();
 
-        $this->logger->info('Game archived', ['game_id' => $game->getId()]);
+        $this->logger->info('Game deleted permanently', ['game_id' => $gameId]);
+    }
+
+    /**
+     * Invite un utilisateur à rejoindre une partie (crée une entrée PENDING).
+     */
+    public function invitePlayer(Game $game, User $inviter, User $target): GamePlayer
+    {
+        if (!$game->isGameMaster($inviter)) {
+            throw new AccessDeniedException('Seul le MJ peut inviter des joueurs');
+        }
+
+        if ($this->gamePlayerRepository->isUserInGame($game, $target)) {
+            throw new AccessDeniedException('Ce joueur est déjà dans la partie ou a déjà été invité');
+        }
+
+        $gameId = $game->getId();
+        if (null === $gameId) {
+            throw new GameNotFoundException('ID de partie invalide');
+        }
+
+        $currentCount = $this->gamePlayerRepository->countActiveAndPendingPlayers($game);
+        if ($currentCount >= $game->getMaxPlayers()) {
+            throw new GameFullException('La partie est pleine, impossible d\'inviter d\'autres joueurs');
+        }
+
+        $gamePlayer = new GamePlayer();
+        $gamePlayer->setGame($game)
+            ->setUser($target)
+            ->setRole(PlayerRole::PLAYER)
+            ->setStatus(PlayerStatus::PENDING);
+
+        $this->entityManager->persist($gamePlayer);
+        $this->entityManager->flush();
+
+        $this->logger->info('Player invited to game', [
+            'inviter_id' => $inviter->getId(),
+            'target_id' => $target->getId(),
+            'game_id' => $gameId,
+        ]);
+
+        $targetId = $target->getId();
+        if (null !== $targetId) {
+            $this->mercurePublisher->publishUserNotification($targetId, [
+                'action' => 'invitation_received',
+                'game' => [
+                    'id' => $gameId,
+                    'name' => $game->getName(),
+                ],
+                'gameMaster' => [
+                    'id' => $inviter->getId(),
+                    'pseudo' => $inviter->getPseudo(),
+                ],
+                'invitationId' => $gamePlayer->getId(),
+            ]);
+        }
+
+        $this->mercurePublisher->publishPlayerEvent($gameId, [
+            'action' => 'invited',
+            'userId' => $target->getId(),
+            'userName' => $target->getPseudo(),
+        ]);
+
+        return $gamePlayer;
+    }
+
+    /**
+     * Accepte une invitation à rejoindre une partie.
+     */
+    public function acceptInvitation(Game $game, User $user): GamePlayer
+    {
+        $gamePlayer = $this->gamePlayerRepository->findPlayerInGame($game, $user);
+
+        if (!$gamePlayer || PlayerStatus::PENDING !== $gamePlayer->getStatus()) {
+            throw new AccessDeniedException('Aucune invitation en attente pour cette partie');
+        }
+
+        $gamePlayer->activate();
+        $this->entityManager->flush();
+
+        $gameId = $game->getId();
+        $this->logger->info('Invitation accepted', [
+            'user_id' => $user->getId(),
+            'game_id' => $gameId,
+        ]);
+
+        if (null !== $gameId) {
+            $this->mercurePublisher->publishPlayerEvent($gameId, [
+                'action' => 'accepted',
+                'userId' => $user->getId(),
+                'userName' => $user->getPseudo(),
+                'role' => $gamePlayer->getRole()->value,
+            ]);
+        }
+
+        return $gamePlayer;
+    }
+
+    /**
+     * Refuse une invitation à rejoindre une partie.
+     */
+    public function declineInvitation(Game $game, User $user): void
+    {
+        $gamePlayer = $this->gamePlayerRepository->findPlayerInGame($game, $user);
+
+        if (!$gamePlayer || PlayerStatus::PENDING !== $gamePlayer->getStatus()) {
+            throw new AccessDeniedException('Aucune invitation en attente pour cette partie');
+        }
+
+        $gameId = $game->getId();
+        $userId = $user->getId();
+
+        $this->entityManager->remove($gamePlayer);
+        $this->entityManager->flush();
+
+        $this->logger->info('Invitation declined', [
+            'user_id' => $userId,
+            'game_id' => $gameId,
+        ]);
+
+        if (null !== $gameId) {
+            $this->mercurePublisher->publishPlayerEvent($gameId, [
+                'action' => 'declined',
+                'userId' => $userId,
+                'userName' => $user->getPseudo(),
+            ]);
+        }
+    }
+
+    /**
+     * Expulse un joueur de la partie (MJ uniquement).
+     */
+    public function kickPlayer(Game $game, User $requester, GamePlayer $target): void
+    {
+        if (!$game->isGameMaster($requester)) {
+            throw new AccessDeniedException('Seul le MJ peut expulser des joueurs');
+        }
+
+        if (PlayerRole::GAME_MASTER === $target->getRole()) {
+            throw new AccessDeniedException('Impossible d\'expulser le MJ');
+        }
+
+        $targetUser = $target->getUser();
+        $this->entityManager->remove($target);
+        $this->entityManager->flush();
+
+        $gameId = $game->getId();
+        $this->logger->info('Player kicked from game', [
+            'requester_id' => $requester->getId(),
+            'target_id' => $targetUser?->getId(),
+            'game_id' => $gameId,
+        ]);
+
+        if (null !== $gameId) {
+            $this->mercurePublisher->publishPlayerEvent($gameId, [
+                'action' => 'kicked',
+                'userId' => $targetUser?->getId(),
+                'userName' => $targetUser?->getPseudo(),
+            ]);
+        }
     }
 
     /**

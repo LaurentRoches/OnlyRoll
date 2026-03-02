@@ -6,6 +6,8 @@
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
     app.hostname: '%env(APP_HOSTNAME)%'
+    app.frontend_url: '%env(APP_FRONTEND_URL)%'
+    app.admin_email: '%env(APP_ADMIN_EMAIL)%'
 
 services:
     # default configuration for services in *this* file
@@ -47,3 +49,18 @@ services:
     App\EventSubscriber\JwtCookieRefreshSubscriber:
         arguments:
             $appEnv: '%kernel.environment%'
+
+    # Injecter l'email admin pour les messages d'erreur d'authentification
+    App\Security\UserChecker:
+        arguments:
+            $adminEmail: '%app.admin_email%'
+
+    # Injecter l'URL frontend pour les liens dans les emails de vérification
+    App\Service\EmailVerificationService:
+        arguments:
+            $appFrontendUrl: '%app.frontend_url%'
+
+    # Injecter l'URL frontend pour les liens dans les emails de réinitialisation
+    App\Service\PasswordResetService:
+        arguments:
+            $appFrontendUrl: '%app.frontend_url%'

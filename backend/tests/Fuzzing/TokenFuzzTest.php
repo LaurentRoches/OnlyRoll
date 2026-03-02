@@ -87,7 +87,7 @@ class TokenFuzzTest extends WebTestCase
 
         $this->entityManager->flush();
         $this->gameId = $game->getId();
-        $this->mapId  = $map->getId();
+        $this->mapId = $map->getId();
     }
 
     protected function tearDown(): void
@@ -106,8 +106,8 @@ class TokenFuzzTest extends WebTestCase
         $issues = [];
 
         $coordValues = [
-            -1, -999, PHP_INT_MIN,
-            PHP_INT_MAX, 999999,
+            -1, -999, \PHP_INT_MIN,
+            \PHP_INT_MAX, 999999,
             0.5, 1.99999,
             'NaN', 'Infinity', '-Infinity',
             null, '', 'dix', true, [],
@@ -121,17 +121,17 @@ class TokenFuzzTest extends WebTestCase
                 [],
                 ['CONTENT_TYPE' => 'application/json'],
                 json_encode([
-                    'x'    => $coord,
-                    'y'    => $coord,
+                    'x' => $coord,
+                    'y' => $coord,
                     'name' => 'Fuzz Token',
                     'type' => 'character',
-                ], JSON_INVALID_UTF8_SUBSTITUTE)
+                ], \JSON_INVALID_UTF8_SUBSTITUTE),
             );
 
             $statusCode = $this->client->getResponse()->getStatusCode();
 
-            if (!in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
-                $issues[] = sprintf("x=y=%s → HTTP %d", json_encode($coord), $statusCode);
+            if (!\in_array($statusCode, FuzzPayloadProvider::acceptableHttpCodes())) {
+                $issues[] = \sprintf('x=y=%s → HTTP %d', json_encode($coord), $statusCode);
             }
         }
 
@@ -150,7 +150,7 @@ class TokenFuzzTest extends WebTestCase
 
         $this->client->request(
             'GET',
-            "/api/games/{$this->gameId}/maps/{$this->mapId}/tokens"
+            "/api/games/{$this->gameId}/maps/{$this->mapId}/tokens",
         );
 
         $statusCode = $this->client->getResponse()->getStatusCode();
@@ -158,7 +158,7 @@ class TokenFuzzTest extends WebTestCase
         $this->assertContains(
             $statusCode,
             [401, 403],
-            "IDOR : un utilisateur étranger a pu accéder aux tokens de la partie (HTTP $statusCode)"
+            "IDOR : un utilisateur étranger a pu accéder aux tokens de la partie (HTTP $statusCode)",
         );
     }
 

@@ -7,6 +7,7 @@ namespace App\Tests\Functional\Controller\Admin;
 use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -305,10 +306,12 @@ class AdminUserControllerTest extends WebTestCase
         foreach ($tables as $table) {
             try {
                 $connection->executeStatement("TRUNCATE TABLE $table");
-            } catch (\Exception $e) {
+            }
+            catch (Exception $e) {
             }
         }
 
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS = 1');
+        $this->entityManager->clear();
     }
 }

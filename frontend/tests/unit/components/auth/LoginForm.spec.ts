@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
 import LoginForm from '@/components/auth/LoginForm.vue'
 import { useAuth } from '@/composables/useAuth'
 
@@ -33,7 +33,7 @@ describe('LoginForm.vue', () => {
     mockAuth = {
       login: vi.fn(),
       isLoading: false,
-      error: null,
+      error: ref(null),
       clearError: vi.fn(),
     }
 
@@ -61,12 +61,6 @@ describe('LoginForm.vue', () => {
   it('should display form title and subtitle', () => {
     expect(wrapper.find('h2').text()).toBe('Connexion')
     expect(wrapper.text()).toContain('Accédez à votre table virtuelle')
-  })
-
-  it('should have test credentials button', () => {
-    const buttons = wrapper.findAll('button[type="button"]')
-    const hasTestButton = buttons.some(btn => btn.text().includes('données de test'))
-    expect(hasTestButton).toBe(true)
   })
 
   // ========== FORM INPUT ==========
@@ -111,23 +105,6 @@ describe('LoginForm.vue', () => {
       await nextTick()
 
       expect((passwordInput.element as HTMLInputElement).type).toBe('password')
-    }
-  })
-
-  // ========== TEST CREDENTIALS ==========
-
-  it('should fill test credentials when button clicked', async () => {
-    const buttons = wrapper.findAll('button[type="button"]')
-    const testButton = buttons.find(btn => btn.text().includes('données de test'))
-
-    expect(testButton).toBeDefined()
-
-    if (testButton) {
-      await testButton.trigger('click')
-      await nextTick()
-
-      expect((wrapper.find('#email').element as HTMLInputElement).value).toBe('test@onlyroll.com')
-      expect((wrapper.find('#password').element as HTMLInputElement).value).toBe('password123')
     }
   })
 
@@ -247,7 +224,7 @@ describe('LoginForm.vue', () => {
   // ========== ERROR DISPLAY ==========
 
   it('should display error message when error exists', async () => {
-    mockAuth.error = 'Invalid credentials'
+    mockAuth.error = ref('Invalid credentials')
 
     wrapper = mount(LoginForm, {
       global: {
@@ -263,7 +240,7 @@ describe('LoginForm.vue', () => {
   })
 
   it('should not display error block when no error', () => {
-    mockAuth.error = null
+    mockAuth.error = ref(null)
 
     wrapper = mount(LoginForm, {
       global: {

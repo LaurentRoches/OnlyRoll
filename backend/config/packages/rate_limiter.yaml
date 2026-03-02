@@ -24,3 +24,17 @@ framework:
             policy: 'sliding_window'
             limit: 100
             interval: '1 hour'
+
+        # Rate limiter pour le renvoi d'email de vérification
+        # 3 renvois par heure par utilisateur
+        email_verification_resend_limiter:
+            policy: 'fixed_window'
+            limit: 3
+            interval: '1 hour'
+
+        # Rate limiter pour la réinitialisation de mot de passe
+        # 5 demandes par heure par IP
+        password_reset_limiter:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 hour'

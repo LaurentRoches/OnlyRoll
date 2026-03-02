@@ -10,11 +10,13 @@ use App\Entity\User;
 use App\Enum\MapGridType;
 use App\Repository\GameMapRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class GameMapRepositoryTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+
     private GameMapRepository $repository;
 
     protected function setUp(): void
@@ -144,7 +146,7 @@ class GameMapRepositoryTest extends KernelTestCase
 
     public function testActivateMapThrowsExceptionWhenNoGame(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('La carte doit être associée à un jeu.');
 
         $map = new GameMap();

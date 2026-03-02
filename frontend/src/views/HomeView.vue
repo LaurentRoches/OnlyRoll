@@ -9,7 +9,7 @@
             to="/"
             class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
           >
-            <div class="w-10 h-10 bg-gradient-to-br rounded-lg flex items-center justify-center">
+            <div class="w-10 h-10 flex items-center justify-center">
               <img style="width: 100%; height: 100%" src="/images/logo.png" alt="Logo OnlyRoll" />
             </div>
             <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
@@ -17,6 +17,12 @@
 
           <!-- Navigation menu -->
           <div class="hidden md:flex items-center space-x-8">
+            <RouterLink
+              to="/games"
+              class="text-secondary-300 hover:text-secondary-50 transition-colors"
+            >
+              Parties
+            </RouterLink>
             <a
               href="#features"
               class="text-secondary-300 hover:text-secondary-50 transition-colors"
@@ -110,17 +116,68 @@
           :class="{ revealed: heroReady }"
           style="transition-delay: 600ms"
         >
+          <template v-if="isAuthenticated">
+            <RouterLink
+              to="/dashboard"
+              class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
+            >
+              Mon Dashboard
+            </RouterLink>
+            <RouterLink
+              to="/games"
+              class="px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
+            >
+              Voir les parties
+            </RouterLink>
+          </template>
+          <template v-else>
+            <RouterLink
+              to="/auth/register"
+              class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
+            >
+              Inscription
+            </RouterLink>
+            <RouterLink
+              to="/auth/login"
+              class="px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
+            >
+              Connexion
+            </RouterLink>
+          </template>
+        </div>
+
+        <!-- Lien discret vers les parties pour les visiteurs -->
+        <div
+          v-if="!isAuthenticated"
+          class="mt-6 reveal-up"
+          :class="{ revealed: heroReady }"
+          style="transition-delay: 750ms"
+        >
           <RouterLink
-            to="/auth/register"
-            class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
+            to="/games"
+            class="inline-flex items-center gap-2 text-secondary-400 hover:text-secondary-200 transition-colors text-sm"
           >
-            Inscription
-          </RouterLink>
-          <RouterLink
-            to="/auth/login"
-            class="px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
-          >
-            Connexion
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Parcourir les parties sans inscription
           </RouterLink>
         </div>
       </div>

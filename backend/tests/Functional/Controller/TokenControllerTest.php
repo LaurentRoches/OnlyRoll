@@ -44,6 +44,7 @@ class TokenControllerTest extends WebTestCase
         $connection->executeStatement('TRUNCATE TABLE user');
 
         $connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
+        $this->entityManager->clear();
 
         $this->gameMaster = new User();
         $this->gameMaster->setPseudo('gamemaster');
@@ -778,7 +779,7 @@ class TokenControllerTest extends WebTestCase
         $this->client->loginUser($this->gameMaster);
         $this->client->request(
             'POST',
-            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-visibility'
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-visibility',
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -791,7 +792,7 @@ class TokenControllerTest extends WebTestCase
         $this->client->loginUser($this->gameMaster);
         $this->client->request(
             'POST',
-            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-lock'
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId() . '/toggle-lock',
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -804,7 +805,7 @@ class TokenControllerTest extends WebTestCase
         $this->client->loginUser($this->gameMaster);
         $this->client->request(
             'DELETE',
-            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId()
+            '/api/games/99999/maps/' . $this->map->getId() . '/tokens/' . $token->getId(),
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
@@ -853,7 +854,7 @@ class TokenControllerTest extends WebTestCase
             [],
             [
                 'CONTENT_TYPE' => 'multipart/form-data',
-            ]
+            ],
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -875,7 +876,7 @@ class TokenControllerTest extends WebTestCase
                 'x' => '10',
             ],
             [],
-            ['CONTENT_TYPE' => 'multipart/form-data']
+            ['CONTENT_TYPE' => 'multipart/form-data'],
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
@@ -906,7 +907,7 @@ class TokenControllerTest extends WebTestCase
             [],
             [],
             ['CONTENT_TYPE' => 'multipart/form-data; boundary=' . $boundary],
-            $data
+            $data,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
@@ -938,7 +939,7 @@ class TokenControllerTest extends WebTestCase
             [],
             [],
             ['CONTENT_TYPE' => 'multipart/form-data; boundary=' . $boundary],
-            $data
+            $data,
         );
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);

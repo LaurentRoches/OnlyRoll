@@ -17,9 +17,13 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 class GameMessageRepositoryTest extends KernelTestCase
 {
     private EntityManagerInterface $entityManager;
+
     private GameMessageRepository $repository;
+
     private Game $game;
+
     private User $user;
+
     private User $recipient;
 
     protected function setUp(): void
@@ -64,7 +68,7 @@ class GameMessageRepositoryTest extends KernelTestCase
 
     public function testFindRecentMessages(): void
     {
-        for ($i = 0; $i < 60; $i++) {
+        for ($i = 0; $i < 60; ++$i) {
             $message = new GameMessage();
             $message->setGame($this->game);
             $message->setUser($this->user);
@@ -299,7 +303,7 @@ class GameMessageRepositoryTest extends KernelTestCase
 
     public function testCountMessagesByGame(): void
     {
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 5; ++$i) {
             $message = new GameMessage();
             $message->setGame($this->game);
             $message->setUser($this->user);
