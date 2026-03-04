@@ -81,7 +81,7 @@ final class ChatController extends AbstractController
         }
 
         $limit = (int) $request->query->get('limit', 50);
-        $limit = max(1, min($limit, 200)); // Entre 1 et 200
+        $limit = max(1, min($limit, 200));
 
         $beforeId = (int) $request->query->get('before', 0);
 
@@ -484,11 +484,11 @@ final class ChatController extends AbstractController
     }
 
     /**
-     * Récupère les messages depuis une date donnée (polling).
+     * Récupère les messages depuis une date donnée.
      */
     #[OA\Get(
         path: '/api/games/{gameId}/chat/messages/since',
-        summary: 'Messages depuis une date (polling)',
+        summary: 'Messages depuis une date',
         security: [['BearerAuth' => []]],
         tags: ['Chat'],
         parameters: [

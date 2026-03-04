@@ -124,7 +124,6 @@ class LoadTestFixtures extends Fixture implements FixtureGroupInterface
                 ->setStatus(PlayerStatus::ACTIVE);
             $manager->persist($gmPlayer);
 
-            // Stocker la référence à la première partie comme "partie chat"
             if (0 === $index) {
                 $this->addReference(self::CHAT_GAME_REFERENCE, $game);
             }

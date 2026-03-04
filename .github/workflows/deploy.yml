@@ -165,6 +165,51 @@ jobs:
             echo ".htpasswd generated"
           ENDSSH
       
+      - name: Save rollback state before deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
+            set -e
+            ROLLBACK_STATE_FILE="/home/onlyroll/.rollback-state"
+            COMPOSE_FILE="/home/onlyroll/production/docker-compose.prod.yml"
+            ROLLBACK_TAG="rollback-${{ github.sha }}"
+
+            echo "Saving rollback state (tag: ${ROLLBACK_TAG})..."
+
+            # Sauvegarder la version de migration courante (vide si premier déploiement)
+            CURRENT_MIGRATION=""
+            if [ -f "$COMPOSE_FILE" ]; then
+              CURRENT_MIGRATION=$(
+                docker compose -f "$COMPOSE_FILE" exec -T php-fpm \
+                  php bin/console doctrine:migrations:current --no-interaction 2>/dev/null || echo ""
+              )
+            fi
+
+            # Tagger les images actuelles pour permettre le rollback sans rebuild
+            if docker image inspect production-php-fpm:latest > /dev/null 2>&1; then
+              docker tag production-php-fpm:latest "production-php-fpm:${ROLLBACK_TAG}"
+              echo "Tagged production-php-fpm:latest as production-php-fpm:${ROLLBACK_TAG}"
+            else
+              echo "No existing production-php-fpm:latest image (first deploy)"
+            fi
+
+            if docker image inspect production-frontend:latest > /dev/null 2>&1; then
+              docker tag production-frontend:latest "production-frontend:${ROLLBACK_TAG}"
+              echo "Tagged production-frontend:latest as production-frontend:${ROLLBACK_TAG}"
+            else
+              echo "No existing production-frontend:latest image (first deploy)"
+            fi
+
+            # Écrire le fichier d'état de rollback
+            cat > "$ROLLBACK_STATE_FILE" << EOF
+          ROLLBACK_TAG=${ROLLBACK_TAG}
+          ROLLBACK_MIGRATION_VERSION=${CURRENT_MIGRATION}
+          ROLLBACK_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+            echo "Rollback state saved:"
+            cat "$ROLLBACK_STATE_FILE"
+          ENDSSH
+
       - name: Deploy on VPS
         id: deploy
         run: |
@@ -340,6 +385,7 @@ jobs:
           ENDSSH
       
       - name: Health Check
+        id: health_check
         run: |
           echo "Waiting for application to fully start..."
           sleep 20
@@ -350,7 +396,7 @@ jobs:
           
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             # Test de l'API health endpoint (public) - using insecure flag for self-signed cert
-            if curl -k -f -s -m 10 https://onlyroll.cloud/health > /dev/null 2>&1; then
+            if curl -k -f -s -m 10 https://onlyroll.cloud/api/health > /dev/null 2>&1; then
               echo "API health endpoint is responding!"
 
               # Test du frontend
@@ -406,32 +452,79 @@ jobs:
           echo ""
       
       - name: Rollback on failure
-        if: failure() && steps.deploy.outcome == 'failure'
+        if: failure() && (steps.deploy.outcome == 'failure' || steps.health_check.outcome == 'failure')
         run: |
-          echo "Deployment failed! Starting rollback..."
-          
+          echo "Deployment or health check failed! Starting image-based rollback..."
+
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             DEPLOY_PATH="/home/onlyroll/production"
-            cd "$DEPLOY_PATH"
-            
-            LATEST_BACKUP=$(ls -t /home/onlyroll/backups/ 2>/dev/null | head -n1)
-            
-            if [ -n "$LATEST_BACKUP" ] && [ -f "/home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz" ]; then
-              echo "Restoring from backup: $LATEST_BACKUP"
-              
-              find . -mindepth 1 -delete 2>/dev/null || true
-              
-              tar -xzf /home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz
-              
-              echo "Restarting services..."
-              docker compose -f docker-compose.prod.yml down
-              docker compose -f docker-compose.prod.yml up -d
-              
-              echo "Rollback completed"
-            else
-              echo "No backup found - this might be the first deployment"
-              echo "Manual intervention may be required"
+            COMPOSE_FILE="$DEPLOY_PATH/docker-compose.prod.yml"
+            ROLLBACK_STATE_FILE="/home/onlyroll/.rollback-state"
+
+            if [ ! -f "$ROLLBACK_STATE_FILE" ]; then
+              echo "ERROR: No rollback state file found. This may be the first deployment."
+              echo "Manual intervention required."
+              exit 1
             fi
+
+            echo "Loading rollback state..."
+            . "$ROLLBACK_STATE_FILE"
+            echo "  Tag:              ${ROLLBACK_TAG}"
+            echo "  Migration:        ${ROLLBACK_MIGRATION_VERSION}"
+            echo "  Saved at:         ${ROLLBACK_TIMESTAMP}"
+
+            PHP_OK=$(docker image inspect "production-php-fpm:${ROLLBACK_TAG}" > /dev/null 2>&1 && echo "yes" || echo "no")
+            FRONTEND_OK=$(docker image inspect "production-frontend:${ROLLBACK_TAG}" > /dev/null 2>&1 && echo "yes" || echo "no")
+
+            if [ "$PHP_OK" = "no" ] || [ "$FRONTEND_OK" = "no" ]; then
+              echo "WARNING: Rollback images not found (php-fpm: $PHP_OK, frontend: $FRONTEND_OK)."
+              echo "Falling back to filesystem backup..."
+              LATEST_BACKUP=$(ls -t /home/onlyroll/backups/ 2>/dev/null | head -n1)
+              if [ -n "$LATEST_BACKUP" ] && [ -f "/home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz" ]; then
+                cd "$DEPLOY_PATH"
+                find . -mindepth 1 -delete 2>/dev/null || true
+                tar -xzf "/home/onlyroll/backups/$LATEST_BACKUP/deployment.tar.gz"
+                docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+                docker compose -f docker-compose.prod.yml up -d
+                echo "Filesystem rollback completed from $LATEST_BACKUP"
+              else
+                echo "No filesystem backup available. Manual intervention required."
+                exit 1
+              fi
+              exit 0
+            fi
+
+            echo "Stopping current containers..."
+            cd "$DEPLOY_PATH"
+            docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+
+            echo "Retagging rollback images to latest..."
+            docker tag "production-php-fpm:${ROLLBACK_TAG}" production-php-fpm:latest
+            docker tag "production-frontend:${ROLLBACK_TAG}" production-frontend:latest
+
+            echo "Starting services with previous images (no rebuild)..."
+            docker compose -f docker-compose.prod.yml up -d --no-build
+
+            echo "Waiting for containers to start (15s)..."
+            sleep 15
+
+            # Rollback des migrations seulement si elles ont changé pendant le déploiement
+            CURRENT_VERSION=$(docker compose -f docker-compose.prod.yml exec -T php-fpm \
+              php bin/console doctrine:migrations:current --no-interaction 2>/dev/null || echo "")
+
+            if [ -n "$ROLLBACK_MIGRATION_VERSION" ] && \
+               [ "$ROLLBACK_MIGRATION_VERSION" != "$CURRENT_VERSION" ]; then
+              echo "Rolling back migrations: ${CURRENT_VERSION} → ${ROLLBACK_MIGRATION_VERSION}..."
+              docker compose -f docker-compose.prod.yml exec -T php-fpm \
+                php bin/console doctrine:migrations:migrate "${ROLLBACK_MIGRATION_VERSION}" \
+                --no-interaction 2>&1 || echo "WARNING: Migration rollback returned an error. Check DB manually."
+            else
+              echo "No migration rollback needed (version unchanged or no prior version)."
+            fi
+
+            echo "Rollback container status:"
+            docker compose -f docker-compose.prod.yml ps
+            echo "Rollback completed."
           ENDSSH
       
       - name: Notify on success
@@ -447,6 +540,25 @@ jobs:
           echo "   https://www.onlyroll.cloud"
           echo ""
       
+      - name: Cleanup old rollback images on success
+        if: success()
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
+            echo "Cleaning up old rollback images (keeping 2 most recent per service)..."
+            for SERVICE in production-php-fpm production-frontend; do
+              IMAGES_TO_DELETE=$(
+                docker images --format '{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}' \
+                  | grep "${SERVICE}:rollback-" \
+                  | sort -r \
+                  | awk 'NR>2 {print $2}'
+              )
+              if [ -n "$IMAGES_TO_DELETE" ]; then
+                echo "$IMAGES_TO_DELETE" | xargs docker rmi 2>/dev/null || true
+              fi
+            done
+            echo "Cleanup complete (kept latest 2 rollback images per service)."
+          ENDSSH
+
       - name: Notify on failure
         if: failure()
         run: |
