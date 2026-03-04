@@ -1,5 +1,5 @@
 /**
- * Service API pour la gestion des cartes (GameMap)
+ * Service API pour la gestion des cartes
  */
 import { get, post, put, patch, delete as del } from './apiClient'
 import type { GameMap } from '@/types/game'

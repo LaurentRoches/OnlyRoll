@@ -24,7 +24,6 @@ const selectedUser = ref<UserSearchResult | null>(null)
 const error = ref<string | null>(null)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-// IDs des joueurs déjà dans la partie (hors expulsés/partis qui peuvent être re-invités)
 const existingPlayerIds = computed(
   () =>
     new Set(
@@ -97,7 +96,6 @@ async function confirmInvite() {
       <div
         class="bg-secondary-800 rounded-xl border border-secondary-700 shadow-2xl w-full max-w-md mx-4"
       >
-        <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-secondary-700">
           <h2 class="font-semibold text-secondary-50 text-lg">Inviter un joueur</h2>
           <button
@@ -116,9 +114,7 @@ async function confirmInvite() {
           </button>
         </div>
 
-        <!-- Corps -->
         <div class="p-4 space-y-4">
-          <!-- Champ de recherche -->
           <div class="relative">
             <label class="block text-sm font-medium text-secondary-300 mb-1">
               Rechercher par pseudo
@@ -138,7 +134,6 @@ async function confirmInvite() {
               </div>
             </div>
 
-            <!-- Suggestions -->
             <div
               v-if="searchResults.length > 0 && !selectedUser"
               class="absolute z-10 w-full top-full mt-1 bg-secondary-700 border border-secondary-600 rounded-lg shadow-xl overflow-hidden"
@@ -167,7 +162,6 @@ async function confirmInvite() {
             </div>
           </div>
 
-          <!-- Utilisateur sélectionné -->
           <div
             v-if="selectedUser"
             class="flex items-center gap-3 p-3 bg-primary-500/10 border border-primary-500/30 rounded-lg"
@@ -194,11 +188,9 @@ async function confirmInvite() {
             </button>
           </div>
 
-          <!-- Erreur -->
           <p v-if="error" class="text-error text-sm">{{ error }}</p>
         </div>
 
-        <!-- Footer -->
         <div class="flex gap-3 p-4 border-t border-secondary-700">
           <button
             @click="emit('close')"

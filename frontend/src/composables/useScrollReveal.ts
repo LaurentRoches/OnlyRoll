@@ -13,7 +13,6 @@ export function useScrollReveal(
   const { threshold = 0.1, delay = 0 } = options
   const isVisible = ref(false)
 
-  // Respecter prefers-reduced-motion : révéler immédiatement sans animation
   const prefersReducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 

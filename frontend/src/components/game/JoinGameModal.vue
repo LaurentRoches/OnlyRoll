@@ -52,7 +52,6 @@ async function handleJoin() {
 </script>
 
 <template>
-  <!-- Le template reste identique -->
   <div
     class="fixed inset-0 bg-primary-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click="emit('close')"
@@ -64,7 +63,6 @@ async function handleJoin() {
       class="bg-secondary-800 rounded-lg max-w-md w-full p-6 border border-secondary-700 shadow-purple-lg"
       @click.stop
     >
-      <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h2 id="join-game-modal-title" class="text-2xl font-bold text-secondary-50">
           Rejoindre la partie
@@ -78,7 +76,6 @@ async function handleJoin() {
         </button>
       </div>
 
-      <!-- Game Info Card -->
       <div class="bg-secondary-700/50 rounded-lg p-4 border border-secondary-600 mb-6">
         <div class="flex items-start justify-between mb-3">
           <div class="flex-1">
@@ -116,7 +113,6 @@ async function handleJoin() {
         </div>
       </div>
 
-      <!-- Password Input (if private) -->
       <div v-if="needsPassword" class="mb-6">
         <label for="joinPassword" class="block text-sm font-medium text-secondary-300 mb-2">
           <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
@@ -133,7 +129,6 @@ async function handleJoin() {
         />
       </div>
 
-      <!-- Public game info -->
       <div v-else class="mb-6">
         <div
           class="flex items-start gap-3 p-3 bg-accent-emerald/10 border border-accent-emerald/30 rounded-lg"
@@ -148,7 +143,6 @@ async function handleJoin() {
         </div>
       </div>
 
-      <!-- Error Message -->
       <div
         v-if="error"
         class="mb-6 p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose flex items-start gap-3"
@@ -169,7 +163,6 @@ async function handleJoin() {
         <span class="text-sm">{{ error }}</span>
       </div>
 
-      <!-- Actions -->
       <div class="flex justify-end gap-3">
         <button
           type="button"

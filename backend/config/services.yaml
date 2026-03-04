@@ -30,6 +30,11 @@ services:
         arguments:
             $uploadsDirectory: '%uploads_directory%'
 
+    # Injecter le pool de cache Redis principal pour le health check
+    App\Controller\HealthController:
+        arguments:
+            $appCache: '@cache.app'
+
     # Injecter le pool de cache Redis dédié à la présence
     App\Service\PresenceService:
         arguments:

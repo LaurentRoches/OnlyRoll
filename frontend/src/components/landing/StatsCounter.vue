@@ -60,10 +60,8 @@ const stats = computed(() => [
   { emoji: '📜', label: 'Sorts dans le Wiki', display: spellsDisplay.value },
 ])
 
-// Déclencher les compteurs quand la section est visible
 watch(isVisible, (visible) => {
   if (!visible) return
-  // Stagger les départs pour un effet cascade
   setTimeout(() => {
     dicesBase.value = 1247
   }, 0)

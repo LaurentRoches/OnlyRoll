@@ -27,15 +27,11 @@ const authStore = useAuthStore()
 const showInviteModal = ref(false)
 const kickingPlayerId = ref<number | null>(null)
 
-// ============================================
-// Computed
-// ============================================
 const isGameMaster = computed(() => {
   if (!authStore.user || !props.gameMasterId) return false
   return authStore.user.id === props.gameMasterId
 })
 
-// Joueurs actifs + en attente pour le comptage de capacité
 const activeAndPendingCount = computed(() => {
   return props.players.filter(
     (p) =>
@@ -87,9 +83,6 @@ const playersByRole = computed(() => {
   }
 })
 
-// ============================================
-// Helpers
-// ============================================
 function getRoleLabel(role: PlayerRole): string {
   const labels = {
     [PlayerRole.GAME_MASTER]: 'MJ',
@@ -158,7 +151,6 @@ async function handleKick(player: GamePlayer) {
 
 <template>
   <div class="flex-1 overflow-y-auto p-4">
-    <!-- Header avec stats -->
     <div class="mb-6">
       <h3 class="font-bold text-secondary-50 text-lg mb-2 flex items-center gap-2">
         <span>👥</span>
@@ -181,7 +173,6 @@ async function handleKick(player: GamePlayer) {
       </div>
     </div>
 
-    <!-- Liste des joueurs -->
     <div class="space-y-2">
       <div
         v-for="player in sortedPlayers"
@@ -190,7 +181,6 @@ async function handleKick(player: GamePlayer) {
         :class="{ 'opacity-70': player.status === PlayerStatus.PENDING }"
       >
         <div class="flex items-center gap-3">
-          <!-- Avatar -->
           <div
             :class="[
               'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 relative',
@@ -199,7 +189,6 @@ async function handleKick(player: GamePlayer) {
           >
             <span>{{ player.user.pseudo.slice(0, 2).toUpperCase() }}</span>
 
-            <!-- Indicateur de présence en ligne -->
             <div
               :class="[
                 'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-secondary-800',
@@ -209,14 +198,12 @@ async function handleKick(player: GamePlayer) {
             ></div>
           </div>
 
-          <!-- Infos -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1 flex-wrap">
               <span class="font-semibold text-secondary-50 truncate">
                 {{ player.user.pseudo }}
               </span>
 
-              <!-- Badge rôle -->
               <span
                 :class="[
                   'px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap',
@@ -226,7 +213,6 @@ async function handleKick(player: GamePlayer) {
                 {{ getRoleLabel(player.role) }}
               </span>
 
-              <!-- Badge "En attente" pour les invités -->
               <span
                 v-if="player.status === PlayerStatus.PENDING"
                 class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap bg-accent-amber/20 text-accent-amber border border-accent-amber/30"
@@ -235,7 +221,6 @@ async function handleKick(player: GamePlayer) {
               </span>
             </div>
 
-            <!-- Détails -->
             <div class="flex items-center gap-2 text-xs text-secondary-400">
               <span :class="isPlayerOnline(player) ? 'text-success' : 'text-secondary-400'">
                 {{ isPlayerOnline(player) ? 'En ligne' : 'Hors ligne' }}
@@ -245,7 +230,6 @@ async function handleKick(player: GamePlayer) {
             </div>
           </div>
 
-          <!-- Actions MJ : bouton expulsion (sauf sur le MJ lui-même) -->
           <div
             v-if="isGameMaster && !isCurrentUserGameMaster(player)"
             class="opacity-0 group-hover:opacity-100 transition-opacity"
@@ -280,14 +264,12 @@ async function handleKick(player: GamePlayer) {
       </div>
     </div>
 
-    <!-- Message si aucun joueur -->
     <div v-if="sortedPlayers.length === 0" class="text-center py-8 text-secondary-400">
       <div class="text-4xl mb-3">👥</div>
       <p class="text-lg">Aucun joueur dans la partie</p>
       <p class="text-sm mt-1">Invitez vos amis à vous rejoindre</p>
     </div>
 
-    <!-- Bouton Inviter un joueur (MJ uniquement, si pas à capacité max) -->
     <div v-if="isGameMaster" class="mt-4">
       <button
         v-if="!isAtCapacity"
@@ -307,7 +289,6 @@ async function handleKick(player: GamePlayer) {
       </div>
     </div>
 
-    <!-- Section Spectateurs si présents -->
     <div v-if="playersByRole.spectators.length > 0" class="mt-6 pt-6 border-t border-secondary-700">
       <h4 class="text-sm font-semibold text-secondary-400 mb-3 flex items-center gap-2">
         <span>👁️</span>
@@ -332,7 +313,6 @@ async function handleKick(player: GamePlayer) {
       </div>
     </div>
 
-    <!-- Modale d'invitation -->
     <InvitePlayerModal
       v-if="showInviteModal"
       :game-id="gameId"
@@ -345,7 +325,6 @@ async function handleKick(player: GamePlayer) {
 </template>
 
 <style scoped>
-/* Scrollbar custom */
 ::-webkit-scrollbar {
   width: 8px;
 }

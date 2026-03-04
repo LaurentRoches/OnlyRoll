@@ -3,20 +3,16 @@
     <Transition name="konami" @enter="onEnter" @after-leave="onAfterLeave">
       <div v-if="show" class="konami-overlay" @click="close">
         <div class="konami-container">
-          <!-- Message principal avec effet rétro -->
           <h1 class="konami-title">KONAMI CODE</h1>
           <h2 class="konami-subtitle">VICTORY!</h2>
 
-          <!-- Score rétro -->
           <div class="konami-score">
             <span class="score-label">SCORE</span>
             <span class="score-value">{{ animatedScore }}</span>
           </div>
 
-          <!-- Message de félicitations -->
           <p class="konami-message">🎮 Vous avez découvert l'easter egg ! 🎮</p>
 
-          <!-- Bouton pour fermer -->
           <button class="konami-close" @click.stop="close">[ PRESS START ]</button>
         </div>
       </div>

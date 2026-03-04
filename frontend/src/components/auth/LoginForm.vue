@@ -1,6 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
-    <!-- Titre du formulaire -->
     <div class="text-center mb-6">
       <h2 class="text-xl font-semibold text-secondary-50 mb-1">Connexion</h2>
       <p class="text-sm text-secondary-400">Accédez à votre table virtuelle</p>
@@ -102,7 +101,6 @@
       </div>
     </div>
 
-    <!-- Champ Email -->
     <div class="space-y-1">
       <label for="email" class="block text-sm font-medium text-secondary-200"> Email </label>
       <input
@@ -118,7 +116,6 @@
       />
     </div>
 
-    <!-- Champ Mot de passe -->
     <div class="space-y-1">
       <label for="password" class="block text-sm font-medium text-secondary-200">
         Mot de passe
@@ -182,7 +179,6 @@
       </div>
     </div>
 
-    <!-- Options supplémentaires -->
     <div class="flex items-center justify-between">
       <div class="flex items-center">
         <input
@@ -205,7 +201,6 @@
       </RouterLink>
     </div>
 
-    <!-- Bouton de soumission -->
     <button
       type="submit"
       :disabled="isLoading || !isFormValid"

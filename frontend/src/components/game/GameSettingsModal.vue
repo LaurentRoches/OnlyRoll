@@ -22,7 +22,6 @@ const maxPlayers = ref(props.game.maxPlayers)
 const isSaving = ref(false)
 const error = ref<string | null>(null)
 
-// Sync si le jeu change
 watch(
   () => props.game,
   (game) => {
@@ -75,7 +74,6 @@ async function handleSubmit() {
         <div
           class="bg-secondary-800 rounded-xl border border-secondary-700 shadow-2xl w-full max-w-md mx-4"
         >
-          <!-- Header -->
           <div class="flex items-center justify-between p-4 border-b border-secondary-700">
             <h2 class="font-semibold text-secondary-50 text-lg flex items-center gap-2">
               <svg
@@ -108,9 +106,7 @@ async function handleSubmit() {
             </button>
           </div>
 
-          <!-- Formulaire -->
           <form @submit.prevent="handleSubmit" class="p-4 space-y-4">
-            <!-- Nom -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-1">
                 Nom de la partie <span class="text-error">*</span>
@@ -124,7 +120,6 @@ async function handleSubmit() {
               />
             </div>
 
-            <!-- Description -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-1"> Description </label>
               <textarea
@@ -135,7 +130,6 @@ async function handleSubmit() {
               ></textarea>
             </div>
 
-            <!-- Nombre max de joueurs -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-1">
                 Nombre maximum de joueurs
@@ -152,7 +146,6 @@ async function handleSubmit() {
               </div>
             </div>
 
-            <!-- Erreur -->
             <p
               v-if="error"
               class="text-error text-sm bg-error/10 border border-error/20 rounded-lg px-3 py-2"
@@ -161,7 +154,6 @@ async function handleSubmit() {
             </p>
           </form>
 
-          <!-- Footer -->
           <div class="flex gap-3 p-4 border-t border-secondary-700">
             <button
               type="button"

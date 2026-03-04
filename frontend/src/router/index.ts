@@ -155,8 +155,6 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
   if (authStore.isLoading) {
-    console.log("⏳ Attente de l'initialisation du store auth...")
-
     await new Promise<void>((resolve) => {
       const unwatch = watch(
         () => authStore.isLoading,
@@ -170,9 +168,6 @@ router.beforeEach(async (to, from, next) => {
       )
     })
   }
-
-  console.log('Navigation vers:', to.path)
-  console.log('isAuthenticated:', authStore.isAuthenticated)
 
   // ========== VÉRIFICATION DE L'AUTHENTIFICATION ==========
 

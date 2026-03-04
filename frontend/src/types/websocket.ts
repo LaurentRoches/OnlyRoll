@@ -1,6 +1,6 @@
 /**
  * Types pour les événements WebSocket via Mercure
- * Basés sur les services backend (MapService, TokenService, ChatService)
+ * Basés sur les services backend
  */
 
 import type {
@@ -12,10 +12,6 @@ import type {
   TokenPosition,
   MessageType,
 } from './game'
-
-// ===========================
-// TYPES D'ÉVÉNEMENTS MERCURE
-// ===========================
 
 /**
  * Tous les types d'événements possibles dans le système
@@ -51,10 +47,6 @@ export enum MercureEventType {
   GAME_PAUSED = 'game.paused',
   GAME_ENDED = 'game.ended',
 }
-
-// ===========================
-// DONNÉES BRUTES REÇUES VIA MERCURE
-// ===========================
 
 /**
  * Données reçues lors d'un nouveau message via Mercure
@@ -155,10 +147,6 @@ export interface MercurePresenceEventData {
   timestamp: string
 }
 
-// ===========================
-// PAYLOADS DES ÉVÉNEMENTS
-// ===========================
-
 /**
  * Payload pour les événements de carte
  */
@@ -244,10 +232,6 @@ export type MercureEventData =
   | MercurePresenceEventData
   | MercureSystemEventData
 
-// ===========================
-// STRUCTURE DES ÉVÉNEMENTS MERCURE
-// ===========================
-
 /**
  * Structure d'un événement Mercure reçu
  */
@@ -280,10 +264,6 @@ export type PlayerJoinedEvent = MercureEvent<PlayerEventPayload>
 export type PlayerLeftEvent = MercureEvent<PlayerEventPayload>
 
 export type GameUpdatedEvent = MercureEvent<GameEventPayload>
-
-// ===========================
-// TOPICS MERCURE
-// ===========================
 
 /**
  * Fonction helper pour générer les topics Mercure
@@ -330,10 +310,6 @@ export const MercureTopic = {
   presence: (gameId: number): string => `/games/${gameId}/presence`,
 }
 
-// ===========================
-// ÉTAT DE CONNEXION MERCURE
-// ===========================
-
 /**
  * États possibles de la connexion Mercure
  */
@@ -366,10 +342,6 @@ export interface MercureConnectionStatus {
   reconnectAttempts: number
   error?: string
 }
-
-// ===========================
-// HANDLERS D'ÉVÉNEMENTS
-// ===========================
 
 /**
  * Type pour les handlers d'événements Mercure
@@ -414,10 +386,6 @@ export interface MercureListenOptions {
    */
   onConnectionChange?: (status: MercureConnectionStatus) => void
 }
-
-// ===========================
-// INTERFACE DU CLIENT MERCURE
-// ===========================
 
 /**
  * Interface du client Mercure (sera implémentée dans le composable)
@@ -468,10 +436,6 @@ export interface MercureClient {
    */
   offAny(): void
 }
-
-// ===========================
-// TYPES UTILITAIRES
-// ===========================
 
 /**
  * Type guard pour vérifier le type d'un événement

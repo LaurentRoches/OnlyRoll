@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
@@ -60,9 +60,6 @@ const showSettingsModal = ref(false)
 
 const gameMapRef = ref<InstanceType<typeof GameMap> | null>(null)
 
-// ============================================
-// Fonction de déconnexion synchrone pour beforeunload
-// ============================================
 function notifyDisconnectionBeacon() {
   try {
     const url = `/api/games/${gameId.value}/presence/leave`
@@ -75,27 +72,19 @@ function notifyDisconnectionBeacon() {
 
 async function notifyDisconnection() {
   try {
-    console.log('Envoi notification de déconnexion...')
     await presenceApi.leave(gameId.value)
-    console.log('Déconnexion notifiée avec succès')
   } catch (error) {
     console.error('Erreur lors de la notification de déconnexion:', error)
   }
 }
 
-// ============================================
-// Lifecycle
-// ============================================
 onMounted(async () => {
-  console.log('Initialisation de la partie', gameId.value)
   await initializeGame()
   setupMercure()
   setupBeforeUnload()
 })
 
 onBeforeRouteLeave(async () => {
-  console.log('Navigation détectée - déconnexion en cours')
-
   await notifyDisconnection()
 
   mercureService.disconnect()
@@ -105,14 +94,10 @@ onBeforeRouteLeave(async () => {
 })
 
 onUnmounted(() => {
-  console.log('Nettoyage de la partie')
   mercureService.disconnect()
   presenceStore.clearGamePresence(gameId.value)
 })
 
-// ============================================
-// Initialisation
-// ============================================
 async function initializeGame() {
   try {
     isLoading.value = true
@@ -123,14 +108,6 @@ async function initializeGame() {
       chatStore.loadRecentMessages(gameId.value, 30),
     ])
 
-    console.log('Partie chargée:', {
-      game: gameStore.currentGame,
-      map: mapStore.activeMap,
-      tokens: mapStore.tokens.length,
-      messages: chatStore.messages.length,
-    })
-
-    // Guard : seuls les joueurs inscrits et le MJ peuvent accéder à la partie
     if (!gameStore.isGameMaster && !gameStore.isPlayerInGame) {
       router.push({ name: 'games' })
       return
@@ -141,7 +118,6 @@ async function initializeGame() {
       if (response.onlineUsers) {
         presenceStore.setOnlineUsers(gameId.value, response.onlineUsers)
       }
-      console.log('Présence notifiée, utilisateurs en ligne:', response.onlineUsers?.length || 0)
     } catch (error) {
       console.error('Erreur lors de la notification de présence:', error)
     }
@@ -153,15 +129,9 @@ async function initializeGame() {
   }
 }
 
-// ============================================
-// Setup Mercure
-// ============================================
 async function setupMercure() {
-  console.log('Configuration de Mercure pour la partie', gameId.value)
-
   try {
     await gameApi.getMercureToken(gameId.value)
-    console.log('Token Mercure obtenu')
 
     mercureService.connect(gameId.value)
 
@@ -170,7 +140,6 @@ async function setupMercure() {
       connectionState.value = mercureService.getConnectionState()
 
       if (isConnected.value) {
-        console.log('Mercure connecté')
         clearInterval(checkConnection)
       }
     }, 500)
@@ -180,26 +149,21 @@ async function setupMercure() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('token', (event: any) => {
-    console.log('Token event:', event.data)
     mapStore.handleTokenEvent(event.data as MercureTokenEventData)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('map', (event: any) => {
-    console.log('Map event:', event.data)
     mapStore.handleMapEvent(event.data as MercureMapEventData)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('chat', (event: any) => {
-    console.log('Chat message:', event.data)
     chatStore.handleChatMessage(event.data as MercureChatMessageData)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('player', async (event: any) => {
-    console.log('Player event:', event.data)
-
     if (event.data?.action === 'kicked' && event.data?.userId === authStore.user?.id) {
       mercureService.disconnect()
       presenceStore.clearGamePresence(gameId.value)
@@ -212,7 +176,6 @@ async function setupMercure() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('presence', (event: any) => {
-    console.log('Presence event:', event)
     const presenceData: MercurePresenceEventData = {
       gameId: event.gameId,
       userId: event.data.userId,
@@ -227,7 +190,6 @@ async function setupMercure() {
     if (mercureService.isConnected() && gameId.value && !isNaN(gameId.value)) {
       try {
         await presenceApi.heartbeat(gameId.value)
-        console.log('Heartbeat envoyé pour la partie', gameId.value)
       } catch (error: unknown) {
         console.error("Erreur lors de l'envoi du heartbeat:", error)
 
@@ -248,9 +210,6 @@ async function setupMercure() {
   })
 }
 
-// ============================================
-// Setup BeforeUnload - Notifier la déconnexion
-// ============================================
 function setupBeforeUnload() {
   window.addEventListener('beforeunload', notifyDisconnectionBeacon)
 
@@ -259,9 +218,6 @@ function setupBeforeUnload() {
   })
 }
 
-// ============================================
-// Computed
-// ============================================
 const currentGame = computed(() => gameStore.currentGame)
 const activeMap = computed(() => mapStore.activeMap)
 const tokens = computed(() => mapStore.tokens)
@@ -269,20 +225,6 @@ const messages = computed(() => chatStore.sortedMessages)
 const isGameMaster = computed(() => gameStore.isGameMaster)
 const hasActiveMap = computed(() => mapStore.hasActiveMap)
 
-// ============================================
-// Watchers
-// ============================================
-watch(isConnected, (connected) => {
-  if (connected) {
-    console.log('Mercure connecté')
-  } else {
-    console.log('Mercure déconnecté')
-  }
-})
-
-// ============================================
-// Handlers - Upload de carte
-// ============================================
 function handleCreateMap() {
   showUploadModal.value = true
 }
@@ -292,9 +234,6 @@ async function handleMapCreated() {
   showUploadModal.value = false
 }
 
-// ============================================
-// Handlers - Édition de carte
-// ============================================
 async function handleEditMap(map: GameMapType) {
   try {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost/api'
@@ -321,17 +260,12 @@ async function handleMapUpdated() {
   editingMap.value = null
 }
 
-// ============================================
-// Handlers - Toolbar & Navigation
-// ============================================
 function handleToolChanged(tool: string) {
   selectedTool.value = tool
-  console.log('Outil sélectionné:', tool)
 }
 
 function handleZoomChanged(zoom: number) {
   mapZoom.value = zoom
-  console.log('Zoom changé:', zoom)
 }
 
 function handleCenterMap() {
@@ -349,7 +283,6 @@ async function handleGridSettingsChanged(settings: {
 
   try {
     await mapStore.updateMapSettings(mapStore.activeMap.id, settings)
-    console.log('Paramètres de grille mis à jour:', settings)
   } catch (error) {
     console.error('Erreur lors de la mise à jour des paramètres de grille:', error)
   }
@@ -381,9 +314,6 @@ async function handleLeaveGame() {
   }
 }
 
-// ============================================
-// Handlers - Création de token
-// ============================================
 function handleCreateToken(position: { x: number; y: number }) {
   tokenCreationPosition.value = position
   showCreateTokenModal.value = true
@@ -397,7 +327,6 @@ async function handleTokenCreated() {
 </script>
 
 <template>
-  <!-- Loading state -->
   <div v-if="isLoading" class="h-screen flex items-center justify-center bg-primary-900">
     <div class="text-center">
       <div
@@ -407,9 +336,7 @@ async function handleTokenCreated() {
     </div>
   </div>
 
-  <!-- Main game view -->
   <div v-else class="h-screen bg-gradient-dark flex flex-col overflow-hidden">
-    <!-- Header -->
     <GameHeader
       :game="currentGame"
       :is-connected="isConnected"
@@ -420,9 +347,7 @@ async function handleTokenCreated() {
     />
 
     <div class="flex-1 flex overflow-hidden relative">
-      <!-- Zone centrale - Carte (masquée sur mobile) -->
       <div class="hidden lg:flex lg:flex-1 lg:flex-col min-w-0">
-        <!-- Toolbar -->
         <MapToolbar
           :is-game-master="isGameMaster"
           :game-id="gameId"
@@ -441,7 +366,6 @@ async function handleTokenCreated() {
             @create-map="handleCreateMap"
           />
 
-          <!-- Carte normale si elle existe -->
           <GameMap
             v-else
             ref="gameMapRef"
@@ -458,13 +382,11 @@ async function handleTokenCreated() {
         </div>
       </div>
 
-      <!-- Panel droit - Chat & Joueurs -->
       <Transition name="slide-left">
         <div
           v-if="rightPanelOpen"
           class="w-full lg:w-96 bg-secondary-800 lg:border-l border-secondary-700 flex flex-col"
         >
-          <!-- Tabs -->
           <div class="flex border-b border-secondary-700">
             <button
               v-for="tab in ['chat', 'players', 'dice'] as const"
@@ -483,7 +405,6 @@ async function handleTokenCreated() {
             </button>
           </div>
 
-          <!-- Contenu -->
           <ChatPanel
             v-if="activeTab === 'chat'"
             :messages="messages"
@@ -504,7 +425,6 @@ async function handleTokenCreated() {
         </div>
       </Transition>
 
-      <!-- Toggle panel — desktop uniquement -->
       <button
         @click="rightPanelOpen = !rightPanelOpen"
         :class="[
@@ -575,7 +495,6 @@ async function handleTokenCreated() {
   background: linear-gradient(135deg, #1a0b2e, #0f172a);
 }
 
-/* Transitions pour le panel */
 .slide-left-enter-active,
 .slide-left-leave-active {
   transition: transform 0.3s ease;

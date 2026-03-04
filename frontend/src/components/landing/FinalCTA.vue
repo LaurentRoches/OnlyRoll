@@ -1,6 +1,5 @@
 <template>
   <section ref="sectionRef" class="py-24 relative overflow-hidden">
-    <!-- Background radial gradient -->
     <div
       class="absolute inset-0 pointer-events-none"
       aria-hidden="true"
@@ -28,7 +27,6 @@
         Rejoignez la communauté et lancez votre première aventure — c'est gratuit.
       </p>
 
-      <!-- Bouton CTA principal -->
       <div class="reveal-scale" :class="{ revealed: isVisible }" style="transition-delay: 300ms">
         <RouterLink
           to="/auth/register"
@@ -52,7 +50,6 @@
         </RouterLink>
       </div>
 
-      <!-- Réassurance -->
       <p
         class="mt-6 text-secondary-500 text-sm reveal-up"
         :class="{ revealed: isVisible }"

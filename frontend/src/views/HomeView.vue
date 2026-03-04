@@ -1,10 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-900">
-    <!-- Navigation -->
     <nav class="relative z-50 bg-secondary-800 backdrop-blur-sm border-b border-secondary-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <!-- Logo -->
           <RouterLink
             to="/"
             class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
@@ -15,7 +13,6 @@
             <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
           </RouterLink>
 
-          <!-- Navigation menu -->
           <div class="hidden md:flex items-center space-x-8">
             <RouterLink
               to="/games"
@@ -37,7 +34,6 @@
             </a>
           </div>
 
-          <!-- Auth buttons -->
           <div class="flex items-center space-x-2 sm:space-x-4">
             <template v-if="isAuthenticated">
               <UserProfileBadge class="hidden sm:flex" />
@@ -67,9 +63,7 @@
       </div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="relative py-20 lg:py-32 overflow-hidden">
-      <!-- Background Image avec overlay -->
       <div class="absolute inset-0 z-0">
         <img
           src="/images/hero_banner_onlyroll.jpg"
@@ -82,10 +76,8 @@
         ></div>
       </div>
 
-      <!-- Particules flottantes (z-index intermédiaire) -->
       <HeroParticles class="z-[1]" />
 
-      <!-- Contenu hero avec animations d'entrée staggerées -->
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         <h1
           class="text-4xl md:text-6xl font-bold text-secondary-50 mb-6 text-shadow-stronger reveal-up"
@@ -110,7 +102,6 @@
           le tout depuis votre navigateur.
         </p>
 
-        <!-- Boutons CTA -->
         <div
           class="flex flex-col sm:flex-row gap-4 justify-center items-center reveal-up"
           :class="{ revealed: heroReady }"
@@ -146,7 +137,6 @@
           </template>
         </div>
 
-        <!-- Lien discret vers les parties pour les visiteurs -->
         <div
           v-if="!isAuthenticated"
           class="mt-6 reveal-up"
@@ -182,7 +172,6 @@
         </div>
       </div>
 
-      <!-- Scroll indicator -->
       <div
         class="absolute bottom-8 left-1/2 -translate-x-1/2 text-secondary-500 animate-bounce-gentle reveal-up"
         :class="{ revealed: heroReady }"
@@ -206,26 +195,19 @@
       </div>
     </section>
 
-    <!-- Fonctionnalités (layout asymétrique) -->
     <FeatureShowcase />
 
-    <!-- Stats / Social Proof -->
     <StatsCounter />
 
-    <!-- Aperçu in-game avec tilt 3D -->
     <GamePreview />
 
-    <!-- Comment ça marche -->
     <HowItWorks />
 
-    <!-- CTA final immersif -->
     <FinalCTA />
 
-    <!-- Footer -->
     <footer class="bg-secondary-900 border-t border-secondary-800 py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-4 gap-8">
-          <!-- Logo et description -->
           <div class="md:col-span-2">
             <div class="flex items-center space-x-3 mb-4">
               <div class="w-8 h-8 rounded-lg flex items-center justify-center">
@@ -238,7 +220,6 @@
             </p>
           </div>
 
-          <!-- Réseaux sociaux -->
           <div>
             <h3 class="text-secondary-200 font-semibold mb-4">Réseaux sociaux</h3>
             <ul class="space-y-2 text-sm text-secondary-400">
@@ -247,7 +228,6 @@
             </ul>
           </div>
 
-          <!-- Support -->
           <div>
             <h3 class="text-secondary-200 font-semibold mb-4">Support</h3>
             <ul class="space-y-2 text-sm text-secondary-400">
@@ -257,7 +237,6 @@
           </div>
         </div>
 
-        <!-- Copyright -->
         <div class="border-t border-secondary-800 mt-8 pt-8 text-center">
           <p class="text-secondary-500 text-sm">
             © 2025 OnlyRoll • Tous droits réservés
@@ -283,7 +262,6 @@ import FinalCTA from '@/components/landing/FinalCTA.vue'
 
 const { isAuthenticated } = useAuth()
 
-// Animations d'entrée du hero déclenchées après le montage (stagger CSS)
 const heroReady = ref(false)
 onMounted(() => {
   setTimeout(() => {

@@ -16,7 +16,6 @@
 
     <!-- Contrôles de pagination -->
     <div class="flex items-center space-x-1">
-      <!-- Première page -->
       <button
         v-if="showFirstLast"
         type="button"
@@ -42,7 +41,6 @@
         </svg>
       </button>
 
-      <!-- Page précédente -->
       <button
         type="button"
         class="pagination-button"
@@ -68,10 +66,8 @@
         <span class="sr-only sm:not-sr-only sm:ml-1">Précédent</span>
       </button>
 
-      <!-- Numéros de pages -->
       <div v-if="showPageNumbers" class="hidden sm:flex items-center space-x-1">
         <template v-for="page in visiblePages" :key="page">
-          <!-- Ellipsis -->
           <span
             v-if="page === 'ellipsis-start' || page === 'ellipsis-end'"
             class="px-2 text-secondary-500"
@@ -80,7 +76,6 @@
             …
           </span>
 
-          <!-- Page number -->
           <button
             v-else
             type="button"
@@ -95,7 +90,6 @@
         </template>
       </div>
 
-      <!-- Sélecteur de page (mobile) -->
       <div class="sm:hidden flex items-center">
         <label :for="selectId" class="sr-only">Sélectionner une page</label>
         <select
@@ -111,7 +105,6 @@
         <span class="ml-2 text-secondary-400 text-sm">/ {{ totalPages }}</span>
       </div>
 
-      <!-- Page suivante -->
       <button
         type="button"
         class="pagination-button"
@@ -132,7 +125,6 @@
         </svg>
       </button>
 
-      <!-- Dernière page -->
       <button
         v-if="showFirstLast"
         type="button"
@@ -159,7 +151,6 @@
       </button>
     </div>
 
-    <!-- Annonce pour les lecteurs d'écran -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>
@@ -208,10 +199,6 @@ const endItem = computed(() => {
   return Math.min(props.currentPage * props.perPage, props.total)
 })
 
-/**
- * Calcule les pages visibles avec ellipsis
- * Algorithme similaire à celui utilisé dans usePagination
- */
 const visiblePages = computed(() => {
   const pages: (number | string)[] = []
   const totalPages = props.totalPages

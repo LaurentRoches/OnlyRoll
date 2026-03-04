@@ -31,7 +31,6 @@ export function useKonamiCode(callback?: () => void) {
    * Gère l'événement keydown
    */
   const handleKeydown = (event: KeyboardEvent) => {
-    console.log('Touche pressée :', event.code)
     userSequence.push(event.code)
 
     if (userSequence.length > konamiSequence.length) {

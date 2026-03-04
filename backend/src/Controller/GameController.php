@@ -65,7 +65,6 @@ final class GameController extends AbstractController
         ],
     )]
     #[Route('', name: 'list', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
     public function list(Request $request): JsonResponse
     {
         $filterDTO = new GameFilterDTO();

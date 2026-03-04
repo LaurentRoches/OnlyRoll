@@ -5,12 +5,10 @@ import { ref, triggerRef } from 'vue'
  * Store pour gérer la présence en temps réel des joueurs
  */
 export const usePresenceStore = defineStore('presence', () => {
-  // ========== State ==========
   const connectedUsers = ref<Map<number, Set<number>>>(new Map())
 
   const lastHeartbeat = ref<number>(Date.now())
 
-  // ========== Getters ==========
   /**
    * Vérifier si un utilisateur est connecté dans une partie
    */
@@ -45,7 +43,6 @@ export const usePresenceStore = defineStore('presence', () => {
     }
     connectedUsers.value.get(gameId)!.add(userId)
     triggerRef(connectedUsers)
-    console.log(`User ${userId} is now online in game ${gameId}`)
   }
 
   /**
@@ -56,7 +53,6 @@ export const usePresenceStore = defineStore('presence', () => {
     if (gameUsers) {
       gameUsers.delete(userId)
       triggerRef(connectedUsers)
-      console.log(`User ${userId} is now offline in game ${gameId}`)
     }
   }
 
@@ -66,7 +62,6 @@ export const usePresenceStore = defineStore('presence', () => {
   function setOnlineUsers(gameId: number, userIds: number[]) {
     connectedUsers.value.set(gameId, new Set(userIds))
     triggerRef(connectedUsers)
-    console.log(`Updated online users for game ${gameId}:`, userIds)
   }
 
   /**

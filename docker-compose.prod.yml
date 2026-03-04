@@ -147,6 +147,24 @@ services:
       start_period: 40s
 
   # ===========================================
+  # PHPMYADMIN (Admin DB - réseau interne uniquement)
+  # ===========================================
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: onlyroll-phpmyadmin-prod
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 100M
+      PMA_ABSOLUTE_URI: https://onlyroll.cloud/pma/
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - onlyroll-network
+    restart: unless-stopped
+
+  # ===========================================
   # NGINX - PRODUCTION (Reverse Proxy)
   # ===========================================
   nginx:
@@ -158,6 +176,7 @@ services:
       - certbot-webroot:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
       - certbot-var:/var/lib/letsencrypt:ro
+      - ./docker/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
     ports:
       - "80:80"
       - "443:443"

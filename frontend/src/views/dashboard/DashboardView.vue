@@ -1,19 +1,14 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-900">
-    <!-- Navigation -->
     <DashboardNav />
 
-    <!-- Contenu principal -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <!-- Message de bienvenue -->
       <div class="text-center mb-12">
         <h1 class="text-4xl font-bold text-secondary-50 mb-4">Bienvenue, {{ user?.pseudo }} !</h1>
         <p class="text-lg text-secondary-400">Votre dashboard OnlyRoll - Prêt pour l'aventure ?</p>
       </div>
 
-      <!-- Sections du dashboard -->
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Mes parties -->
         <DashboardCard
           title="Mes Parties"
           description="Créez ou rejoignez une partie de D&D"
@@ -22,7 +17,6 @@
           :coming-soon="false"
         />
 
-        <!-- Wiki D&D -->
         <DashboardCard
           title="Wiki D&D"
           description="Consultez toutes les données du SRD"
@@ -31,7 +25,6 @@
           :coming-soon="true"
         />
 
-        <!-- Personnages -->
         <DashboardCard
           title="Mes Personnages"
           description="Gérez vos feuilles de personnage"
@@ -40,7 +33,6 @@
           :coming-soon="true"
         />
 
-        <!-- Profil -->
         <DashboardCard
           title="Mon Profil"
           description="Paramètres et préférences"
@@ -49,7 +41,6 @@
           :coming-soon="false"
         />
 
-        <!-- Partie rapide -->
         <DashboardCard
           title="Partie Rapide"
           description="Rejoindre une partie publique"
@@ -58,7 +49,6 @@
           :coming-soon="true"
         />
 
-        <!-- Communauté -->
         <DashboardCard
           title="Communauté"
           description="Discord et réseaux sociaux"
@@ -68,7 +58,6 @@
         />
       </div>
 
-      <!-- Informations de développement -->
       <div class="mt-16 bg-secondary-800/50 rounded-xl p-8 border border-secondary-700">
         <div class="text-center">
           <h2 class="text-xl font-semibold text-secondary-50 mb-4">🚧 Développement en cours</h2>
@@ -77,7 +66,6 @@
             Les autres fonctionnalités arrivent bientôt...
           </p>
 
-          <!-- Infos utilisateur -->
           <div class="bg-secondary-800 rounded-lg p-4 max-w-md mx-auto">
             <h3 class="text-sm font-medium text-secondary-300 mb-2">Informations de session</h3>
             <div class="text-left space-y-1 text-xs text-secondary-400">

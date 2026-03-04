@@ -1,11 +1,9 @@
 <template>
   <div v-if="isAuthenticated" class="relative">
-    <!-- Badge cliquable -->
     <button
       @click="toggleMenu"
       class="flex items-center space-x-3 hover:bg-secondary-700/50 rounded-lg p-2 transition-colors"
     >
-      <!-- Avatar -->
       <div class="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
         <img
           v-if="avatarUrl"
@@ -21,7 +19,6 @@
         </span>
       </div>
 
-      <!-- Info utilisateur -->
       <div class="flex flex-col items-start">
         <span class="text-secondary-50 text-sm font-medium">
           {{ user?.pseudo }}
@@ -31,7 +28,6 @@
         </span>
       </div>
 
-      <!-- Icône chevron -->
       <svg
         class="w-4 h-4 text-secondary-400 transition-transform"
         :class="{ 'rotate-180': isMenuOpen }"
@@ -43,7 +39,6 @@
       </svg>
     </button>
 
-    <!-- Menu déroulant -->
     <Transition
       enter-active-class="transition ease-out duration-200"
       enter-from-class="transform opacity-0 scale-95"
@@ -57,7 +52,6 @@
         class="absolute right-0 mt-2 w-56 bg-secondary-800 border border-secondary-700 rounded-lg shadow-lg z-50"
       >
         <div class="py-1">
-          <!-- Profil -->
           <RouterLink
             to="/profile"
             @click="closeMenu"
@@ -74,7 +68,6 @@
             Mon profil
           </RouterLink>
 
-          <!-- Paramètres -->
           <RouterLink
             to="/settings"
             @click="closeMenu"
@@ -97,10 +90,8 @@
             Paramètres
           </RouterLink>
 
-          <!-- Divider -->
           <div class="border-t border-secondary-700 my-1"></div>
 
-          <!-- Déconnexion -->
           <button
             @click="handleLogout"
             :disabled="isLoggingOut"
@@ -120,7 +111,6 @@
       </div>
     </Transition>
 
-    <!-- Overlay pour fermer le menu -->
     <div v-if="isMenuOpen" @click="closeMenu" class="fixed inset-0 z-40"></div>
   </div>
 </template>

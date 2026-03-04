@@ -1,12 +1,12 @@
 /**
- * Service API pour les opérations liées aux utilisateurs (recherche, invitations)
+ * Service API pour les opérations liées aux utilisateurs
  */
 import { get } from './apiClient'
 import type { GameInvitation, UserSearchResult } from '@/types/game'
 
 export const userApi = {
   /**
-   * Recherche des utilisateurs par pseudo (autocomplétion pour invitations)
+   * Recherche des utilisateurs par pseudo
    */
   async searchUsers(pseudo: string): Promise<UserSearchResult[]> {
     const params = new URLSearchParams({ pseudo })
