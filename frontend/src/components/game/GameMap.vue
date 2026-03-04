@@ -269,7 +269,7 @@ function getTokenImageUrl(imageUrl: string | undefined): string | null {
 
 /**
  * Vérifie si l'utilisateur peut contrôler un token.
- * Le MJ peut toujours contrôler. 
+ * Le MJ peut toujours contrôler.
  * Les joueurs peuvent contrôler si leur userId est dans token.settings.controllableBy
  */
 function canControlToken(token: GameToken): boolean {
@@ -492,7 +492,6 @@ defineExpose({
           {{ token.name }}
         </div>
       </div>
-
     </div>
 
     <Teleport to="body">

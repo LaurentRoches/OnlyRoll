@@ -155,7 +155,6 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
   if (authStore.isLoading) {
-
     await new Promise<void>((resolve) => {
       const unwatch = watch(
         () => authStore.isLoading,

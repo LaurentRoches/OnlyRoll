@@ -12,7 +12,6 @@ import { logger } from '@/utils/logger'
 import type { MercureTokenEventData, MercureMapEventData } from '@/types/websocket'
 
 export const useMapStore = defineStore('map', () => {
-
   const activeMap = ref<GameMap | null>(null)
   const allMaps = ref<GameMap[]>([])
   const tokens = ref<GameToken[]>([])

@@ -75,7 +75,9 @@
               Connecté en tant que
               <strong class="text-secondary-200">{{ currentUser?.pseudo }}</strong>
             </span>
-            <strong class="hidden sm:inline text-secondary-200 text-sm">{{ currentUser?.pseudo }}</strong>
+            <strong class="hidden sm:inline text-secondary-200 text-sm">{{
+              currentUser?.pseudo
+            }}</strong>
             <button
               type="button"
               class="px-3 py-1.5 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors text-sm"

@@ -85,7 +85,6 @@ onMounted(async () => {
 })
 
 onBeforeRouteLeave(async () => {
-
   await notifyDisconnection()
 
   mercureService.disconnect()
@@ -131,7 +130,6 @@ async function initializeGame() {
 }
 
 async function setupMercure() {
-
   try {
     await gameApi.getMercureToken(gameId.value)
 
@@ -166,7 +164,6 @@ async function setupMercure() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mercureService.on('player', async (event: any) => {
-
     if (event.data?.action === 'kicked' && event.data?.userId === authStore.user?.id) {
       mercureService.disconnect()
       presenceStore.clearGamePresence(gameId.value)

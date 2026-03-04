@@ -111,7 +111,6 @@ async function rollDice() {
   if (!canRoll.value) return
 
   try {
-
     const result = await chatStore.rollDice(props.gameId, fullFormula.value, isInCharacter.value)
 
     if (result.diceResult) {
