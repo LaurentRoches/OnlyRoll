@@ -157,6 +157,12 @@ jobs:
           BACKENDENVEOF
             
             echo ".env files created"
+
+            echo "Generating .htpasswd for phpMyAdmin..."
+            mkdir -p docker/nginx
+            echo "${{ secrets.PMA_USER }}:$(openssl passwd -apr1 '${{ secrets.PMA_PASSWORD }}')" \
+              > docker/nginx/.htpasswd
+            echo ".htpasswd generated"
           ENDSSH
       
       - name: Deploy on VPS
@@ -197,7 +203,8 @@ jobs:
             # Forcer l'arrêt des conteneurs par nom (au cas où)
             echo "Removing any existing OnlyRoll containers..."
             docker rm -f onlyroll-php-prod onlyroll-nginx-prod onlyroll-frontend-prod \
-                        onlyroll-mysql-prod onlyroll-redis-prod onlyroll-mercure-prod 2>/dev/null || echo "No individual containers to remove"
+                        onlyroll-mysql-prod onlyroll-redis-prod onlyroll-mercure-prod \
+                        onlyroll-phpmyadmin-prod 2>/dev/null || echo "No individual containers to remove"
             
             # Supprimer le réseau s'il existe
             echo "Removing old network..."

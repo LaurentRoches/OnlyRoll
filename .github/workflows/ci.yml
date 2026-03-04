@@ -36,6 +36,11 @@ jobs:
           echo "MYSQL_USER=onlyroll_db" >> .env.docker
           echo "MYSQL_PASSWORD=onlyroll_docker_pass" >> .env.docker
 
+      - name: Generate .htpasswd for phpMyAdmin
+        run: |
+          echo "${{ secrets.PMA_USER }}:$(openssl passwd -apr1 '${{ secrets.PMA_PASSWORD }}')" \
+            > docker/nginx/.htpasswd
+
       - name: Build Docker images
         run: docker compose build
 
@@ -342,6 +347,11 @@ jobs:
           echo "MYSQL_DATABASE=onlyroll_test" >> .env.docker
           echo "MYSQL_USER=onlyroll_db" >> .env.docker
           echo "MYSQL_PASSWORD=onlyroll_docker_pass" >> .env.docker
+
+      - name: Generate .htpasswd for phpMyAdmin
+        run: |
+          echo "${{ secrets.PMA_USER }}:$(openssl passwd -apr1 '${{ secrets.PMA_PASSWORD }}')" \
+            > docker/nginx/.htpasswd
 
       - name: Build Docker images
         run: docker compose build
