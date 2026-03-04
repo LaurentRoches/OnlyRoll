@@ -1,4 +1,4 @@
-# OnlyRoll - Plan de Développement Wiki SRD + i18n
+# OnlyRoll - Plan de Développement Wiki D&D + i18n
 
 ## État Actuel
 
@@ -6,9 +6,11 @@
 
 À créer :
 - Tables de référence (damage_type, spell_school, condition_type, etc.)
-- Tables SRD (srd_spell, srd_monster, srd_item, srd_race, srd_class, etc.)
+- Tables contenu D&D (srd_spell, srd_monster, srd_item, srd_race, srd_class, etc.)
 - Tables i18n (translation_locale)
 - Tables Wiki (wiki_category, wiki_article, wiki_article_translation, etc.)
+
+> **Accord WotC :** L'intégralité du contenu D&D est utilisable. Les données sources sont disponibles localement au format JSON (structure 5etools) dans `/docs/SRD/`. La table `content_source` est centrale — toutes les entrées référencent leur source (PHB, XGE, TCE, DMG, etc.).
 
 ## Documentation Projet
 
@@ -17,6 +19,7 @@
 | Structure projet | `/docs/STRUCTURE.md` |
 | Spécification BDD | `/docs/database/OnlyRoll_Database.sql` |
 | Maquettes UI | `/docs/maquettes/` |
+| Données JSON D&D | `/docs/SRD/` |
 
 ## Conformité OWASP ASVS 5.0
 
@@ -31,9 +34,98 @@
 
 ---
 
+## Architecture de peuplement de la base de données
+
+Le contenu D&D est volumineux et structuré en sources multiples. L'approche retenue distingue trois couches :
+
+### Fixtures Doctrine — groupe `reference`
+
+Réservées aux **tables de référence statiques** : petites, immuables, sans logique de transformation.
+
+```bash
+php bin/console doctrine:fixtures:load --group=reference
+```
+
+```
+DataFixtures/ReferenceFixtures.php
+└── damage_type, spell_school, condition_type, alignment,
+    creature_size, creature_type, item_category, item_rarity,
+    weapon_property, language, content_source
+```
+
+> Ces données n'évoluent jamais et n'ont pas de source JSON externe — elles sont saisies directement dans la fixture.
+
+### Commandes d'import Symfony — contenu D&D
+
+Réservées à tout le **contenu de jeu** issu des fichiers JSON. Chaque commande est **idempotente** (upsert), **rejouable** en CI/CD, et supporte `--dry-run`.
+
+```bash
+# Import complet
+php bin/console app:import:all
+
+# Import par type
+php bin/console app:import:skills
+php bin/console app:import:spells              # lit l'index.json, importe toutes les sources
+php bin/console app:import:spells --source=PHB # cible une source précise
+php bin/console app:import:monsters
+php bin/console app:import:races
+php bin/console app:import:classes
+php bin/console app:import:items
+php bin/console app:import:backgrounds
+php bin/console app:import:feats
+php bin/console app:import:conditions
+```
+
+Structure des commandes :
+
+```
+src/Command/Import/
+├── ImportAllCommand.php          # Orchestrateur, appelle les autres dans l'ordre
+├── ImportSkillsCommand.php
+├── ImportSpellsCommand.php       # Lit spells/index.json → itère les fichiers sources
+├── ImportMonstersCommand.php
+├── ImportRacesCommand.php
+├── ImportClassesCommand.php
+├── ImportItemsCommand.php
+├── ImportBackgroundsCommand.php
+├── ImportFeatsCommand.php
+└── ImportConditionsCommand.php
+```
+
+Chaque commande suit le même patron :
+
+```php
+// Lecture JSON → transformation → upsert via Repository
+// INSERT ... ON DUPLICATE KEY UPDATE (idempotent)
+// --source=PHB  : filtre sur un fichier source
+// --dry-run     : valide sans écrire
+// Progress bar  : feedback visuel pendant l'import
+```
+
+Gestion des doublons multi-sources (ex. `skills.json` contient PHB + XPHB pour la même compétence) : source canonique = PHB pour la compatibilité historique, XPHB ignoré ou stocké comme entrée distincte selon la stratégie retenue à l'implémentation.
+
+### Fixtures Doctrine — groupe `test`
+
+Comportement inchangé. Données de test isolées pour PHPUnit et Playwright.
+
+```bash
+php bin/console doctrine:fixtures:load --group=test
+```
+
+### Initialisation complète (Makefile / CI)
+
+```bash
+make db-setup:
+  doctrine:migrations:migrate
+  doctrine:fixtures:load --group=reference
+  app:import:all
+```
+
+---
+
 ## Étape 1 : Tables de Référence (3-4h)
 
-Créer les tables lookup nécessaires au SRD et Wiki.
+Créer les tables lookup nécessaires au contenu D&D et Wiki.
 
 ### 1.1 Migration Doctrine
 
@@ -56,7 +148,7 @@ Référence : `/docs/database/OnlyRoll_Database.sql` lignes 17-148
 - [ ] `condition_type` - Conditions (blinded, charmed, etc.)
 - [ ] `skill` - Compétences (Acrobatics, Perception, etc.)
 - [ ] `language` - Langues (Common, Elvish, etc.)
-- [ ] `content_source` - Sources (PHB, DMG, SRD, etc.)
+- [ ] `content_source` - Sources **(PHB, DMG, XGE, TCE, XPHB, etc. — toutes les sources WotC)**
 
 ### 1.3 Entités Doctrine
 
@@ -78,11 +170,11 @@ backend/src/Entity/Reference/
 
 ### 1.4 Fixtures (données initiales)
 
-- [ ] Créer `DataFixtures/ReferenceFixtures.php` avec toutes les valeurs SRD
+- [ ] Créer `DataFixtures/ReferenceFixtures.php` (groupe `reference`) avec toutes les valeurs D&D
 
 ---
 
-## Étape 2 : Tables SRD (10-12h)
+## Étape 2 : Tables Contenu D&D (10-12h)
 
 ### 2.1 Tables principales
 
@@ -170,9 +262,52 @@ backend/src/Repository/Srd/
 
 ---
 
-## Étape 3 : Infrastructure i18n (6-8h)
+## Étape 3 : Commandes d'import D&D (6-8h)
 
-### 3.1 Table locale
+> **Voir section "Architecture de peuplement"** pour le détail du patron et des options CLI.
+
+### 3.1 Structure
+
+```
+src/Command/Import/
+├── ImportAllCommand.php
+├── ImportSkillsCommand.php
+├── ImportSpellsCommand.php
+├── ImportMonstersCommand.php
+├── ImportRacesCommand.php
+├── ImportClassesCommand.php
+├── ImportItemsCommand.php
+├── ImportBackgroundsCommand.php
+├── ImportFeatsCommand.php
+└── ImportConditionsCommand.php
+```
+
+### 3.2 Service de mapping JSON → Entité
+
+```
+src/Service/Import/
+├── SpellImportMapper.php
+├── MonsterImportMapper.php
+├── ItemImportMapper.php
+└── ...
+```
+
+Chaque mapper transforme la structure 5etools vers les entités Doctrine, résout les FK (ex. `spell_school_id` depuis le code texte `"Evocation"`), et retourne une entité prête à persister.
+
+### 3.3 Checklist
+
+- [ ] `ImportSpellsCommand` lit `spells/index.json` et itère les fichiers sources
+- [ ] Upsert idempotent sur chaque commande (clé unique : `name` + `source`)
+- [ ] Option `--source=PHB` disponible sur toutes les commandes avec sources multiples
+- [ ] Option `--dry-run` disponible sur toutes les commandes
+- [ ] Progress bar Symfony sur tous les imports
+- [ ] Commande `app:import:all` orchestratrice avec ordre de dépendance respecté
+
+---
+
+## Étape 4 : Infrastructure i18n (6-8h)
+
+### 4.1 Table locale
 
 ```sql
 CREATE TABLE translation_locale (
@@ -191,13 +326,13 @@ INSERT INTO translation_locale VALUES
 (2, 'fr', 'French', 'Français', FALSE, TRUE);
 ```
 
-### 3.2 Modifier table user
+### 4.2 Modifier table user
 
 ```sql
 ALTER TABLE user ADD COLUMN user_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 ```
 
-### 3.3 Backend
+### 4.3 Backend
 
 - [ ] `src/Entity/TranslationLocale.php`
 - [ ] `src/Service/LocaleService.php`
@@ -205,7 +340,7 @@ ALTER TABLE user ADD COLUMN user_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 - [ ] `translations/messages.en.yaml`
 - [ ] `translations/messages.fr.yaml`
 
-### 3.4 Frontend
+### 4.4 Frontend
 
 - [ ] Installer `vue-i18n@9`
 - [ ] `src/locales/en.json`
@@ -216,11 +351,11 @@ ALTER TABLE user ADD COLUMN user_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 
 ---
 
-## Étape 4 : Tables Wiki (3-4h)
+## Étape 5 : Tables Wiki (3-4h)
 
-### 4.1 Architecture
+### 5.1 Architecture
 
-Le Wiki est une couche de présentation i18n au-dessus du SRD :
+Le Wiki est une couche de présentation i18n au-dessus du contenu D&D :
 
 ```
 wiki_article.article_srd_table = 'srd_spell'
@@ -228,7 +363,7 @@ wiki_article.article_srd_id = 42
 → Traductions dans wiki_article_translation (FR/EN)
 ```
 
-### 4.2 Tables à créer
+### 5.2 Tables à créer
 
 ```sql
 -- Catégories
@@ -249,15 +384,15 @@ wiki_favorite
 wiki_article_revision
 ```
 
-### 4.3 Données initiales catégories
+### 5.3 Données initiales catégories
 
 9 catégories : rules, races, classes, spells, monsters, items, backgrounds, feats, conditions
 
 ---
 
-## Étape 5 : Backend Wiki (12-14h)
+## Étape 6 : Backend Wiki (12-14h)
 
-### 5.1 Entités
+### 6.1 Entités
 
 ```
 src/Entity/Wiki/
@@ -271,7 +406,7 @@ src/Entity/Wiki/
 └── WikiArticleRevision.php
 ```
 
-### 5.2 Services
+### 6.2 Services
 
 ```
 src/Service/Wiki/
@@ -279,15 +414,15 @@ src/Service/Wiki/
 ├── WikiArticleService.php
 ├── WikiSearchService.php
 ├── WikiRevisionService.php
-└── WikiSrdSyncService.php    # Génère wiki_article depuis SRD
+└── WikiSrdSyncService.php    # Génère wiki_article depuis le contenu D&D importé
 ```
 
-### 5.3 Controllers
+### 6.3 Controllers
 
 - [ ] `src/Controller/WikiController.php` (public)
 - [ ] `src/Controller/Admin/AdminWikiController.php`
 
-### 5.4 Endpoints
+### 6.4 Endpoints
 
 **Public :** `GET /api/wiki/{categories,articles,search,tags}`
 **Auth :** `GET|POST|DELETE /api/wiki/favorites`
@@ -295,9 +430,9 @@ src/Service/Wiki/
 
 ---
 
-## Étape 6 : Frontend Wiki (14-18h)
+## Étape 7 : Frontend Wiki (14-18h)
 
-### 6.1 Pages
+### 7.1 Pages
 
 ```
 src/views/wiki/
@@ -314,7 +449,7 @@ src/views/admin/wiki/
 └── AdminWikiArticleEdit.vue
 ```
 
-### 6.2 Composants
+### 7.2 Composants
 
 ```
 src/components/wiki/
@@ -325,13 +460,13 @@ src/components/wiki/
 └── WikiFavoriteButton.vue
 ```
 
-### 6.3 Store & API
+### 7.3 Store & API
 
 - [ ] `src/stores/wikiStore.ts`
 - [ ] `src/services/api/wikiApi.ts`
 - [ ] `src/types/wiki.ts`
 
-### 6.4 Dépendances
+### 7.4 Dépendances
 
 ```bash
 npm install vue-i18n@9 marked dompurify @types/dompurify
@@ -339,9 +474,9 @@ npm install vue-i18n@9 marked dompurify @types/dompurify
 
 ---
 
-## Étape 7 : OWASP Compléments (4-6h)
+## Étape 8 : OWASP Compléments (4-6h)
 
-### 7.1 Rate limiting Wiki
+### 8.1 Rate limiting Wiki
 
 ```yaml
 # config/packages/rate_limiter.yaml
@@ -351,7 +486,7 @@ wiki_search:
     interval: '1 minute'
 ```
 
-### 7.2 Audit Actions
+### 8.2 Audit Actions
 
 ```php
 // src/Enum/AuditAction.php
@@ -363,26 +498,29 @@ case WIKI_SRD_SYNC = 'wiki_srd_sync';
 
 ---
 
-## Étape 8 : Tests (6-8h)
+## Étape 9 : Tests (6-8h)
 
 - [ ] Tests unitaires services Wiki
+- [ ] Tests unitaires mappers d'import (transformation JSON → entité)
 - [ ] Tests fonctionnels controllers Wiki
+- [ ] Tests fonctionnels commandes d'import (`--dry-run`)
 - [ ] Tests frontend store + composants
 
 ---
 
-## Estimation Totale : 58-76h
+## Estimation Totale : 64-86h
 
 | Étape | Heures |
 |-------|--------|
 | 1. Tables référence | 3-4h |
-| 2. Tables SRD | 10-12h |
-| 3. i18n | 6-8h |
-| 4. Tables Wiki | 3-4h |
-| 5. Backend Wiki | 12-14h |
-| 6. Frontend Wiki | 14-18h |
-| 7. OWASP | 4-6h |
-| 8. Tests | 6-8h |
+| 2. Tables contenu D&D | 10-12h |
+| 3. Commandes d'import | 6-8h |
+| 4. i18n | 6-8h |
+| 5. Tables Wiki | 3-4h |
+| 6. Backend Wiki | 12-14h |
+| 7. Frontend Wiki | 14-18h |
+| 8. OWASP | 4-6h |
+| 9. Tests | 6-8h |
 
 ---
 
@@ -408,3 +546,5 @@ case WIKI_SRD_SYNC = 'wiki_srd_sync';
 | 16 | Fix `user_username` → `user_pseudo` dans vues et données test | Cohérence avec table `user` |
 | 17 | Fix vues `character_stats`/`character_full_info` | JOIN via `character_class_level` (multiclasse) |
 | 18 | Retrait `query_cache` deprecated | Supprimé depuis MySQL 8.0 |
+| 19 | Remplacement fixtures SRD par commandes d'import Symfony | Import idempotent depuis JSON, support multi-sources |
+| 20 | Ajout `content_source` étendu toutes sources WotC | Accord WotC — plus limité au SRD uniquement |
