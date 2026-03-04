@@ -74,7 +74,7 @@ final class PresenceController extends AbstractController
     }
 
     /**
-     * Notifie que l'utilisateur a quitté la partie (page fermée/navigué ailleurs).
+     * Notifie que l'utilisateur a quitté la partie.
      */
     #[OA\Post(
         path: '/api/games/{gameId}/presence/leave',

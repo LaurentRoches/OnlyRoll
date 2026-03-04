@@ -117,7 +117,7 @@ final class SeoController extends AbstractController
 
         $response = new Response();
         $response->headers->set('Content-Type', 'application/xml');
-        $response->headers->set('Cache-Control', 'public, max-age=3600'); // Cache 1 heure
+        $response->headers->set('Cache-Control', 'public, max-age=3600');
 
         return $this->render('seo/sitemap.xml.twig', [
             'urls' => $urls,
@@ -175,7 +175,7 @@ EOT;
 
         $response = new Response($content);
         $response->headers->set('Content-Type', 'text/plain');
-        $response->headers->set('Cache-Control', 'public, max-age=86400'); // Cache 24 heures
+        $response->headers->set('Cache-Control', 'public, max-age=86400');
 
         return $response;
     }
