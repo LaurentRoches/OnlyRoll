@@ -98,11 +98,15 @@ class GameControllerTest extends WebTestCase
         $this->assertGreaterThanOrEqual(1, \count($response['data']));
     }
 
-    public function testListGamesRequiresAuthentication(): void
+    public function testListGamesIsPublic(): void
     {
         $this->client->request('GET', '/api/games');
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('data', $response);
+        $this->assertArrayHasKey('meta', $response);
     }
 
     // ==================== MY GAMES ====================

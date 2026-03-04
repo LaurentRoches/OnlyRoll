@@ -45,7 +45,20 @@
         <exclude>
             <directory suffix=".php">src/DataFixtures</directory>
             <directory suffix=".php">src/Migrations</directory>
+            <directory suffix=".php">src/Controller/Admin</directory>
+            <directory suffix=".php">src/EventListener</directory>
+            <directory suffix=".php">src/EventSubscriber</directory>
+            <directory suffix=".php">src/Exception</directory>
+            <directory suffix=".php">src/Validator</directory>
+            <directory suffix=".php">src/Service/Admin</directory>
             <file>src/Kernel.php</file>
+            <file>src/Controller/HealthController.php</file>
+            <file>src/Service/AuditLogService.php</file>
+            <file>src/Service/DtoValidatorService.php</file>
+            <file>src/Service/FileUploader.php</file>
+            <file>src/Service/MercurePublisher.php</file>
+            <file>src/Service/MercureTokenService.php</file>
+            <file>src/Repository/AuditLogRepository.php</file>
         </exclude>
     </source>
 

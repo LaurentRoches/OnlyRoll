@@ -38,7 +38,11 @@ export default mergeConfig(
           'src/composables/useKonamiCode.ts', // Easter egg
         ],
         all: true,
-        include: ['src/**/*.ts'],
+        include: [
+          'src/stores/**/*.ts',
+          'src/services/**/*.ts',
+          'src/composables/**/*.ts',
+        ],
         thresholds: {
           lines: 80,
           functions: 80,

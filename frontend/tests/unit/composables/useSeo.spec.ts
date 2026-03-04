@@ -139,7 +139,7 @@ describe('useSeo', () => {
       }))
 
       const canonicalLink = document.querySelector('link[rel="canonical"]')
-      expect(canonicalLink?.getAttribute('href')).toBe('https://onlyroll.fr/test-page')
+      expect(canonicalLink?.getAttribute('href')).toBe('https://onlyroll.cloud/test-page')
     })
   })
 
@@ -224,7 +224,7 @@ describe('useSeo', () => {
       }))
 
       const ogImage = document.querySelector('meta[property="og:image"]')
-      expect(ogImage?.getAttribute('content')).toBe('https://onlyroll.fr/og-image.png')
+      expect(ogImage?.getAttribute('content')).toBe('https://onlyroll.cloud/og-image.png')
     })
 
     it('should set og:site_name meta tag', () => {
@@ -509,8 +509,8 @@ describe('getOrganizationStructuredData', () => {
 
     expect(data['@type']).toBe('Organization')
     expect(data.name).toBe('OnlyRoll')
-    expect(data.url).toBe('https://onlyroll.fr')
-    expect(data.logo).toBe('https://onlyroll.fr/logo.png')
+    expect(data.url).toBe('https://onlyroll.cloud')
+    expect(data.logo).toBe('https://onlyroll.cloud/logo.png')
     expect(data.sameAs).toContain('https://twitter.com/onlyroll')
     expect(data.sameAs).toContain('https://discord.gg/onlyroll')
   })

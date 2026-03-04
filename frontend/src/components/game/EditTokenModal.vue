@@ -156,7 +156,7 @@ async function handleSubmit() {
       throw new Error(errorData.error || 'Erreur lors de la mise à jour du token')
     }
 
-    const updatedToken = await response.json()
+    await response.json()
 
     await mapStore.loadMapTokens(props.mapId)
 

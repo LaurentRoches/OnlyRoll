@@ -22,12 +22,21 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
     )
     if (response.ok()) {
       const data = await response.json()
-      const messages = data.items ?? []
+      interface MailhogMimePart {
+          MIME?: { Parts?: MailhogMimePart[] }
+          Headers?: Record<string, string[]>
+          Body?: string
+        }
+        interface MailhogMessage {
+          MIME?: { Parts?: MailhogMimePart[] }
+          Content?: { Body?: string }
+        }
+        const messages = data.items ?? []
       if (messages.length > 0) {
-        const msg = messages[messages.length - 1] as any
+        const msg = messages[messages.length - 1] as MailhogMessage
 
-        const topParts: any[] = msg.MIME?.Parts ?? []
-        const allParts: any[] = [...topParts, ...topParts.flatMap((p: any) => p.MIME?.Parts ?? [])]
+        const topParts: MailhogMimePart[] = msg.MIME?.Parts ?? []
+        const allParts: MailhogMimePart[] = [...topParts, ...topParts.flatMap((p: MailhogMimePart) => p.MIME?.Parts ?? [])]
 
         let body = ''
         for (const part of allParts) {
