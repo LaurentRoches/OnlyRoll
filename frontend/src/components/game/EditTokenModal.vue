@@ -157,7 +157,6 @@ async function handleSubmit() {
     }
 
     const updatedToken = await response.json()
-    console.log('Token mis à jour:', updatedToken)
 
     await mapStore.loadMapTokens(props.mapId)
 
@@ -192,7 +191,6 @@ function handleClose() {
         <div
           class="bg-secondary-800 rounded-xl shadow-2xl w-full max-w-lg mx-4 border border-secondary-700"
         >
-          <!-- Header -->
           <div class="flex items-center justify-between p-6 border-b border-secondary-700">
             <div>
               <h2 class="text-2xl font-bold text-white">✏️ Modifier le Token</h2>
@@ -216,9 +214,7 @@ function handleClose() {
             </button>
           </div>
 
-          <!-- Form -->
           <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
-            <!-- Erreur -->
             <div
               v-if="error"
               class="bg-error/10 border border-error/20 rounded-lg p-4 flex items-start gap-3"
@@ -237,7 +233,6 @@ function handleClose() {
               <p class="text-sm text-error">{{ error }}</p>
             </div>
 
-            <!-- Nom -->
             <div>
               <label for="token-name" class="block text-sm font-medium text-secondary-200 mb-2">
                 Nom du token *
@@ -254,7 +249,6 @@ function handleClose() {
               />
             </div>
 
-            <!-- Type -->
             <div>
               <label class="block text-sm font-medium text-secondary-200 mb-3">
                 Type de token *
@@ -285,7 +279,6 @@ function handleClose() {
               </div>
             </div>
 
-            <!-- Taille -->
             <div>
               <label for="token-size" class="block text-sm font-medium text-secondary-200 mb-2">
                 Taille
@@ -302,7 +295,6 @@ function handleClose() {
               </select>
             </div>
 
-            <!-- Upload d'image (optionnel) -->
             <div>
               <label class="block text-sm font-medium text-secondary-200 mb-2">
                 Image du token (optionnel)
@@ -329,7 +321,6 @@ function handleClose() {
                 </label>
               </div>
 
-              <!-- Aperçu de l'image -->
               <div v-else class="relative">
                 <img
                   :src="imagePreview"
@@ -358,7 +349,6 @@ function handleClose() {
               </p>
             </div>
 
-            <!-- Actions -->
             <div class="flex gap-3 pt-4">
               <button
                 type="button"
@@ -389,7 +379,6 @@ function handleClose() {
   box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
 }
 
-/* Transitions pour la modal */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.3s ease;

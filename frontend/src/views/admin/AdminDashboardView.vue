@@ -1,12 +1,10 @@
 <template>
   <div class="admin-dashboard">
-    <!-- Page header -->
     <header class="mb-8">
       <h2 class="text-2xl font-bold text-secondary-50">Tableau de bord</h2>
       <p class="text-secondary-400 mt-1">Vue d'ensemble de l'administration</p>
     </header>
 
-    <!-- Loading state -->
     <div
       v-if="isLoading"
       class="flex justify-center py-12"
@@ -20,7 +18,6 @@
       <span class="sr-only">Chargement des données...</span>
     </div>
 
-    <!-- Error state -->
     <div
       v-else-if="error"
       role="alert"
@@ -29,9 +26,7 @@
       <strong class="font-semibold">Erreur :</strong> {{ error }}
     </div>
 
-    <!-- Stats Cards -->
     <div v-else-if="stats" class="space-y-8">
-      <!-- Users Stats Section -->
       <section aria-labelledby="users-stats-heading">
         <h3 id="users-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">
           Utilisateurs
@@ -70,7 +65,6 @@
         </div>
       </section>
 
-      <!-- Audit Stats Section -->
       <section aria-labelledby="audit-stats-heading">
         <h3 id="audit-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">Audit</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -107,7 +101,6 @@
         </div>
       </section>
 
-      <!-- Recent Activity Section -->
       <section aria-labelledby="recent-activity-heading">
         <h3 id="recent-activity-heading" class="text-lg font-semibold text-secondary-50 mb-4">
           Activité récente

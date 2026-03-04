@@ -3,10 +3,6 @@
  * Basés sur les entités Symfony avec serialization groups
  */
 
-// ===========================
-// ENUMS
-// ===========================
-
 export enum PlayerRole {
   GAME_MASTER = 'game_master',
   PLAYER = 'player',
@@ -271,10 +267,6 @@ export interface UserSearchResult {
   avatar?: string
 }
 
-// ===========================
-// TYPES HELPERS
-// ===========================
-
 /**
  * Type pour les réponses paginées de l'API
  */
@@ -285,10 +277,6 @@ export interface PaginatedResponse<T> {
   limit: number
   totalPages: number
 }
-
-// ===========================
-// DTOs POUR LES GAMES
-// ===========================
 
 /**
  * DTO pour créer une partie
@@ -349,10 +337,6 @@ export interface PaginatedGamesResponse {
   meta: PaginationMeta
 }
 
-// ===========================
-// DTOs POUR LES MAPS (CARTES)
-// ===========================
-
 /**
  * DTO pour créer une carte
  * Correspond à CreateMapDTO.php du backend
@@ -383,13 +367,8 @@ export interface UpdateMapDTO {
   settings?: Record<string, unknown>
 }
 
-// ===========================
-// DTOs POUR LES TOKENS
-// ===========================
-
 /**
  * DTO pour créer un token
- * IMPORTANT: Correspond EXACTEMENT à CreateTokenDTO.php du backend Symfony
  *
  * Champs obligatoires:
  * - name: string (1-250 caractères)
@@ -449,10 +428,6 @@ export interface MoveTokenDTO {
   rotation?: number
 }
 
-// ===========================
-// DTOs POUR LES MESSAGES (CHAT)
-// ===========================
-
 /**
  * DTO pour envoyer un message dans le chat
  * Correspond à SendMessageDTO.php du backend
@@ -475,10 +450,6 @@ export interface RollDiceDTO {
   isVisible?: boolean
   recipientId?: number
 }
-
-// ===========================
-// TYPES ADDITIONNELS UTILES
-// ===========================
 
 /**
  * Type pour les dimensions de carte

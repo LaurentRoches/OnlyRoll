@@ -1,12 +1,10 @@
 <template>
   <div class="admin-audit-logs">
-    <!-- Page header -->
     <header class="mb-6">
       <h2 class="text-2xl font-bold text-secondary-50">Logs d'audit</h2>
       <p class="text-secondary-400 mt-1">Historique des actions du système</p>
     </header>
 
-    <!-- Filters - RGAA 11.1, 11.2 -->
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
       <form
         @submit.prevent
@@ -14,7 +12,6 @@
         role="search"
         aria-label="Filtrer les logs d'audit"
       >
-        <!-- Action -->
         <div class="flex flex-col">
           <label for="filter-action" class="text-xs text-secondary-400 mb-1">Action</label>
           <select
@@ -30,7 +27,6 @@
           </select>
         </div>
 
-        <!-- Sévérité -->
         <div class="flex flex-col">
           <label for="filter-severity" class="text-xs text-secondary-400 mb-1">Sévérité</label>
           <select
@@ -46,7 +42,6 @@
           </select>
         </div>
 
-        <!-- Date de début -->
         <div class="flex flex-col">
           <label for="filter-date-from" class="text-xs text-secondary-400 mb-1"
             >Date de début</label
@@ -60,7 +55,6 @@
           />
         </div>
 
-        <!-- Date de fin -->
         <div class="flex flex-col">
           <label for="filter-date-to" class="text-xs text-secondary-400 mb-1">Date de fin</label>
           <input
@@ -72,7 +66,6 @@
           />
         </div>
 
-        <!-- Bouton reset -->
         <div class="flex flex-col justify-end">
           <button
             type="button"
@@ -85,7 +78,6 @@
       </form>
     </div>
 
-    <!-- Loading state -->
     <div
       v-if="isLoading"
       class="flex justify-center py-12"
@@ -99,7 +91,6 @@
       <span class="sr-only">Chargement des logs...</span>
     </div>
 
-    <!-- Error state -->
     <div
       v-else-if="error"
       role="alert"
@@ -108,7 +99,6 @@
       <strong class="font-semibold">Erreur :</strong> {{ error }}
     </div>
 
-    <!-- Logs Table -->
     <template v-else>
       <AccessibleTable
         :columns="logsColumns"
@@ -117,12 +107,10 @@
         empty-message="Aucun log trouvé pour ces critères"
         row-key="id"
       >
-        <!-- Date -->
         <template #cell-createdAt="{ value }">
           <span class="text-secondary-400 text-sm">{{ formatDate(String(value)) }}</span>
         </template>
 
-        <!-- Action -->
         <template #cell-action="{ value }">
           <span
             class="inline-block px-2 py-1 text-xs rounded font-medium"
@@ -132,28 +120,24 @@
           </span>
         </template>
 
-        <!-- Utilisateur -->
         <template #cell-performer="{ row }">
           <span class="text-secondary-200">
             {{ (row.performer as { pseudo?: string })?.pseudo || 'Système' }}
           </span>
         </template>
 
-        <!-- Cible -->
         <template #cell-targetUser="{ row }">
           <span class="text-secondary-300">
             {{ (row.targetUser as { pseudo?: string })?.pseudo || '-' }}
           </span>
         </template>
 
-        <!-- IP -->
         <template #cell-ipAddress="{ value }">
           <code class="text-secondary-400 font-mono text-xs bg-secondary-700/50 px-1 rounded">
             {{ value || '-' }}
           </code>
         </template>
 
-        <!-- Détails -->
         <template #cell-details="{ row }">
           <button
             v-if="row.details && Object.keys(row.details as object).length > 0"
@@ -168,7 +152,6 @@
         </template>
       </AccessibleTable>
 
-      <!-- Pagination -->
       <div v-if="meta.totalPages > 1" class="mt-4">
         <AccessiblePagination
           :current-page="meta.page"
@@ -181,7 +164,6 @@
       </div>
     </template>
 
-    <!-- Details Modal -->
     <AccessibleModal
       :is-open="showDetailsModal"
       title="Détails du log"

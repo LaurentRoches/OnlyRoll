@@ -2,7 +2,6 @@
   <nav class="bg-secondary-800 backdrop-blur-sm border-b border-secondary-700 relative z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
-        <!-- Logo -->
         <RouterLink to="/" class="flex items-center space-x-3">
           <div class="w-8 h-8 flex items-center justify-center">
             <img style="width: 100%; height: 100%" src="/images/logo.png" />
@@ -10,7 +9,6 @@
           <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
         </RouterLink>
 
-        <!-- Menu de navigation — desktop -->
         <div class="hidden md:flex items-center space-x-1">
           <RouterLink
             to="/dashboard"
@@ -48,9 +46,7 @@
           </RouterLink>
         </div>
 
-        <!-- Contrôles droite (cloche toujours visible + desktop user menu + burger mobile) -->
         <div class="flex items-center gap-1">
-          <!-- Cloche de notifications — visible sur tous les écrans -->
           <div class="relative" ref="bellRef">
             <button
               @click="toggleNotifications"
@@ -71,7 +67,6 @@
                   d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 />
               </svg>
-              <!-- Badge rouge -->
               <span
                 v-if="notificationStore.invitationCount > 0"
                 class="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
@@ -82,7 +77,6 @@
               </span>
             </button>
 
-            <!-- Drawer notifications (dropdown) -->
             <Transition name="fade-down">
               <div
                 v-if="showNotifications"
@@ -111,7 +105,6 @@
                 </div>
 
                 <div class="max-h-96 overflow-y-auto">
-                  <!-- Chargement -->
                   <div
                     v-if="notificationStore.isLoading"
                     class="p-6 text-center text-secondary-400"
@@ -122,7 +115,6 @@
                     Chargement...
                   </div>
 
-                  <!-- Aucune invitation -->
                   <div
                     v-else-if="notificationStore.invitations.length === 0"
                     class="p-6 text-center text-secondary-400"
@@ -131,7 +123,6 @@
                     <p class="text-sm">Aucune invitation en attente</p>
                   </div>
 
-                  <!-- Liste des invitations -->
                   <div v-else class="divide-y divide-secondary-700">
                     <div
                       v-for="invitation in notificationStore.invitations"
@@ -169,7 +160,6 @@
             </Transition>
           </div>
 
-          <!-- Menu utilisateur — desktop uniquement -->
           <div class="hidden md:flex items-center space-x-4 ml-2">
             <UserProfileBadge />
             <button
@@ -180,7 +170,6 @@
             </button>
           </div>
 
-          <!-- Burger button — mobile uniquement -->
           <button
             class="md:hidden p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
             :aria-expanded="isMobileMenuOpen"
@@ -222,7 +211,6 @@
       </div>
     </div>
 
-    <!-- Menu mobile déroulant -->
     <div v-if="isMobileMenuOpen" class="md:hidden border-t border-secondary-700 bg-secondary-800">
       <div class="px-4 py-3 space-y-1">
         <RouterLink

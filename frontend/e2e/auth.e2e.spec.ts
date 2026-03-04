@@ -24,14 +24,9 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
       const data = await response.json()
       const messages = data.items ?? []
       if (messages.length > 0) {
-        // Use the most recent email to avoid stale/invalidated tokens
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const msg = messages[messages.length - 1] as any
 
-        // Flatten top-level MIME parts + one level of nesting (multipart/mixed > multipart/alternative)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const topParts: any[] = msg.MIME?.Parts ?? []
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allParts: any[] = [...topParts, ...topParts.flatMap((p: any) => p.MIME?.Parts ?? [])]
 
         let body = ''
@@ -42,17 +37,12 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
             break
           }
         }
-        // Fallback to raw body (QP-encoded)
         if (!body) {
           body = msg.Content?.Body ?? ''
         }
 
-        // Decode Quoted-Printable encoding:
-        // 1. Remove soft line breaks (=\r\n per RFC 2045)
-        // 2. Decode =3D → = (QP encoding of the = sign, as output by PHP's Symfony Mailer)
         const decodedBody = body.replace(/=\r?\n/g, '').replace(/=3D/g, '=')
 
-        // Token is exactly 100 lowercase hex chars — bin2hex(random_bytes(50))
         const match = decodedBody.match(/[?&]token=([a-f0-9]{100})/)
         if (match) {
           const verifyResponse = await request.post(`${BACKEND_API}/auth/verify-email`, {
@@ -99,7 +89,6 @@ test.describe.serial('E2E - Inscription et Connexion', () => {
     page,
     request,
   }) => {
-    // Verify the email via mailhog before attempting to login
     await verifyEmailViaMailhog(request, email)
 
     await page.goto('/auth/login')

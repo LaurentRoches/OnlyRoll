@@ -5,14 +5,14 @@
     :aria-label="caption || 'Tableau de données'"
   >
     <table class="w-full" :aria-describedby="descriptionId">
-      <!-- Caption pour décrire le tableau - RGAA 5.1 -->
+      <!-- Caption pour décrire le tableau -->
       <caption v-if="caption" class="sr-only">
         {{
           caption
         }}
       </caption>
 
-      <!-- En-têtes de colonnes - RGAA 5.6, 5.7 -->
+      <!-- En-têtes de colonnes -->
       <thead class="bg-secondary-700">
         <tr>
           <th
@@ -97,7 +97,6 @@
 
       <!-- Corps du tableau -->
       <tbody class="divide-y divide-secondary-700">
-        <!-- État vide -->
         <tr v-if="data.length === 0">
           <td :colspan="columns.length" class="px-4 py-8 text-center text-secondary-400">
             <slot name="empty">
@@ -106,7 +105,6 @@
           </td>
         </tr>
 
-        <!-- Lignes de données -->
         <tr
           v-for="(row, rowIndex) in data"
           :key="getRowKey(row, rowIndex)"
@@ -123,7 +121,6 @@
               column.class || 'text-secondary-200',
             ]"
           >
-            <!-- Slot personnalisé pour la cellule -->
             <slot :name="`cell-${column.key}`" :row="row" :value="getCellValue(row, column.key)">
               {{ formatCellValue(getCellValue(row, column.key), column) }}
             </slot>
@@ -132,7 +129,6 @@
       </tbody>
     </table>
 
-    <!-- Description cachée pour les lecteurs d'écran -->
     <p :id="descriptionId" class="sr-only">
       Ce tableau contient {{ data.length }} {{ data.length > 1 ? 'lignes' : 'ligne' }}.
       <template v-if="sortable">
@@ -140,7 +136,6 @@
       </template>
     </p>
 
-    <!-- Annonce pour les lecteurs d'écran -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>

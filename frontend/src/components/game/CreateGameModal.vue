@@ -68,7 +68,6 @@ async function handleSubmit() {
       class="bg-secondary-800 rounded-lg max-w-2xl w-full p-6 border border-secondary-700 shadow-purple-lg"
       @click.stop
     >
-      <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h2 id="create-game-modal-title" class="text-2xl font-bold text-secondary-50">
           Créer une nouvelle partie
@@ -82,9 +81,7 @@ async function handleSubmit() {
         </button>
       </div>
 
-      <!-- Form -->
       <form @submit.prevent="handleSubmit" class="space-y-5">
-        <!-- Name -->
         <div>
           <label class="block text-sm font-medium text-secondary-300 mb-2">
             Nom de la partie <span class="text-accent-rose">*</span>
@@ -102,7 +99,6 @@ async function handleSubmit() {
           </p>
         </div>
 
-        <!-- Description -->
         <div>
           <label class="block text-sm font-medium text-secondary-300 mb-2"> Description </label>
           <textarea
@@ -113,7 +109,6 @@ async function handleSubmit() {
           />
         </div>
 
-        <!-- Max Players -->
         <div>
           <label for="maxPlayers" class="block text-sm font-medium text-secondary-300 mb-2">
             <UsersIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
@@ -136,7 +131,6 @@ async function handleSubmit() {
           </div>
         </div>
 
-        <!-- Public/Private Toggle -->
         <div class="bg-secondary-700/50 rounded-lg p-4 border border-secondary-600">
           <label class="flex items-start cursor-pointer group">
             <div class="relative flex items-center">
@@ -171,7 +165,6 @@ async function handleSubmit() {
           </label>
         </div>
 
-        <!-- Password (si privée) -->
         <div v-if="!formData.isPublic">
           <label for="gamePassword" class="block text-sm font-medium text-secondary-300 mb-2">
             <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
@@ -190,7 +183,6 @@ async function handleSubmit() {
           </p>
         </div>
 
-        <!-- Error from store -->
         <div
           v-if="gameStore.error"
           class="p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose flex items-start gap-3"
@@ -211,7 +203,6 @@ async function handleSubmit() {
           <span class="text-sm">{{ gameStore.error }}</span>
         </div>
 
-        <!-- Actions -->
         <div class="flex justify-end gap-3 pt-4 border-t border-secondary-700">
           <button
             type="button"

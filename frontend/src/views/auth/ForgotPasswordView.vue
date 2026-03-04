@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- En-tête -->
     <div class="text-center">
       <h2 class="text-xl font-semibold text-secondary-50 mb-2">Mot de passe oublié</h2>
       <p class="text-secondary-400 text-sm">
@@ -8,7 +7,6 @@
       </p>
     </div>
 
-    <!-- Succès -->
     <div
       v-if="submitted"
       class="bg-success/10 border border-success/20 rounded-lg p-4 text-center space-y-3"
@@ -33,7 +31,6 @@
       </RouterLink>
     </div>
 
-    <!-- Formulaire -->
     <form v-else @submit.prevent="submit" class="space-y-4">
       <div>
         <label for="email" class="block text-sm font-medium text-secondary-300 mb-1"

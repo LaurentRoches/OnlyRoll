@@ -1,7 +1,6 @@
 <template>
   <section ref="sectionRef" class="py-20 bg-secondary-50/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Titre -->
       <div class="text-center mb-16">
         <h2
           class="text-3xl md:text-4xl font-bold text-secondary-50 mb-4 text-shadow-strong reveal-up"
@@ -18,9 +17,7 @@
         </p>
       </div>
 
-      <!-- Grille 5 colonnes sur desktop (étape, connecteur, étape, connecteur, étape) -->
       <div class="grid grid-cols-1 md:grid-cols-5 items-start gap-8 md:gap-0">
-        <!-- Étape 1 -->
         <div
           class="flex flex-col items-center text-center reveal-up"
           :class="{ revealed: isVisible }"
@@ -39,12 +36,10 @@
           </p>
         </div>
 
-        <!-- Connecteur 1→2 (desktop only) -->
         <div class="hidden md:flex items-start pt-8" aria-hidden="true">
           <div class="w-full border-t-2 border-dashed border-secondary-700 opacity-40 mt-0"></div>
         </div>
 
-        <!-- Étape 2 -->
         <div
           class="flex flex-col items-center text-center reveal-up"
           :class="{ revealed: isVisible }"
@@ -63,12 +58,10 @@
           </p>
         </div>
 
-        <!-- Connecteur 2→3 (desktop only) -->
         <div class="hidden md:flex items-start pt-8" aria-hidden="true">
           <div class="w-full border-t-2 border-dashed border-secondary-700 opacity-40 mt-0"></div>
         </div>
 
-        <!-- Étape 3 -->
         <div
           class="flex flex-col items-center text-center reveal-up"
           :class="{ revealed: isVisible }"

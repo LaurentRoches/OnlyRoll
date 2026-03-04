@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Token invalide (détecté au montage) -->
     <div v-if="!token" class="text-center space-y-4">
       <div class="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto">
         <svg class="w-8 h-8 text-error" fill="currentColor" viewBox="0 0 20 20">
@@ -20,7 +19,6 @@
       </RouterLink>
     </div>
 
-    <!-- Succès -->
     <div v-else-if="success" class="text-center space-y-4">
       <div class="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto">
         <svg class="w-10 h-10 text-success" fill="currentColor" viewBox="0 0 20 20">
@@ -43,7 +41,6 @@
       </RouterLink>
     </div>
 
-    <!-- Formulaire -->
     <form v-else @submit.prevent="submit" class="space-y-5">
       <div class="text-center">
         <h2 class="text-xl font-semibold text-secondary-50 mb-1">Nouveau mot de passe</h2>

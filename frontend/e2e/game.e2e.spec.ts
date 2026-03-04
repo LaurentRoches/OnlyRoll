@@ -46,14 +46,9 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
       const data = await response.json()
       const messages = data.items ?? []
       if (messages.length > 0) {
-        // Use the most recent email to avoid stale/invalidated tokens
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const msg = messages[messages.length - 1] as any
 
-        // Flatten top-level MIME parts + one level of nesting (multipart/mixed > multipart/alternative)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const topParts: any[] = msg.MIME?.Parts ?? []
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allParts: any[] = [...topParts, ...topParts.flatMap((p: any) => p.MIME?.Parts ?? [])]
 
         let body = ''
@@ -64,17 +59,12 @@ async function verifyEmailViaMailhog(request: APIRequestContext, userEmail: stri
             break
           }
         }
-        // Fallback to raw body (QP-encoded)
         if (!body) {
           body = msg.Content?.Body ?? ''
         }
 
-        // Decode Quoted-Printable encoding:
-        // 1. Remove soft line breaks (=\r\n per RFC 2045)
-        // 2. Decode =3D → = (QP encoding of the = sign, as output by PHP's Symfony Mailer)
         const decodedBody = body.replace(/=\r?\n/g, '').replace(/=3D/g, '=')
 
-        // Token is exactly 100 lowercase hex chars — bin2hex(random_bytes(50))
         const match = decodedBody.match(/[?&]token=([a-f0-9]{100})/)
         if (match) {
           const verifyResponse = await request.post(`${BACKEND_API}/auth/verify-email`, {
@@ -109,7 +99,6 @@ async function registerAndLogin(
   await page.locator('button[type="submit"]').click()
   await expect(page).toHaveURL(/\/auth\/register-success/, { timeout: 15_000 })
 
-  // Verify email via mailhog before logging in
   await verifyEmailViaMailhog(request, user.email)
 
   await page.goto('/auth/login')
@@ -123,11 +112,9 @@ test.describe.serial('E2E - Création, rejoindre une partie et poster un message
   test('MJ : crée une partie publique', async ({ page, request }) => {
     await registerAndLogin(page, request, GM)
 
-    // Naviguer vers la liste des parties (login redirige vers /dashboard)
     await page.goto('/games')
     await expect(page).toHaveURL(/\/games/, { timeout: 10_000 })
 
-    // Intercepter la réponse de création pour capturer l'ID de la partie
     const createPromise = page.waitForResponse(
       (res) =>
         res.url().includes('/api/games') &&
@@ -135,61 +122,47 @@ test.describe.serial('E2E - Création, rejoindre une partie et poster un message
         res.status() === 201
     )
 
-    // Ouvrir le modal de création
     await page.getByRole('button', { name: 'Nouvelle' }).click()
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 })
 
-    // Remplir le nom de la partie
     await page
       .getByRole('dialog')
       .getByPlaceholder(/Dragons Oubliés/i)
       .fill(GAME_NAME)
 
-    // Soumettre le formulaire
     await page.getByRole('dialog').getByRole('button', { name: 'Créer la partie' }).click()
 
-    // Récupérer l'ID depuis la réponse API
     const createRes = await createPromise
     const gameData = await createRes.json()
     gameId = gameData.id
     expect(gameId).toBeTruthy()
 
-    // Vérifier la redirection vers la vue de jeu
     await expect(page).toHaveURL(/\/games\/\d+\/play/, { timeout: 15_000 })
   })
 
   test('Joueur : rejoint la partie et poste un message dans le chat', async ({ page, request }) => {
     await registerAndLogin(page, request, PLAYER)
 
-    // Naviguer vers la liste publique
     await page.goto('/games')
 
-    // Trouver la carte de la partie par son nom
     const gameCard = page.locator('article').filter({ hasText: GAME_NAME })
     await expect(gameCard).toBeVisible({ timeout: 10_000 })
 
-    // Cliquer sur "Rejoindre" pour ouvrir le modal de participation
     await gameCard.getByRole('button', { name: 'Rejoindre' }).click()
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5_000 })
 
-    // Rejoindre la partie (publique → pas de mot de passe requis)
     await page.getByRole('dialog').getByRole('button', { name: 'Rejoindre' }).click()
 
-    // Attendre la fermeture du modal (succès)
     await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10_000 })
 
-    // Naviguer vers la vue de jeu (pas d'auto-navigation après join dans GameListView)
     await page.goto(`/games/${gameId}/play`)
 
-    // Attendre que la zone de saisie du chat soit disponible
     const chatInput = page.locator('textarea[placeholder*="Enter text"]')
     await expect(chatInput).toBeVisible({ timeout: 15_000 })
 
-    // Poster un message
     await chatInput.fill(CHAT_MSG)
     await chatInput.press('Enter')
 
-    // Vérifier que le message apparaît dans le chat
     await expect(page.locator('p.text-secondary-100').filter({ hasText: CHAT_MSG })).toBeVisible({
       timeout: 15_000,
     })

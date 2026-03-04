@@ -30,13 +30,11 @@ const isAtBottom = ref(true)
 const chatInputError = ref<string | null>(null)
 const loadOlderSentinel = ref<HTMLElement | null>(null)
 
-// Chargement de l'historique avec ancrage de position de scroll
 async function loadOlderMessages() {
   if (!chatContainer.value) return
   const prevHeight = chatContainer.value.scrollHeight
   await chatStore.loadMoreMessages(props.gameId)
   await nextTick()
-  // Maintenir la position de scroll après le prepend
   if (chatContainer.value) {
     chatContainer.value.scrollTop = chatContainer.value.scrollHeight - prevHeight
   }
@@ -155,7 +153,7 @@ watch(messageInput, () => {
 })
 
 // ============================================
-// Envoi de messages - Utilise chatStore
+// Envoi de messages
 // ============================================
 async function sendMessage() {
   if (!messageInput.value.trim()) return
@@ -362,12 +360,9 @@ function getAvatarColor(userId: number): string {
 
 <template>
   <div class="flex-1 flex flex-col overflow-hidden">
-    <!-- Messages -->
     <div ref="chatContainer" @scroll="handleScroll" class="flex-1 overflow-y-auto p-4 space-y-3">
-      <!-- Sentinel en haut : déclencheur du chargement de l'historique -->
       <div ref="loadOlderSentinel" class="h-1" aria-hidden="true"></div>
 
-      <!-- Skeleton messages pendant le chargement de l'historique -->
       <template v-if="chatStore.isLoading && chatStore.hasMore">
         <SkeletonMessage v-for="n in 3" :key="`skel-${n}`" />
       </template>
@@ -377,7 +372,6 @@ function getAvatarColor(userId: number): string {
         :key="msg.id"
         :class="['rounded-lg p-3 transition-all hover:shadow-md', getMessageClass(msg.type)]"
       >
-        <!-- Header du message -->
         <div class="flex items-center justify-between mb-1">
           <div class="flex items-center gap-2">
             <span class="text-sm">{{ getMessageIcon(msg.type) }}</span>
@@ -398,10 +392,8 @@ function getAvatarColor(userId: number): string {
           <span class="text-xs text-secondary-400">{{ formatTime(msg.createdAt) }}</span>
         </div>
 
-        <!-- Contenu -->
         <p class="text-secondary-100 text-sm">{{ msg.content }}</p>
 
-        <!-- Résultat de dés -->
         <DiceResultDisplay
           v-if="normalizeDiceResult(msg.diceResult)"
           :diceResult="normalizeDiceResult(msg.diceResult)!"
@@ -409,7 +401,6 @@ function getAvatarColor(userId: number): string {
         />
       </div>
 
-      <!-- Message si pas de messages -->
       <div v-if="visibleMessages.length === 0" class="text-center py-8 text-secondary-400">
         <p class="text-lg mb-2">💬</p>
         <p>Aucun message pour le moment</p>
@@ -417,7 +408,6 @@ function getAvatarColor(userId: number): string {
       </div>
     </div>
 
-    <!-- Bouton pour scroller en bas -->
     <Transition name="fade">
       <button
         v-if="!isAtBottom"
@@ -429,9 +419,7 @@ function getAvatarColor(userId: number): string {
       </button>
     </Transition>
 
-    <!-- Input -->
     <div class="border-t border-secondary-700 p-4 bg-secondary-800">
-      <!-- Boutons mode -->
       <div class="flex items-center gap-2 mb-2">
         <button
           @click="isInCharacter = !isInCharacter"
@@ -451,7 +439,6 @@ function getAvatarColor(userId: number): string {
         </div>
       </div>
 
-      <!-- Erreur d'envoi -->
       <Transition name="fade">
         <div
           v-if="chatInputError"
@@ -470,9 +457,7 @@ function getAvatarColor(userId: number): string {
         </div>
       </Transition>
 
-      <!-- Input de message -->
       <div class="relative">
-        <!-- Suggestions d'autocomplétion -->
         <Transition name="slide-up">
           <div
             v-if="showSuggestions && filteredPlayers.length > 0"

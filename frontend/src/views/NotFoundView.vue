@@ -3,17 +3,14 @@
     class="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-secondary-900 flex items-center justify-center p-4"
   >
     <div class="text-center max-w-2xl mx-auto">
-      <!-- Animation du dé qui roule -->
       <div class="mb-12">
         <div class="inline-flex items-center justify-center w-32 h-32 animate-bounce-gentle">
           <img style="width: 100%; height: 100%" src="/images/logo.png" />
         </div>
       </div>
 
-      <!-- Titre d'erreur avec style D&D -->
       <h1 class="text-8xl md:text-9xl font-bold text-primary-400 mb-4 tracking-tighter">404</h1>
 
-      <!-- Message principal -->
       <h2 class="text-2xl md:text-4xl font-bold text-secondary-50 mb-6">Échec critique !</h2>
 
       <p class="text-lg md:text-xl text-secondary-300 mb-8 leading-relaxed">
@@ -22,7 +19,6 @@
         Cette page semble avoir été dévorée par un Dragon Rouge.
       </p>
 
-      <!-- Citations aléatoires D&D -->
       <div class="bg-secondary-800/50 rounded-xl p-6 mb-8 border border-secondary-700">
         <div class="flex items-start space-x-3">
           <svg
@@ -43,9 +39,7 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="space-y-4">
-        <!-- Bouton retour -->
         <button
           @click="goBack"
           class="w-full sm:w-auto px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1 mr-0 sm:mr-4 mb-4 sm:mb-0"
@@ -66,7 +60,6 @@
           Retour
         </button>
 
-        <!-- Bouton accueil -->
         <RouterLink
           to="/"
           class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
@@ -83,7 +76,6 @@
         </RouterLink>
       </div>
 
-      <!-- Suggestions -->
       <div class="mt-12 pt-8 border-t border-secondary-700">
         <p class="text-secondary-400 text-sm mb-4">Peut-être cherchez-vous :</p>
         <div class="flex flex-wrap justify-center gap-2">
@@ -117,7 +109,6 @@
         </div>
       </div>
 
-      <!-- Easter egg : relancer le dé -->
       <div class="mt-8">
         <button
           @click="rollDice"

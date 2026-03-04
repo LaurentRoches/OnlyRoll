@@ -44,7 +44,6 @@ function handlePresenceEvent(data: unknown) {
     gameId: number
     data: { userId: number; type: string; onlineUsers?: number[]; timestamp: string }
   }
-  console.log('Presence event in GameListView:', event)
   const presenceData: MercurePresenceEventData = {
     gameId: event.gameId,
     userId: event.data.userId,
@@ -59,7 +58,6 @@ async function connectToPresence() {
   const gameIds = displayedGames.value.map((game) => game.id)
 
   if (gameIds.length === 0) {
-    console.log('Aucune partie à écouter')
     return
   }
 
@@ -68,17 +66,12 @@ async function connectToPresence() {
     !gameIds.every((id) => connectedGameIds.value.includes(id))
 
   if (!idsChanged) {
-    console.log('Déjà connecté aux mêmes parties, skip reconnexion')
     return
   }
 
-  console.log('Connexion aux événements de présence pour les parties:', gameIds)
-
   try {
     await gameApi.getMercurePresenceToken(gameIds)
-    console.log('Token Mercure de présence obtenu')
 
-    // Seulement pour les jeux pas encore suivis
     const newGameIds = gameIds.filter((id) => !connectedGameIds.value.includes(id))
 
     for (const gameId of newGameIds) {
@@ -86,7 +79,6 @@ async function connectToPresence() {
         const response = await presenceApi.getOnlineUsers(gameId)
         if (response.onlineUsers && response.onlineUsers.length > 0) {
           presenceStore.setOnlineUsers(gameId, response.onlineUsers)
-          console.log(`État initial chargé pour partie ${gameId}:`, response.onlineUsers)
         }
       } catch (error) {
         console.error(
@@ -146,7 +138,6 @@ const infiniteScrollDisabled = computed(
   () => !gameStore.hasMoreGames || activeTab.value !== 'public' || gameStore.isLoading
 )
 
-// Parties où l'utilisateur est joueur (pas MJ)
 const playerGames = computed(() => {
   if (!authStore.user) return []
   return gameStore.myGames.filter((game) => game.gameMaster.id !== authStore.user!.id)
@@ -157,7 +148,6 @@ const { isLoading: isScrollLoading } = useInfiniteScroll(loadMoreSentinel, loadM
   rootMargin: '200px',
 })
 
-// Recharger les parties publiques côté serveur quand les filtres changent
 watch(
   [
     () => filters.value.search,
@@ -219,9 +209,6 @@ async function handleGameDeleted() {
   await gameStore.fetchMyGames()
 }
 
-// ============================================
-// Tri et filtrage personnalisé pour "Toutes"
-// ============================================
 const sortedGamesForAllTab = computed(() => {
   if (!authStore.isAuthenticated) {
     return [...gameStore.games].sort((a, b) =>
@@ -237,14 +224,12 @@ const sortedGamesForAllTab = computed(() => {
     seenIds.add(game.id)
   })
 
-  // Les parties déjà filtrées par le serveur (pagination serveur)
   gameStore.games.forEach((game) => {
     if (!seenIds.has(game.id)) {
       allGames.push(game)
     }
   })
 
-  // Tri par priorité : MJ en premier, puis joueur, puis parties publiques
   const asMaster: Game[] = []
   const asPlayer: Game[] = []
   const publicGames: Game[] = []
@@ -315,11 +300,9 @@ watch(displayedGames, () => {
 
 <template>
   <div class="min-h-screen bg-primary-900">
-    <!-- Navigation -->
     <DashboardNav />
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <!-- Header -->
       <div class="flex items-center justify-between mb-8">
         <div>
           <h1 class="text-3xl font-bold text-secondary-50">
@@ -352,14 +335,13 @@ watch(displayedGames, () => {
         <RouterLink
           v-else
           :to="{ name: 'login', query: { redirect: '/games' } }"
-          class="px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+          class="px-4 py-2 sm:px-6 sm:py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 text-sm sm:text-base"
         >
           Se connecter
         </RouterLink>
       </div>
 
-      <!-- Tabs -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-wrap items-center justify-between mb-6 gap-2">
         <div class="flex gap-2 bg-secondary-800 p-1 rounded-lg border border-secondary-700">
           <button
             @click="handleTabChange('public')"
@@ -398,7 +380,6 @@ watch(displayedGames, () => {
           </button>
         </div>
 
-        <!-- Toggle Filters (mobile) -->
         <button
           @click="showFilters = !showFilters"
           class="lg:hidden px-4 py-2 bg-secondary-800 border border-secondary-700 rounded-lg text-secondary-300 hover:text-secondary-50 transition-colors flex items-center gap-2"
@@ -408,16 +389,13 @@ watch(displayedGames, () => {
         </button>
       </div>
 
-      <!-- Layout: Filters + Grid -->
       <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Sidebar Filters -->
         <aside v-if="showFilters" class="lg:w-64 flex-shrink-0">
           <div
             class="bg-secondary-800 rounded-lg border border-secondary-700 p-4 space-y-4 sticky top-6"
           >
             <h3 class="text-lg font-semibold text-secondary-50 mb-4">Filtres de recherche</h3>
 
-            <!-- Search globale -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-2"> Recherche </label>
               <div class="relative">
@@ -433,7 +411,6 @@ watch(displayedGames, () => {
               </div>
             </div>
 
-            <!-- Titre -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-2"> Titre </label>
               <input
@@ -444,7 +421,6 @@ watch(displayedGames, () => {
               />
             </div>
 
-            <!-- Maître du Jeu (masqué dans l'onglet M.J.) -->
             <div v-if="activeTab === 'public'">
               <label class="block text-sm font-medium text-secondary-300 mb-2">
                 Maître du Jeu
@@ -457,7 +433,6 @@ watch(displayedGames, () => {
               />
             </div>
 
-            <!-- Statut -->
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-2"> Statut </label>
               <select
@@ -472,7 +447,6 @@ watch(displayedGames, () => {
               </select>
             </div>
 
-            <!-- Bouton Reset -->
             <button
               @click="resetFilters"
               class="w-full px-4 py-2 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-md transition-colors text-sm"
@@ -482,9 +456,7 @@ watch(displayedGames, () => {
           </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 min-w-0">
-          <!-- Results counter -->
           <div v-if="displayedGames.length > 0" class="mb-4">
             <p class="text-secondary-400 text-sm">
               <span class="text-secondary-50 font-medium">{{ displayedGames.length }}</span>
@@ -496,7 +468,6 @@ watch(displayedGames, () => {
             </p>
           </div>
 
-          <!-- Loading State initial : skeleton cards -->
           <div
             v-if="gameStore.isLoading && displayedGames.length === 0"
             class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
@@ -504,7 +475,6 @@ watch(displayedGames, () => {
             <SkeletonCard v-for="n in 15" :key="n" />
           </div>
 
-          <!-- Games Grid -->
           <div
             v-else-if="displayedGames.length > 0"
             class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
@@ -520,7 +490,6 @@ watch(displayedGames, () => {
             />
           </div>
 
-          <!-- Empty State -->
           <div v-else-if="!gameStore.isLoading" class="text-center py-20">
             <InboxIcon class="w-24 h-24 mx-auto text-secondary-600 mb-4" />
             <h3 class="text-xl font-semibold text-secondary-300 mb-2">
@@ -552,7 +521,6 @@ watch(displayedGames, () => {
             </button>
           </div>
 
-          <!-- Skeleton append (scroll infini en cours) -->
           <div
             v-if="isScrollLoading && activeTab === 'public'"
             class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6"
@@ -560,7 +528,6 @@ watch(displayedGames, () => {
             <SkeletonCard v-for="n in 3" :key="n" />
           </div>
 
-          <!-- Sentinel scroll infini (onglet public uniquement) -->
           <div
             v-if="activeTab === 'public'"
             ref="loadMoreSentinel"
@@ -568,7 +535,6 @@ watch(displayedGames, () => {
             aria-hidden="true"
           ></div>
 
-          <!-- Error State -->
           <div
             v-if="gameStore.error && !gameStore.isLoading"
             class="p-4 bg-accent-rose/10 border border-accent-rose/50 rounded-lg text-accent-rose mt-6"
@@ -579,7 +545,6 @@ watch(displayedGames, () => {
       </div>
     </div>
 
-    <!-- Modals -->
     <CreateGameModal v-if="showCreateModal" @close="showCreateModal = false" />
 
     <JoinGameModal

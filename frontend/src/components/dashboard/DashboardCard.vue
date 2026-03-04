@@ -4,7 +4,6 @@
     :class="{ 'opacity-75': comingSoon }"
     @click="handleClick"
   >
-    <!-- Badge "Bientôt" -->
     <div
       v-if="comingSoon"
       class="absolute top-3 right-3 px-2 py-1 bg-warning/20 text-warning text-xs font-medium rounded-full border border-warning/30"
@@ -12,11 +11,9 @@
       Bientôt
     </div>
 
-    <!-- Icône -->
     <div
       class="flex items-center justify-center w-12 h-12 bg-primary-500/10 rounded-lg mb-4 group-hover:scale-110 transition-transform duration-200"
     >
-      <!-- Icône Gamepad -->
       <svg
         v-if="icon === 'gamepad'"
         class="w-6 h-6 text-primary-500"
@@ -32,7 +29,6 @@
         />
       </svg>
 
-      <!-- Icône Book -->
       <svg
         v-else-if="icon === 'book'"
         class="w-6 h-6 text-primary-500"
@@ -48,7 +44,6 @@
         />
       </svg>
 
-      <!-- Icône User -->
       <svg
         v-else-if="icon === 'user'"
         class="w-6 h-6 text-primary-500"
@@ -64,7 +59,6 @@
         />
       </svg>
 
-      <!-- Icône Settings -->
       <svg
         v-else-if="icon === 'settings'"
         class="w-6 h-6 text-primary-500"
@@ -86,7 +80,6 @@
         />
       </svg>
 
-      <!-- Icône Zap -->
       <svg
         v-else-if="icon === 'zap'"
         class="w-6 h-6 text-primary-500"
@@ -102,7 +95,6 @@
         />
       </svg>
 
-      <!-- Icône Users -->
       <svg
         v-else-if="icon === 'users'"
         class="w-6 h-6 text-primary-500"
@@ -118,7 +110,6 @@
         />
       </svg>
 
-      <!-- Icône par défaut (gamepad) -->
       <svg
         v-else
         class="w-6 h-6 text-primary-500"
@@ -135,7 +126,6 @@
       </svg>
     </div>
 
-    <!-- Contenu -->
     <h3 class="text-lg font-semibold text-secondary-50 mb-2">
       {{ title }}
     </h3>
@@ -143,7 +133,6 @@
       {{ description }}
     </p>
 
-    <!-- Flèche d'action -->
     <div class="flex justify-end mt-4">
       <svg
         class="w-5 h-5 text-secondary-500 group-hover:text-primary-400 group-hover:translate-x-1 transition-all duration-200"

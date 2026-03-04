@@ -1,9 +1,7 @@
 <template>
   <div class="avatar-uploader">
-    <!-- Avatar actuel -->
     <div class="flex items-center space-x-4">
       <div class="relative">
-        <!-- Image avatar ou placeholder -->
         <div
           class="w-24 h-24 rounded-full overflow-hidden bg-secondary-700 flex items-center justify-center"
           role="img"
@@ -32,7 +30,6 @@
           </svg>
         </div>
 
-        <!-- Badge de chargement -->
         <div
           v-if="isUploading"
           class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
@@ -43,9 +40,7 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="flex flex-col space-y-2">
-        <!-- Input file caché -->
         <input
           ref="fileInputRef"
           :id="inputId"
@@ -56,7 +51,6 @@
           @change="handleFileSelect"
         />
 
-        <!-- Bouton upload -->
         <button
           type="button"
           class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900"
@@ -67,7 +61,6 @@
           <span v-else>Ajouter un avatar</span>
         </button>
 
-        <!-- Bouton supprimer -->
         <button
           v-if="avatar"
           type="button"
@@ -80,12 +73,10 @@
       </div>
     </div>
 
-    <!-- Aide et contraintes -->
     <p :id="helpTextId" class="mt-3 text-sm text-secondary-400">
       Formats acceptés : JPEG, PNG, GIF, WebP. Taille maximale : 2 Mo.
     </p>
 
-    <!-- Message d'erreur - RGAA 11.10, 11.11 -->
     <div
       v-if="error"
       role="alert"
@@ -95,7 +86,6 @@
       {{ error }}
     </div>
 
-    <!-- Message de succès -->
     <div
       v-if="successMessage"
       role="status"

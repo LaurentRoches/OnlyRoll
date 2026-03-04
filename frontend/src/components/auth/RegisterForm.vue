@@ -1,6 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
-    <!-- Titre du formulaire -->
     <div class="text-center mb-6">
       <h2 class="text-xl font-semibold text-secondary-50 mb-1">Inscription</h2>
       <p class="text-sm text-secondary-400">Rejoignez la communauté OnlyRoll</p>
@@ -35,7 +34,6 @@
       </div>
     </div>
 
-    <!-- Champ Pseudo -->
     <div class="space-y-1">
       <label for="pseudo" class="block text-sm font-medium text-secondary-200">
         Pseudo <span class="text-error">*</span>
@@ -62,7 +60,6 @@
       </p>
     </div>
 
-    <!-- Champ Email -->
     <div class="space-y-1">
       <label for="email" class="block text-sm font-medium text-secondary-200">
         Email <span class="text-error">*</span>
@@ -85,7 +82,6 @@
       <p v-else class="text-xs text-secondary-500">Un email de vérification vous sera envoyé.</p>
     </div>
 
-    <!-- Champ Mot de passe -->
     <div class="space-y-1">
       <div class="flex items-center justify-between">
         <label for="password" class="block text-sm font-medium text-secondary-200">
@@ -195,7 +191,6 @@
         </button>
       </div>
 
-      <!-- Indicateur de force du mot de passe -->
       <div v-if="form.password" class="space-y-1">
         <div class="w-full bg-secondary-600 rounded-full h-2">
           <div
@@ -243,7 +238,6 @@
       </ul>
     </div>
 
-    <!-- Confirmation mot de passe -->
     <div class="space-y-1">
       <label for="confirmPassword" class="block text-sm font-medium text-secondary-200">
         Confirmer le mot de passe <span class="text-error">*</span>
@@ -314,7 +308,6 @@
       </p>
     </div>
 
-    <!-- Acceptation des conditions -->
     <div class="flex items-start space-x-3">
       <input
         id="acceptTerms"
@@ -346,7 +339,6 @@
       </label>
     </div>
 
-    <!-- Bouton de soumission -->
     <button
       type="submit"
       :disabled="isLoading || !isFormValid"
@@ -376,7 +368,6 @@
       {{ isLoading ? 'Création du compte...' : 'Créer mon compte' }}
     </button>
 
-    <!-- Informations supplémentaires -->
     <div class="text-center pt-4 border-t border-secondary-700">
       <p class="text-xs text-secondary-500">
         Un email de vérification sera envoyé à votre adresse.<br />

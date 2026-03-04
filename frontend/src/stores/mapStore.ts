@@ -12,9 +12,6 @@ import { logger } from '@/utils/logger'
 import type { MercureTokenEventData, MercureMapEventData } from '@/types/websocket'
 
 export const useMapStore = defineStore('map', () => {
-  // ===========================
-  // État
-  // ===========================
 
   const activeMap = ref<GameMap | null>(null)
   const allMaps = ref<GameMap[]>([])
@@ -23,10 +20,6 @@ export const useMapStore = defineStore('map', () => {
 
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-
-  // ===========================
-  // Getters (computed)
-  // ===========================
 
   /**
    * Tokens visibles uniquement
@@ -70,10 +63,6 @@ export const useMapStore = defineStore('map', () => {
       gridSize: activeMap.value.gridSize,
     }
   })
-
-  // ===========================
-  // Actions - Cartes
-  // ===========================
 
   /**
    * Charger toutes les cartes d'un jeu
@@ -257,10 +246,6 @@ export const useMapStore = defineStore('map', () => {
       throw e
     }
   }
-
-  // ===========================
-  // Actions - Tokens
-  // ===========================
 
   /**
    * Charger les tokens d'une carte
@@ -559,10 +544,6 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  // ===========================
-  // Actions - Synchronisation Mercure
-  // ===========================
-
   /**
    * Gérer un événement de token reçu via Mercure
    */
@@ -623,10 +604,6 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  // ===========================
-  // Helpers privés
-  // ===========================
-
   /**
    * Ajouter un token à la liste (évite les doublons)
    */
@@ -670,10 +647,6 @@ export const useMapStore = defineStore('map', () => {
     isLoading.value = false
     error.value = null
   }
-
-  // ===========================
-  // Return (API publique du store)
-  // ===========================
 
   return {
     activeMap,

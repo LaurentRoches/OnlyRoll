@@ -78,9 +78,6 @@ const advantageModes = [
   },
 ]
 
-// ============================================
-// Computed
-// ============================================
 const fullFormula = computed(() => {
   if (!formula.value) return ''
 
@@ -108,13 +105,12 @@ const advantagePreview = computed(() => {
 })
 
 // ============================================
-// Actions - Utilise chatStore.rollDice
+// Actions
 // ============================================
 async function rollDice() {
   if (!canRoll.value) return
 
   try {
-    console.log('🎲 Lancer de dés:', fullFormula.value)
 
     const result = await chatStore.rollDice(props.gameId, fullFormula.value, isInCharacter.value)
 
@@ -131,7 +127,6 @@ async function rollDice() {
         sidesPerDie: result.diceResult.sidesPerDie,
         timestamp: result.createdAt,
       }
-      console.log('✅ Résultat:', lastResult.value)
     }
 
     formula.value = ''

@@ -14,9 +14,6 @@ const emit = defineEmits<{
   goBack: []
 }>()
 
-// ============================================
-// Computed
-// ============================================
 const connectionStatusClass = computed(() => {
   switch (props.connectionState) {
     case 'open':
@@ -63,16 +60,13 @@ const maxPlayers = computed(() => {
     class="bg-secondary-800 border-b border-secondary-700 px-3 py-2 sm:px-6 sm:py-4 flex-shrink-0"
   >
     <div class="flex items-center justify-between gap-2">
-      <!-- Infos partie -->
       <div class="flex items-center gap-2 sm:gap-4 min-w-0">
-        <!-- Logo/Icon de la partie -->
         <div
           class="hidden sm:flex w-12 h-12 rounded-full bg-gradient-primary items-center justify-center shadow-purple flex-shrink-0"
         >
           <span class="text-2xl">🎭</span>
         </div>
 
-        <!-- Détails -->
         <div class="min-w-0">
           <h1 class="text-base sm:text-xl font-bold text-secondary-50 truncate">
             {{ game?.name || 'Chargement...' }}
@@ -96,9 +90,7 @@ const maxPlayers = computed(() => {
         </div>
       </div>
 
-      <!-- Status & Actions -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <!-- Statut connexion temps réel -->
         <div
           class="flex items-center gap-2 px-2 py-1.5 sm:px-3 rounded-lg bg-secondary-700/50"
           :title="connectionStatusText"
@@ -109,9 +101,7 @@ const maxPlayers = computed(() => {
           </span>
         </div>
 
-        <!-- Boutons d'action -->
         <div class="flex items-center gap-1 sm:gap-2">
-          <!-- Retour à la liste -->
           <button
             @click="emit('goBack')"
             class="px-2 py-2 sm:px-4 bg-secondary-700 text-secondary-200 rounded-lg hover:bg-secondary-600 transition-colors font-medium flex items-center gap-2"
@@ -130,7 +120,6 @@ const maxPlayers = computed(() => {
             <span class="hidden sm:inline">Retour</span>
           </button>
 
-          <!-- Paramètres -->
           <button
             @click="emit('openSettings')"
             class="p-2 hover:bg-secondary-700 rounded-lg transition-colors"
@@ -151,7 +140,6 @@ const maxPlayers = computed(() => {
             </svg>
           </button>
 
-          <!-- Quitter la partie (retirer en tant que membre) -->
           <button
             @click="emit('leaveGame')"
             class="px-2 py-2 sm:px-4 bg-error text-white rounded-lg hover:bg-red-600 transition-colors font-medium shadow-lg flex items-center gap-1 sm:gap-2"

@@ -71,9 +71,6 @@ const filteredMaps = computed(() => {
 
 const activeMapId = computed(() => mapStore.activeMap?.id)
 
-// ============================================
-// Handlers
-// ============================================
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
   if (!target.closest('.map-selector-container')) {
@@ -82,9 +79,6 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-// ============================================
-// Gestion de la barre secondaire
-// ============================================
 function toggleSecondaryBar(section: SecondaryBarSection) {
   if (openSecondaryBar.value === section) {
     openSecondaryBar.value = null
@@ -93,9 +87,6 @@ function toggleSecondaryBar(section: SecondaryBarSection) {
   }
 }
 
-// ============================================
-// Gestion des paramètres de grille
-// ============================================
 function toggleGridSettings() {
   showGridSettings.value = !showGridSettings.value
 }
@@ -122,9 +113,6 @@ function syncGridSettings() {
   }
 }
 
-// ============================================
-// Lifecycle
-// ============================================
 onMounted(async () => {
   if (props.isGameMaster && mapStore.allMaps.length === 0) {
     try {
@@ -150,9 +138,6 @@ watch(
   }
 )
 
-// ============================================
-// Actions
-// ============================================
 function selectTool(toolId: string) {
   selectedTool.value = toolId
   emit('toolChanged', toolId)
@@ -201,9 +186,6 @@ function centerMap() {
   emit('centerMap')
 }
 
-// ============================================
-// Actions - Gestion des cartes (GM)
-// ============================================
 async function selectMap(map: GameMap) {
   if (!props.isGameMaster) return
 
@@ -253,9 +235,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
 
 <template>
   <div class="flex-shrink-0">
-    <!-- Barre principale -->
     <div class="bg-secondary-800 border-b border-secondary-700 px-4 py-2 flex items-center gap-2">
-      <!-- Bouton Carte (MJ uniquement) -->
       <button
         v-if="isGameMaster"
         @click="toggleSecondaryBar('maps')"
@@ -271,7 +251,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
         <span class="text-sm">Carte</span>
       </button>
 
-      <!-- Bouton Outils -->
       <button
         @click="toggleSecondaryBar('tools')"
         :class="[
@@ -286,10 +265,8 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
         <span class="text-sm">Outils</span>
       </button>
 
-      <!-- Spacer -->
       <div class="flex-1"></div>
 
-      <!-- Contrôles de zoom -->
       <div class="flex items-center gap-2">
         <button
           @click="adjustZoom(-25)"
@@ -299,7 +276,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
           −
         </button>
 
-        <!-- Input de zoom éditable -->
         <div class="relative min-w-[80px]">
           <button
             v-if="!isEditingZoom"
@@ -331,7 +307,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
         </button>
       </div>
 
-      <!-- Centrer -->
       <button
         @click="centerMap"
         class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 flex items-center gap-2 transition-colors"
@@ -342,15 +317,12 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
       </button>
     </div>
 
-    <!-- Barre secondaire -->
     <Transition name="slide-down">
       <div
         v-if="openSecondaryBar"
         class="bg-secondary-800 border-b border-secondary-700 px-4 py-2 flex items-center gap-2"
       >
-        <!-- Section Carte -->
         <template v-if="openSecondaryBar === 'maps' && isGameMaster">
-          <!-- Sélecteur de carte -->
           <div class="relative map-selector-container">
             <button
               @click="toggleMapDropdown"
@@ -377,13 +349,11 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
               </svg>
             </button>
 
-            <!-- Dropdown -->
             <Transition name="dropdown">
               <div
                 v-if="showMapDropdown"
                 class="absolute top-full left-0 mt-2 w-80 bg-secondary-800 border border-secondary-700 rounded-lg shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col"
               >
-                <!-- Input de recherche -->
                 <div class="p-3 border-b border-secondary-700">
                   <input
                     id="map-search-input"
@@ -395,7 +365,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                   />
                 </div>
 
-                <!-- Liste des cartes -->
                 <div class="overflow-y-auto flex-1">
                   <button
                     v-for="map in filteredMaps"
@@ -445,7 +414,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             </Transition>
           </div>
 
-          <!-- Bouton créer une carte -->
           <button
             @click="openUploadModal"
             class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2 transition-colors"
@@ -455,10 +423,8 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             <span class="text-sm font-medium">Nouvelle carte</span>
           </button>
 
-          <!-- Séparateur -->
           <div class="h-8 w-px bg-secondary-600 mx-2"></div>
 
-          <!-- Paramètres de grille -->
           <div class="relative">
             <button
               @click="toggleGridSettings"
@@ -469,7 +435,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
               <span class="text-sm">Grille</span>
             </button>
 
-            <!-- Dropdown des paramètres -->
             <Transition name="dropdown">
               <div
                 v-if="showGridSettings"
@@ -477,7 +442,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
               >
                 <h3 class="text-sm font-semibold text-white mb-3">Paramètres de la grille</h3>
 
-                <!-- Toggle affichage grille -->
                 <div class="flex items-center justify-between mb-4">
                   <label class="text-sm text-secondary-300">Afficher la grille</label>
                   <button
@@ -496,7 +460,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                   </button>
                 </div>
 
-                <!-- Couleur de la grille -->
                 <div class="mb-4">
                   <label class="text-sm text-secondary-300 block mb-2">Couleur</label>
                   <div class="flex items-center gap-2">
@@ -516,7 +479,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                   </div>
                 </div>
 
-                <!-- Opacité de la grille -->
                 <div>
                   <div class="flex items-center justify-between mb-2">
                     <label class="text-sm text-secondary-300">Opacité</label>
@@ -539,7 +501,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
           </div>
         </template>
 
-        <!-- Section Outils -->
         <template v-if="openSecondaryBar === 'tools'">
           <div class="flex items-center gap-1">
             <button
@@ -569,7 +530,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
   box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
 }
 
-/* Transitions pour le dropdown */
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition: all 0.2s ease;
@@ -581,7 +541,6 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
   transform: translateY(-10px);
 }
 
-/* Transition pour la barre secondaire */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.3s ease;

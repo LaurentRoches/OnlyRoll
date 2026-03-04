@@ -61,9 +61,6 @@ function handleFileSelect(event: Event) {
   reader.readAsDataURL(file)
 }
 
-/**
- * Supprimer le fichier sélectionné
- */
 function removeFile() {
   selectedFile.value = null
   imagePreview.value = null
@@ -134,9 +131,6 @@ function resetForm() {
   uploadError.value = null
 }
 
-/**
- * Fermer le modal
- */
 function close() {
   emit('close')
   resetForm()
@@ -154,7 +148,6 @@ function close() {
         <div
           class="bg-secondary-800 rounded-xl shadow-2xl border border-secondary-700 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         >
-          <!-- Header -->
           <div class="flex items-center justify-between p-6 border-b border-secondary-700">
             <div>
               <h2 class="text-2xl font-bold text-white">📍 Créer une carte</h2>
@@ -165,9 +158,7 @@ function close() {
             </button>
           </div>
 
-          <!-- Body -->
           <form @submit.prevent="handleUpload" class="p-6 space-y-6">
-            <!-- Upload zone -->
             <div class="space-y-2">
               <label class="block text-sm font-medium text-secondary-300">
                 Image de la carte *
@@ -193,7 +184,6 @@ function close() {
                 </label>
               </div>
 
-              <!-- Aperçu de l'image -->
               <div v-else class="relative">
                 <img
                   :src="imagePreview"
@@ -213,7 +203,6 @@ function close() {
               </div>
             </div>
 
-            <!-- Nom de la carte -->
             <div class="space-y-2">
               <label for="map-name" class="block text-sm font-medium text-secondary-300">
                 Nom de la carte *
@@ -230,7 +219,6 @@ function close() {
               />
             </div>
 
-            <!-- Description -->
             <div class="space-y-2">
               <label for="map-description" class="block text-sm font-medium text-secondary-300">
                 Description
@@ -244,7 +232,6 @@ function close() {
               ></textarea>
             </div>
 
-            <!-- Configuration de la grille -->
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
                 <label for="grid-type" class="block text-sm font-medium text-secondary-300">
@@ -304,7 +291,6 @@ function close() {
               </div>
             </div>
 
-            <!-- Erreur -->
             <div
               v-if="uploadError"
               class="bg-red-900/20 border border-red-700 text-red-400 px-4 py-3 rounded-lg"
@@ -312,7 +298,6 @@ function close() {
               {{ uploadError }}
             </div>
 
-            <!-- Actions -->
             <div class="flex gap-3 pt-4">
               <button
                 type="button"
