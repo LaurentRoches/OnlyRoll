@@ -45,7 +45,6 @@ test.describe('Authentication Flow', () => {
     const submitButton = page.locator('button[type="submit"]')
     await submitButton.click()
 
-    // Check that we're still on login page (form didn't submit)
     await expect(page).toHaveURL(/.*login/)
   })
 
@@ -55,7 +54,6 @@ test.describe('Authentication Flow', () => {
     const submitButton = page.locator('button[type="submit"]')
     await submitButton.click()
 
-    // Check that we're still on register page
     await expect(page).toHaveURL(/.*register/)
   })
 })

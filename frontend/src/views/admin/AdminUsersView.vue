@@ -1,12 +1,10 @@
 <template>
   <div class="admin-users">
-    <!-- Page header -->
     <header class="mb-6">
       <h2 class="text-2xl font-bold text-secondary-50">Gestion des utilisateurs</h2>
       <p class="text-secondary-400 mt-1">{{ meta.total }} utilisateurs au total</p>
     </header>
 
-    <!-- Filters - RGAA 11.1, 11.2 -->
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
       <form
         @submit.prevent
@@ -14,7 +12,6 @@
         role="search"
         aria-label="Filtrer les utilisateurs"
       >
-        <!-- Recherche -->
         <div class="flex flex-col">
           <label for="search-users" class="sr-only">Rechercher un utilisateur</label>
           <input
@@ -28,7 +25,6 @@
           />
         </div>
 
-        <!-- Filtre statut -->
         <div class="flex flex-col">
           <label for="filter-status" class="sr-only">Filtrer par statut</label>
           <select
@@ -45,7 +41,6 @@
           </select>
         </div>
 
-        <!-- Filtre rôle -->
         <div class="flex flex-col">
           <label for="filter-role" class="sr-only">Filtrer par rôle</label>
           <select
@@ -62,7 +57,6 @@
       </form>
     </div>
 
-    <!-- Loading state -->
     <div
       v-if="isLoading"
       class="flex justify-center py-12"
@@ -76,7 +70,6 @@
       <span class="sr-only">Chargement des utilisateurs...</span>
     </div>
 
-    <!-- Error state -->
     <div
       v-else-if="error"
       role="alert"
@@ -85,7 +78,6 @@
       <strong class="font-semibold">Erreur :</strong> {{ error }}
     </div>
 
-    <!-- Users Table -->
     <template v-else>
       <AccessibleTable
         :columns="usersColumns"
@@ -98,22 +90,18 @@
         :initial-sort-direction="filters.sortDirection"
         @sort="handleSort"
       >
-        <!-- ID -->
         <template #cell-id="{ value }">
           <span class="text-secondary-400 font-mono text-xs">{{ value }}</span>
         </template>
 
-        <!-- Pseudo -->
         <template #cell-pseudo="{ value }">
           <span class="font-medium text-secondary-200">{{ value }}</span>
         </template>
 
-        <!-- Email -->
         <template #cell-email="{ value }">
           <span class="text-secondary-300">{{ value }}</span>
         </template>
 
-        <!-- Rôles -->
         <template #cell-roles="{ row }">
           <span
             v-for="role in row.roles as string[]"
@@ -128,21 +116,18 @@
           </span>
         </template>
 
-        <!-- Statut -->
         <template #cell-status="{ row }">
           <span class="inline-block px-2 py-1 text-xs rounded" :class="getStatusClass(row)">
             {{ getStatusLabel(row) }}
           </span>
         </template>
 
-        <!-- Dernière connexion -->
         <template #cell-lastLogin="{ value }">
           <span class="text-secondary-400">
             {{ value ? formatDate(String(value)) : 'Jamais' }}
           </span>
         </template>
 
-        <!-- Actions -->
         <template #cell-actions="{ row }">
           <div class="flex justify-end space-x-2">
             <button
@@ -167,7 +152,6 @@
         </template>
       </AccessibleTable>
 
-      <!-- Pagination -->
       <div v-if="meta.totalPages > 1" class="mt-4">
         <AccessiblePagination
           :current-page="meta.page"
@@ -180,7 +164,6 @@
       </div>
     </template>
 
-    <!-- Confirmation Modal -->
     <AccessibleModal
       :is-open="showDeleteModal"
       :title="`Supprimer ${userToDelete?.pseudo || 'l\'utilisateur'} ?`"

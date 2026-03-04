@@ -54,7 +54,7 @@ const mapImageUrl = computed(() => {
 const zoomScale = computed(() => props.zoom / 100)
 
 // ============================================
-// Gestion des tokens - Utilise mapStore
+// Gestion des tokens
 // ============================================
 
 /**
@@ -86,7 +86,6 @@ function handleTokenMouseDown(event: MouseEvent, token: GameToken) {
   if (!props.editable || token.isLocked || props.selectedTool !== 'select') return
 
   if (!canControlToken(token)) {
-    console.log("Vous n'avez pas la permission de contrôler ce token")
     return
   }
 
@@ -132,7 +131,6 @@ async function handleMouseUp() {
     if (x !== dragStartPos.value.x || y !== dragStartPos.value.y) {
       try {
         await mapStore.moveToken(draggingToken.value, x, y)
-        console.log('Token déplacé:', { id: draggingToken.value, x, y })
       } catch (error) {
         console.error('Erreur déplacement token:', error)
         tokenElement.style.left = `${dragStartPos.value.x * gridSize.value}px`
@@ -145,12 +143,11 @@ async function handleMouseUp() {
 }
 
 // ============================================
-// Actions sur les tokens - Utilise mapStore
+// Actions sur les tokens
 // ============================================
 async function toggleTokenVisibility(tokenId: number) {
   try {
     await mapStore.toggleTokenVisibility(tokenId)
-    console.log('Visibilité du token changée')
   } catch (error) {
     console.error('Erreur toggle visibility:', error)
   }
@@ -159,7 +156,6 @@ async function toggleTokenVisibility(tokenId: number) {
 async function toggleTokenLock(tokenId: number) {
   try {
     await mapStore.toggleTokenLock(tokenId)
-    console.log('Verrouillage du token changé')
   } catch (error) {
     console.error('Erreur toggle lock:', error)
   }
@@ -171,15 +167,11 @@ async function deleteToken(tokenId: number) {
   try {
     await mapStore.deleteToken(tokenId)
     selectedTokenId.value = null
-    console.log('Token supprimé')
   } catch (error) {
     console.error('Erreur suppression token:', error)
   }
 }
 
-// ============================================
-// Gestion des permissions
-// ============================================
 function openPermissionsModal(tokenId: number) {
   permissionsTokenId.value = tokenId
   showPermissionsModal.value = true
@@ -190,9 +182,6 @@ function closePermissionsModal() {
   permissionsTokenId.value = null
 }
 
-// ============================================
-// Édition de token
-// ============================================
 function openEditModal(tokenId: number) {
   const token = props.tokens.find((t) => t.id === tokenId)
   if (token) {
@@ -214,7 +203,6 @@ async function togglePlayerPermission(tokenId: number, userId: number, hasPermis
   try {
     const action = hasPermission ? 'remove' : 'add'
     await mapStore.manageTokenPermissions(tokenId, action, userId)
-    console.log(`Permission ${action} pour l'utilisateur ${userId}`)
   } catch (error) {
     console.error('Erreur gestion permission:', error)
   }
@@ -226,9 +214,6 @@ const currentPermissions = computed(() => {
   return (token?.settings?.controllableBy as number[]) || []
 })
 
-// ============================================
-// Création de token par clic
-// ============================================
 function handleMapClick(event: MouseEvent) {
   if (!props.editable || props.selectedTool !== 'token' || !mapElement.value) return
 
@@ -245,8 +230,6 @@ function handleMapClick(event: MouseEvent) {
 
   const constrainedX = Math.max(0, Math.min(x, (props.map?.width || 20) - 1))
   const constrainedY = Math.max(0, Math.min(y, (props.map?.height || 20) - 1))
-
-  console.log('Clic pour créer token à:', { x: constrainedX, y: constrainedY })
 
   emit('createToken', { x: constrainedX, y: constrainedY })
 }
@@ -286,7 +269,8 @@ function getTokenImageUrl(imageUrl: string | undefined): string | null {
 
 /**
  * Vérifie si l'utilisateur peut contrôler un token.
- * Le MJ peut toujours contrôler. Les joueurs peuvent contrôler si leur userId est dans token.settings.controllableBy
+ * Le MJ peut toujours contrôler.
+ * Les joueurs peuvent contrôler si leur userId est dans token.settings.controllableBy
  */
 function canControlToken(token: GameToken): boolean {
   if (props.isGameMaster) return true
@@ -308,12 +292,10 @@ async function moveTokenByKey(direction: 'up' | 'down' | 'left' | 'right') {
   if (!token) return
 
   if (!canControlToken(token)) {
-    console.log("Vous n'avez pas la permission de contrôler ce token")
     return
   }
 
   if (token.isLocked) {
-    console.log('Ce token est verrouillé')
     return
   }
 
@@ -342,7 +324,6 @@ async function moveTokenByKey(direction: 'up' | 'down' | 'left' | 'right') {
 
   try {
     await mapStore.moveToken(token.id, newX, newY)
-    console.log('Token déplacé:', { id: token.id, x: newX, y: newY })
   } catch (error) {
     console.error('Erreur déplacement token:', error)
   }
@@ -383,9 +364,6 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
 })
 
-// ============================================
-// Fonction de centrage
-// ============================================
 function centerView() {
   if (!mapContainer.value) return
 
@@ -431,7 +409,6 @@ defineExpose({
     @mouseup="handleMouseUp"
     @mouseleave="handleMouseUp"
   >
-    <!-- Container de la carte avec dimensions et zoom -->
     <div
       ref="mapElement"
       @click="handleMapClick"
@@ -451,7 +428,6 @@ defineExpose({
         transformOrigin: 'center center',
       }"
     >
-      <!-- Grille -->
       <div
         v-if="map?.gridType === 'square' && showGrid"
         class="absolute inset-0 pointer-events-none"
@@ -468,7 +444,6 @@ defineExpose({
         }"
       />
 
-      <!-- Tokens -->
       <div
         v-for="token in visibleTokens"
         :key="token.id"
@@ -490,7 +465,6 @@ defineExpose({
           height: `${getTokenSize(token)}px`,
         }"
       >
-        <!-- Avatar du token -->
         <div
           class="w-full h-full rounded-full flex items-center justify-center font-bold text-white shadow-lg border-2 border-white overflow-hidden"
           :style="{ backgroundColor: getTokenColor(token.type) }"
@@ -506,13 +480,11 @@ defineExpose({
           </span>
         </div>
 
-        <!-- Indicateurs -->
         <div class="absolute -top-1 -right-1 flex gap-1">
           <span v-if="token.isLocked" class="text-xs">🔒</span>
           <span v-if="!token.isVisible" class="text-xs">👁️</span>
         </div>
 
-        <!-- Nom du token -->
         <div
           class="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium px-2 py-1 rounded shadow-lg"
           :class="token.isVisible ? 'bg-black/80 text-white' : 'bg-gray-500/80 text-gray-300'"
@@ -520,11 +492,8 @@ defineExpose({
           {{ token.name }}
         </div>
       </div>
-
-      <!-- Actions rapides pour token sélectionné -->
     </div>
 
-    <!-- Menu token - Teleport pour positionner en dehors du container avec overflow -->
     <Teleport to="body">
       <Transition name="fade">
         <div
@@ -578,7 +547,6 @@ defineExpose({
       </Transition>
     </Teleport>
 
-    <!-- Modal de gestion des permissions -->
     <Teleport to="body">
       <Transition name="fade">
         <div
@@ -641,7 +609,6 @@ defineExpose({
       </Transition>
     </Teleport>
 
-    <!-- Modal d'édition de token -->
     <EditTokenModal
       :show="showEditTokenModal"
       :token="editingToken"

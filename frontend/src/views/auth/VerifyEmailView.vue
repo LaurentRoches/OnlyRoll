@@ -1,6 +1,5 @@
 <template>
   <div class="text-center space-y-6">
-    <!-- État : chargement -->
     <div v-if="status === 'loading'" class="space-y-4">
       <div class="flex justify-center">
         <div
@@ -10,7 +9,6 @@
       <p class="text-secondary-300">Vérification de votre email...</p>
     </div>
 
-    <!-- État : succès -->
     <div v-else-if="status === 'success'" class="space-y-6">
       <div class="flex justify-center">
         <div class="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center">
@@ -37,7 +35,6 @@
       </RouterLink>
     </div>
 
-    <!-- État : erreur -->
     <div v-else class="space-y-6">
       <div class="flex justify-center">
         <div class="w-20 h-20 bg-error/10 rounded-full flex items-center justify-center">

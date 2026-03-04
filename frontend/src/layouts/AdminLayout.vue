@@ -1,6 +1,5 @@
 <template>
   <div class="admin-layout min-h-screen bg-secondary-900">
-    <!-- Skip links - RGAA 12.7 -->
     <nav aria-label="Liens d'accès rapide" class="absolute top-0 left-0 z-50">
       <a
         href="#main-nav"
@@ -16,13 +15,10 @@
       </a>
     </nav>
 
-    <!-- Header avec role banner - RGAA 12.6 -->
     <header role="banner" class="bg-secondary-800 border-b border-secondary-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex items-center justify-between">
-          <!-- Logo et titre -->
           <div class="flex items-center space-x-3 sm:space-x-4">
-            <!-- Burger sidebar — mobile uniquement -->
             <button
               type="button"
               class="lg:hidden p-1.5 rounded-lg text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700 transition-colors"
@@ -74,13 +70,14 @@
             </div>
           </div>
 
-          <!-- User info -->
           <div class="flex items-center space-x-3 sm:space-x-4">
             <span class="hidden sm:inline text-secondary-400 text-sm">
               Connecté en tant que
               <strong class="text-secondary-200">{{ currentUser?.pseudo }}</strong>
             </span>
-            <strong class="sm:hidden text-secondary-200 text-sm">{{ currentUser?.pseudo }}</strong>
+            <strong class="hidden sm:inline text-secondary-200 text-sm">{{
+              currentUser?.pseudo
+            }}</strong>
             <button
               type="button"
               class="px-3 py-1.5 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors text-sm"
@@ -93,7 +90,6 @@
       </div>
     </header>
 
-    <!-- Overlay backdrop — mobile -->
     <div
       v-if="sidebarOpen"
       class="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -102,7 +98,6 @@
     />
 
     <div class="flex">
-      <!-- Navigation principale - RGAA 12.1, 12.2 -->
       <nav
         id="main-nav"
         role="navigation"
@@ -110,7 +105,6 @@
         class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-secondary-800 border-r border-secondary-700 min-h-screen transition-transform duration-300 ease-in-out"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
       >
-        <!-- Bouton fermeture — mobile -->
         <div class="flex items-center justify-between px-4 pt-4 pb-2 lg:hidden">
           <span class="text-sm font-medium text-secondary-300">Navigation</span>
           <button
@@ -151,9 +145,7 @@
         </ul>
       </nav>
 
-      <!-- Contenu principal - RGAA 12.6 -->
       <main id="main-content" role="main" tabindex="-1" class="flex-1 min-w-0">
-        <!-- Fil d'Ariane - RGAA 12.8 -->
         <nav
           v-if="breadcrumbs.length > 1"
           aria-label="Fil d'Ariane"
@@ -190,14 +182,12 @@
           </ol>
         </nav>
 
-        <!-- Contenu de la page -->
         <div class="p-3 sm:p-6">
           <router-view />
         </div>
       </main>
     </div>
 
-    <!-- Live region pour les annonces - RGAA 7.5 -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
       {{ announcement }}
     </div>
@@ -296,7 +286,6 @@ watch(
 </script>
 
 <style scoped>
-/* Couleur de fond intermédiaire */
 .bg-secondary-850 {
   background-color: #1e2330;
 }

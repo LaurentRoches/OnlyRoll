@@ -8,7 +8,6 @@ import { GameStatus, PlayerStatus } from '@/types/game'
 import { logger } from '@/utils/logger'
 
 export const useGameStore = defineStore('game', () => {
-  // ========== State ==========
   const games = ref<Game[]>([])
   const currentGame = ref<Game | null>(null)
   const myGames = ref<Game[]>([])
@@ -22,7 +21,6 @@ export const useGameStore = defineStore('game', () => {
     totalPages: 0,
   })
 
-  // ========== Getters ==========
   const publicGames = computed(() => games.value.filter((game) => game.isPublic))
 
   const isGameMaster = computed(() => {
@@ -54,7 +52,6 @@ export const useGameStore = defineStore('game', () => {
     return isGameMaster.value && currentGame.value?.status === GameStatus.PREPARATION
   })
 
-  // ========== Actions CRUD ==========
   async function fetchPublicGames(filters?: GameFilters) {
     isLoading.value = true
     error.value = null

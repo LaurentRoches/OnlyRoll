@@ -2,12 +2,10 @@
   <div
     class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-secondary-600 transition-all duration-200 hover:shadow-lg group"
   >
-    <!-- Icône -->
     <div
       class="flex items-center justify-center w-12 h-12 rounded-lg mb-4 group-hover:scale-110 transition-transform duration-200"
       :class="iconBackgroundClass"
     >
-      <!-- Icône Book -->
       <svg
         v-if="icon === 'book'"
         class="w-6 h-6"
@@ -24,7 +22,6 @@
         />
       </svg>
 
-      <!-- Icône User -->
       <svg
         v-else-if="icon === 'user'"
         class="w-6 h-6"
@@ -41,7 +38,6 @@
         />
       </svg>
 
-      <!-- Icône Chat -->
       <svg
         v-else-if="icon === 'chat'"
         class="w-6 h-6"
@@ -58,7 +54,6 @@
         />
       </svg>
 
-      <!-- Icône Dice -->
       <svg
         v-else-if="icon === 'dice'"
         class="w-6 h-6"
@@ -71,7 +66,6 @@
         />
       </svg>
 
-      <!-- Icône Table -->
       <svg
         v-else-if="icon === 'table'"
         class="w-6 h-6"
@@ -88,7 +82,6 @@
         />
       </svg>
 
-      <!-- Icône Users -->
       <svg
         v-else-if="icon === 'users'"
         class="w-6 h-6"
@@ -105,7 +98,6 @@
         />
       </svg>
 
-      <!-- Icône par défaut (book) -->
       <svg
         v-else
         class="w-6 h-6"
@@ -123,7 +115,6 @@
       </svg>
     </div>
 
-    <!-- Contenu -->
     <h3 class="text-lg font-semibold text-secondary-50 mb-2">
       {{ title }}
     </h3>

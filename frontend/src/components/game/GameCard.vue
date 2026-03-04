@@ -123,11 +123,9 @@ async function handleDelete(event: Event) {
     role="button"
     :aria-label="`Voir la partie ${game.name}`"
   >
-    <!-- Header Image avec gradient gris/violet pâle comme maquette -->
     <div
       class="h-32 bg-gradient-to-br from-secondary-600 via-secondary-500 to-primary-400 relative"
     >
-      <!-- Bouton suppression (MJ uniquement, visible au hover) -->
       <div
         v-if="showDeleteButton"
         class="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -158,7 +156,6 @@ async function handleDelete(event: Event) {
         </button>
       </div>
 
-      <!-- Badge Status en overlay top-right -->
       <div class="absolute top-3 right-3">
         <span
           :class="statusConfig.class"
@@ -168,7 +165,6 @@ async function handleDelete(event: Event) {
         </span>
       </div>
 
-      <!-- Icône privé en bottom-left (optionnel, seulement si privé) -->
       <div v-if="!game.isPublic" class="absolute bottom-3 left-3">
         <div
           class="flex items-center gap-1 text-secondary-200 text-xs bg-secondary-900/60 px-2 py-1 rounded-md backdrop-blur-sm"
@@ -179,22 +175,16 @@ async function handleDelete(event: Event) {
       </div>
     </div>
 
-    <!-- Contenu de la carte -->
     <div class="p-4">
-      <!-- Titre de la partie -->
       <h3
         class="text-lg font-semibold text-secondary-50 mb-1 group-hover:text-primary-400 transition-colors"
       >
         {{ game.name }}
       </h3>
 
-      <!-- Game Master -->
       <p class="text-secondary-400 text-sm mb-1">Maître du jeu</p>
-
-      <!-- Niveau de campagne -->
       <p class="text-secondary-300 text-sm mb-4">Campagne niveau : {{ campaignLevel }}</p>
 
-      <!-- Players Count et Bouton -->
       <div class="flex items-center justify-between">
         <div class="flex items-center text-sm gap-2">
           <UsersIcon
@@ -210,7 +200,6 @@ async function handleDelete(event: Event) {
           </span>
         </div>
 
-        <!-- Bouton Rejoindre : uniquement si l'utilisateur n'est pas encore membre -->
         <button
           v-if="showJoinButton && !isUserMember"
           @click="handleJoin"
@@ -227,7 +216,6 @@ async function handleDelete(event: Event) {
       </div>
     </div>
 
-    <!-- Hint overlay : affiché quand un utilisateur connecté clique sans être membre -->
     <Transition name="hint-fade">
       <div
         v-if="showHint"

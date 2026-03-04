@@ -18,7 +18,7 @@
 
         <!-- Container pour centrage -->
         <div class="flex min-h-full items-center justify-center p-4">
-          <!-- Modal dialog - RGAA 11.9 -->
+          <!-- Modal dialog -->
           <div
             ref="modalRef"
             role="dialog"
@@ -63,7 +63,7 @@
               <slot />
             </div>
 
-            <!-- Footer (optionnel) -->
+            <!-- Footer -->
             <div
               v-if="$slots.footer"
               class="flex items-center justify-end gap-3 px-6 py-4 border-t border-secondary-700"
@@ -118,10 +118,6 @@ const sizeClasses = computed(() => {
   return sizes[props.size] || sizes.md
 })
 
-/**
- * Focus trap - RGAA 12.9
- * Garde le focus à l'intérieur de la modale
- */
 const getFocusableElements = (): HTMLElement[] => {
   if (!modalRef.value) return []
 

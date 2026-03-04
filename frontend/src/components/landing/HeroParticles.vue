@@ -4,7 +4,6 @@
     class="absolute inset-0 overflow-hidden pointer-events-none"
     aria-hidden="true"
   >
-    <!-- Légère translation de l'ensemble des particules selon la souris (parallaxe) -->
     <div
       :style="{
         transform: `translate(${parallaxX}px, ${parallaxY}px)`,
@@ -43,10 +42,8 @@ import { useMouse } from '@vueuse/core'
 
 const containerRef = ref<HTMLElement>()
 
-// Position globale de la souris (pas d'événements sur le conteneur pointer-events-none)
 const { x: mouseX, y: mouseY } = useMouse()
 
-// Décalage parallaxe relatif au conteneur
 const parallaxX = computed(() => {
   if (!containerRef.value) return 0
   const rect = containerRef.value.getBoundingClientRect()

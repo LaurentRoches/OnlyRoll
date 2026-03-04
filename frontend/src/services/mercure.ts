@@ -1,5 +1,5 @@
 /**
- * Service Mercure pour gérer la connexion SSE (Server-Sent Events)
+ * Service Mercure pour gérer la connexion SSE
  * Permet de recevoir les événements temps réel depuis le backend
  */
 
@@ -49,8 +49,6 @@ export class MercureService {
       url.searchParams.append('topic', `game/${gameId}/presence`)
     })
 
-    console.log('Connexion à Mercure (présence uniquement)...', url.toString())
-
     this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
@@ -72,8 +70,6 @@ export class MercureService {
       url.searchParams.append('topic', `game/${gameId}/${topic}`)
     })
 
-    console.log('Connexion à Mercure...', url.toString())
-
     this.eventSource = new EventSource(url.toString(), { withCredentials: true })
 
     this.setupEventHandlers()
@@ -90,8 +86,6 @@ export class MercureService {
       try {
         const mercureEvent: MercureEvent = JSON.parse(event.data)
 
-        console.log('Événement Mercure reçu:', mercureEvent)
-
         this.notifyListeners(mercureEvent.type, mercureEvent)
 
         this.reconnectAttempts = 0
@@ -101,7 +95,6 @@ export class MercureService {
     }
 
     this.eventSource.onopen = () => {
-      console.log('Connecté à Mercure')
       this.reconnectAttempts = 0
     }
 
@@ -110,9 +103,6 @@ export class MercureService {
 
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++
-        console.log(
-          `Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
-        )
       } else {
         console.error('Nombre maximum de tentatives de reconnexion atteint')
         this.disconnect()
@@ -129,7 +119,6 @@ export class MercureService {
       this.eventSource = null
       this.listeners.clear()
       this.reconnectAttempts = 0
-      console.log('Déconnecté de Mercure')
     }
   }
 

@@ -28,7 +28,7 @@ export interface SeoOptions {
 const defaults = {
   siteName: 'OnlyRoll',
   baseTitle: 'OnlyRoll - VTT D&D 5e',
-  baseUrl: 'https://onlyroll.fr',
+  baseUrl: 'https://onlyroll.cloud',
   defaultDescription:
     'OnlyRoll est une table de jeu virtuelle (VTT) gratuite pour jouer à Dungeons & Dragons 5e en ligne avec vos amis.',
   defaultOgImage: '/og-image.png',
@@ -183,14 +183,14 @@ export function useSeo(options: SeoOptions) {
 }
 
 /**
- * Hook pour les pages publiques (indexables)
+ * Hook pour les pages publiques
  */
 export function usePublicSeo(options: Omit<SeoOptions, 'noindex'>) {
   return useSeo({ ...options, noindex: false })
 }
 
 /**
- * Hook pour les pages privées (non indexables)
+ * Hook pour les pages privées
  */
 export function usePrivateSeo(options: Omit<SeoOptions, 'noindex'>) {
   return useSeo({ ...options, noindex: true })

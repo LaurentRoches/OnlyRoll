@@ -12,10 +12,7 @@ export const useNotificationStore = defineStore('notifications', () => {
   const isLoading = ref(false)
   let notificationEventSource: EventSource | null = null
 
-  // ========== Getters ==========
   const invitationCount = computed(() => invitations.value.length)
-
-  // ========== Actions ==========
 
   async function fetchInvitations() {
     isLoading.value = true
@@ -31,7 +28,6 @@ export const useNotificationStore = defineStore('notifications', () => {
   async function acceptInvitation(gameId: number) {
     try {
       await gameApi.acceptInvitation(gameId)
-      // Retirer l'invitation de la liste
       invitations.value = invitations.value.filter((inv) => inv.game.id !== gameId)
     } catch (e) {
       console.error("Erreur lors de l'acceptation de l'invitation:", e)
@@ -67,7 +63,6 @@ export const useNotificationStore = defineStore('notifications', () => {
         gameMaster: event.data.gameMaster,
         invitedAt: event.timestamp,
       }
-      // Éviter les doublons
       const exists = invitations.value.some((inv) => inv.id === newInvitation.id)
       if (!exists) {
         invitations.value.unshift(newInvitation)
@@ -76,7 +71,7 @@ export const useNotificationStore = defineStore('notifications', () => {
   }
 
   async function connectToNotifications() {
-    if (notificationEventSource) return // déjà connecté
+    if (notificationEventSource) return
 
     const authStore = useAuthStore()
     const userId = authStore.user?.id
@@ -93,7 +88,6 @@ export const useNotificationStore = defineStore('notifications', () => {
       notificationEventSource.onmessage = (event: MessageEvent) => {
         try {
           const parsed = JSON.parse(event.data)
-          console.log('Notification Mercure reçue:', parsed)
           handleInvitationEvent(parsed)
         } catch (e) {
           console.error('Erreur parsing notification Mercure:', e)

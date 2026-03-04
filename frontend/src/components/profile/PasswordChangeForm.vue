@@ -4,7 +4,6 @@
       Changer le mot de passe
     </h3>
 
-    <!-- Mot de passe actuel -->
     <div class="form-group">
       <label :for="currentPasswordId" class="form-label">
         Mot de passe actuel
@@ -83,7 +82,6 @@
       </p>
     </div>
 
-    <!-- Nouveau mot de passe -->
     <div class="form-group">
       <div class="flex items-center justify-between mb-1">
         <label :for="newPasswordId" class="form-label !mb-0">
@@ -201,7 +199,6 @@
         </button>
       </div>
 
-      <!-- Indicateur de force du mot de passe -->
       <div class="mt-2 space-y-2">
         <div class="flex items-center space-x-2">
           <div class="flex-1 h-2 bg-secondary-700 rounded-full overflow-hidden">
@@ -219,7 +216,6 @@
           <span class="text-xs" :class="strengthTextClass">{{ strengthLabel }}</span>
         </div>
 
-        <!-- Liste des exigences -->
         <ul :id="newPasswordHelpId" class="text-xs text-secondary-400 space-y-1" role="list">
           <li
             v-for="(feedback, index) in passwordStrength.feedback"
@@ -273,7 +269,6 @@
       </p>
     </div>
 
-    <!-- Confirmation du mot de passe -->
     <div class="form-group">
       <label :for="confirmPasswordId" class="form-label">
         Confirmer le nouveau mot de passe
@@ -348,7 +343,6 @@
       </p>
     </div>
 
-    <!-- Message d'erreur global -->
     <div
       v-if="globalError"
       role="alert"
@@ -358,7 +352,6 @@
       {{ globalError }}
     </div>
 
-    <!-- Message de succès -->
     <div
       v-if="successMessage"
       role="status"
@@ -368,7 +361,6 @@
       {{ successMessage }}
     </div>
 
-    <!-- Bouton submit -->
     <div class="flex justify-end">
       <button
         type="submit"

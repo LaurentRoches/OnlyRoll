@@ -9,12 +9,9 @@ import { logger } from '@/utils/logger'
  * Store Pinia pour la gestion de l'authentification
  */
 export const useAuthStore = defineStore('auth', () => {
-  // ========== STATE ==========
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-
-  // ========== GETTERS ==========
 
   /**
    * Vérifie si l'utilisateur est authentifié
@@ -25,8 +22,6 @@ export const useAuthStore = defineStore('auth', () => {
    * Retourne l'utilisateur courant
    */
   const currentUser = computed(() => user.value)
-
-  // ========== MUTATIONS (setters privés) ==========
 
   /**
    * Définit l'utilisateur courant
@@ -48,8 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
   const clearError = (): void => {
     error.value = null
   }
-
-  // ========== HELPERS ==========
 
   /**
    * Extrait un message d'erreur lisible
@@ -75,8 +68,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     return defaultMessage
   }
-
-  // ========== ACTIONS ==========
 
   /**
    * Inscription d'un nouvel utilisateur
@@ -219,7 +210,6 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const isAdmin = computed(() => hasRole('ROLE_ADMIN'))
 
-  // ========== RETURN ==========
   return {
     user,
     isLoading,

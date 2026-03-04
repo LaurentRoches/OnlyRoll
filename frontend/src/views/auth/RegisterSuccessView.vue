@@ -1,6 +1,5 @@
 <template>
   <div class="text-center space-y-6">
-    <!-- Icône de succès -->
     <div class="flex justify-center">
       <div class="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center">
         <svg class="w-10 h-10 text-success" fill="currentColor" viewBox="0 0 20 20">
@@ -13,13 +12,11 @@
       </div>
     </div>
 
-    <!-- Message principal -->
     <div>
       <h2 class="text-xl font-semibold text-secondary-50 mb-2">Inscription réussie !</h2>
       <p class="text-secondary-300 mb-4">Votre compte a été créé avec succès.</p>
     </div>
 
-    <!-- Informations sur la vérification email -->
     <div class="bg-info/10 border border-info/20 rounded-lg p-4">
       <div class="flex items-start space-x-3">
         <svg class="w-5 h-5 text-info flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -42,9 +39,7 @@
       </div>
     </div>
 
-    <!-- Actions -->
     <div class="space-y-3">
-      <!-- Bouton de redirection vers login -->
       <RouterLink
         to="/auth/login"
         class="block w-full px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg text-center transition-colors duration-200"
@@ -52,7 +47,6 @@
         Se connecter
       </RouterLink>
 
-      <!-- Bouton pour renvoyer l'email -->
       <button
         type="button"
         @click="resendEmail"
@@ -64,11 +58,9 @@
         <span v-else>Renvoyer l'email de vérification</span>
       </button>
 
-      <!-- Erreur renvoi -->
       <p v-if="resendError" class="text-sm text-error text-center">{{ resendError }}</p>
     </div>
 
-    <!-- Message d'aide -->
     <div class="text-center pt-4 border-t border-secondary-700">
       <p class="text-xs text-secondary-500">
         Problème avec votre inscription ?
