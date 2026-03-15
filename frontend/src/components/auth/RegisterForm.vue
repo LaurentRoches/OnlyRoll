@@ -1,11 +1,10 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <div class="text-center mb-6">
-      <h2 class="text-xl font-semibold text-secondary-50 mb-1">Inscription</h2>
-      <p class="text-sm text-secondary-400">Rejoignez la communauté OnlyRoll</p>
+      <h2 class="text-xl font-semibold text-secondary-50 mb-1">{{ t('auth.register.title') }}</h2>
+      <p class="text-sm text-secondary-400">{{ t('auth.register.subtitle') }}</p>
     </div>
 
-    <!-- Affichage des erreurs -->
     <div
       v-if="error || validationErrors.length > 0"
       class="bg-error/10 border border-error/20 rounded-lg p-4"
@@ -36,7 +35,7 @@
 
     <div class="space-y-1">
       <label for="pseudo" class="block text-sm font-medium text-secondary-200">
-        Pseudo <span class="text-error">*</span>
+        {{ t('auth.register.pseudoLabel') }} <span class="text-error">*</span>
       </label>
       <input
         id="pseudo"
@@ -48,7 +47,7 @@
         required
         :disabled="isLoading"
         class="block w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        placeholder="Votre pseudo de joueur"
+        :placeholder="t('auth.register.pseudoPlaceholder')"
         minlength="3"
         maxlength="50"
       />
@@ -56,13 +55,13 @@
         {{ fieldErrors.pseudo }}
       </p>
       <p v-else class="text-xs text-secondary-500">
-        Entre 3 et 50 caractères. Sera visible par les autres joueurs.
+        {{ t('auth.register.pseudoHint') }}
       </p>
     </div>
 
     <div class="space-y-1">
       <label for="email" class="block text-sm font-medium text-secondary-200">
-        Email <span class="text-error">*</span>
+        {{ t('auth.register.emailLabel') }} <span class="text-error">*</span>
       </label>
       <input
         id="email"
@@ -74,18 +73,18 @@
         required
         :disabled="isLoading"
         class="block w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        placeholder="votre.email@exemple.com"
+        :placeholder="t('auth.register.emailPlaceholder')"
       />
       <p v-if="fieldErrors.email" class="text-xs text-red-400 mt-1">
         {{ fieldErrors.email }}
       </p>
-      <p v-else class="text-xs text-secondary-500">Un email de vérification vous sera envoyé.</p>
+      <p v-else class="text-xs text-secondary-500">{{ t('auth.register.emailHint') }}</p>
     </div>
 
     <div class="space-y-1">
       <div class="flex items-center justify-between">
         <label for="password" class="block text-sm font-medium text-secondary-200">
-          Mot de passe <span class="text-error">*</span>
+          {{ t('auth.register.passwordLabel') }} <span class="text-error">*</span>
         </label>
         <button
           type="button"
@@ -129,7 +128,7 @@
               d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
             />
           </svg>
-          {{ isGenerating ? 'Génération...' : 'Générer un mot de passe sécurisé' }}
+          {{ isGenerating ? t('auth.register.generatingPassword') : t('auth.register.generatePassword') }}
         </button>
       </div>
       <div class="relative">
@@ -142,14 +141,14 @@
           required
           :disabled="isLoading"
           class="block w-full px-4 py-3 pr-12 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          placeholder="••••••••••••"
+          :placeholder="t('auth.register.passwordPlaceholder')"
           minlength="12"
         />
         <button
           type="button"
           @click="togglePasswordVisibility"
           :disabled="isLoading"
-          :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          :aria-label="showPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')"
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <svg
@@ -209,38 +208,38 @@
           <span :class="passwordRules.minlength ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.minlength ? '✓' : '○' }}
           </span>
-          <span>Au moins 12 caractères</span>
+          <span>{{ t('auth.register.passwordRules.minLength') }}</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.lowercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.lowercase ? '✓' : '○' }}
           </span>
-          <span>Une minuscule (a-z)</span>
+          <span>{{ t('auth.register.passwordRules.lowercase') }}</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.uppercase ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.uppercase ? '✓' : '○' }}
           </span>
-          <span>Une majuscule (A-Z)</span>
+          <span>{{ t('auth.register.passwordRules.uppercase') }}</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.number ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.number ? '✓' : '○' }}
           </span>
-          <span>Un chiffre (0-9)</span>
+          <span>{{ t('auth.register.passwordRules.number') }}</span>
         </li>
         <li class="flex items-center space-x-2">
           <span :class="passwordRules.special ? 'text-success' : 'text-secondary-400'">
             {{ passwordRules.special ? '✓' : '○' }}
           </span>
-          <span>Un caractère spécial (!@#$%&*...)</span>
+          <span>{{ t('auth.register.passwordRules.special') }}</span>
         </li>
       </ul>
     </div>
 
     <div class="space-y-1">
       <label for="confirmPassword" class="block text-sm font-medium text-secondary-200">
-        Confirmer le mot de passe <span class="text-error">*</span>
+        {{ t('auth.register.confirmPasswordLabel') }} <span class="text-error">*</span>
       </label>
       <div class="relative">
         <input
@@ -252,7 +251,7 @@
           required
           :disabled="isLoading"
           class="block w-full px-4 py-3 pr-12 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          placeholder="••••••••"
+          :placeholder="t('auth.register.confirmPasswordPlaceholder')"
         />
         <button
           type="button"
@@ -260,8 +259,8 @@
           :disabled="isLoading"
           :aria-label="
             showConfirmPassword
-              ? 'Masquer la confirmation du mot de passe'
-              : 'Afficher la confirmation du mot de passe'
+              ? t('auth.register.hideConfirmPassword')
+              : t('auth.register.showConfirmPassword')
           "
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
@@ -304,7 +303,7 @@
         </button>
       </div>
       <p v-if="form.confirmPassword && !passwordsMatch" class="text-xs text-error">
-        Les mots de passe ne correspondent pas
+        {{ t('auth.register.passwordsDoNotMatch') }}
       </p>
     </div>
 
@@ -319,23 +318,23 @@
         class="h-4 w-4 mt-1 bg-secondary-700 border-secondary-600 rounded text-primary-500 focus:ring-primary-500 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
       />
       <label for="acceptTerms" class="text-sm text-secondary-300 leading-relaxed">
-        J'accepte les
+        {{ t('auth.register.acceptTermsPrefix') }}
         <a
           href="/terms"
           target="_blank"
           class="text-primary-400 hover:text-primary-300 transition-colors"
         >
-          conditions d'utilisation
+          {{ t('auth.register.termsOfService') }}
         </a>
-        et la
+        {{ t('auth.register.acceptTermsAnd') }}
         <a
           href="/privacy"
           target="_blank"
           class="text-primary-400 hover:text-primary-300 transition-colors"
         >
-          politique de confidentialité
+          {{ t('auth.register.privacyPolicy') }}
         </a>
-        d'OnlyRoll.
+        {{ t('auth.register.acceptTermsSuffix') }}
       </label>
     </div>
 
@@ -365,13 +364,13 @@
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         ></path>
       </svg>
-      {{ isLoading ? 'Création du compte...' : 'Créer mon compte' }}
+      {{ isLoading ? t('auth.register.submitLoading') : t('auth.register.submit') }}
     </button>
 
     <div class="text-center pt-4 border-t border-secondary-700">
       <p class="text-xs text-secondary-500">
-        Un email de vérification sera envoyé à votre adresse.<br />
-        Vérifiez vos spams si nécessaire.
+        {{ t('auth.register.verificationNotice') }}<br />
+        {{ t('auth.register.checkSpam') }}
       </p>
     </div>
   </form>
@@ -379,12 +378,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useFormValidation, validators } from '@/composables/useFormValidation'
 import { usePasswordGenerator } from '@/composables/usePasswordGenerator'
 import type { RegisterCredentials } from '@/types/auth'
 import { logger } from '@/utils/logger'
 
+const { t } = useI18n()
 const { register, isLoading, error, clearError } = useAuth()
 const { validationErrors, validateFields, clearErrors } = useFormValidation()
 const { generate: generatePassword, isGenerating } = usePasswordGenerator()
@@ -445,10 +446,10 @@ const passwordStrengthColor = computed(() => {
 })
 
 const passwordStrengthText = computed(() => {
-  if (passwordStrength.value <= 2) return 'Mot de passe faible'
-  if (passwordStrength.value <= 4) return 'Mot de passe moyen'
-  if (passwordStrength.value === 5) return 'Mot de passe fort'
-  return 'Mot de passe excellent'
+  if (passwordStrength.value <= 2) return t('auth.register.passwordStrength.weak')
+  if (passwordStrength.value <= 4) return t('auth.register.passwordStrength.medium')
+  if (passwordStrength.value === 5) return t('auth.register.passwordStrength.strong')
+  return t('auth.register.passwordStrength.excellent')
 })
 
 const isFormValid = computed(() => {
@@ -471,19 +472,19 @@ const fieldErrors = computed(() => {
 
   if (touchedFields.value.has('pseudo')) {
     if (!form.value.pseudo) {
-      errors.pseudo = 'Le pseudo est requis'
+      errors.pseudo = t('auth.register.validation.pseudoRequired')
     } else if (form.value.pseudo.length < 3) {
-      errors.pseudo = 'Le pseudo doit faire au moins 3 caractères'
+      errors.pseudo = t('auth.register.validation.pseudoMinLength')
     } else if (form.value.pseudo.length > 50) {
-      errors.pseudo = 'Le pseudo ne peut pas dépasser 50 caractères'
+      errors.pseudo = t('auth.register.validation.pseudoMaxLength')
     }
   }
 
   if (touchedFields.value.has('email')) {
     if (!form.value.email) {
-      errors.email = "L'email est requis"
+      errors.email = t('auth.register.validation.emailRequired')
     } else if (!validators.isEmail(form.value.email)) {
-      errors.email = "L'email n'est pas valide"
+      errors.email = t('auth.register.validation.emailInvalid')
     }
   }
 
@@ -526,14 +527,14 @@ const validateForm = (): boolean => {
       field: 'pseudo',
       value: form.value.pseudo,
       rules: [
-        { validator: validators.required, message: 'Le pseudo est requis' },
+        { validator: validators.required, message: t('auth.register.validation.pseudoRequired') },
         {
           validator: validators.minLength(3),
-          message: 'Le pseudo doit faire au moins 3 caractères',
+          message: t('auth.register.validation.pseudoMinLength'),
         },
         {
           validator: validators.maxLength(50),
-          message: 'Le pseudo ne peut pas dépasser 50 caractères',
+          message: t('auth.register.validation.pseudoMaxLength'),
         },
       ],
     },
@@ -541,34 +542,34 @@ const validateForm = (): boolean => {
       field: 'email',
       value: form.value.email,
       rules: [
-        { validator: validators.required, message: "L'email est requis" },
-        { validator: validators.isEmail, message: "L'email n'est pas valide" },
+        { validator: validators.required, message: t('auth.register.validation.emailRequired') },
+        { validator: validators.isEmail, message: t('auth.register.validation.emailInvalid') },
       ],
     },
     {
       field: 'password',
       value: form.value.password,
       rules: [
-        { validator: validators.required, message: 'Le mot de passe est requis' },
+        { validator: validators.required, message: t('auth.register.validation.passwordRequired') },
         {
           validator: validators.minLength(12),
-          message: 'Le mot de passe doit faire au moins 12 caractères',
+          message: t('auth.register.validation.passwordMinLength'),
         },
         {
           validator: (v) => /[a-z]/.test(String(v)),
-          message: 'Le mot de passe doit contenir au moins une minuscule',
+          message: t('auth.register.validation.passwordLowercase'),
         },
         {
           validator: (v) => /[A-Z]/.test(String(v)),
-          message: 'Le mot de passe doit contenir au moins une majuscule',
+          message: t('auth.register.validation.passwordUppercase'),
         },
         {
           validator: (v) => /\d/.test(String(v)),
-          message: 'Le mot de passe doit contenir au moins un chiffre',
+          message: t('auth.register.validation.passwordDigit'),
         },
         {
           validator: (v) => /[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/.test(String(v)),
-          message: 'Le mot de passe doit contenir au moins un caractère spécial',
+          message: t('auth.register.validation.passwordSpecial'),
         },
       ],
     },
@@ -576,10 +577,10 @@ const validateForm = (): boolean => {
       field: 'confirmPassword',
       value: form.value.confirmPassword,
       rules: [
-        { validator: validators.required, message: 'La confirmation du mot de passe est requise' },
+        { validator: validators.required, message: t('auth.register.validation.confirmPasswordRequired') },
         {
           validator: validators.matches(form.value.password),
-          message: 'Les mots de passe ne correspondent pas',
+          message: t('auth.register.validation.passwordsMismatch'),
         },
       ],
     },
@@ -589,7 +590,7 @@ const validateForm = (): boolean => {
       rules: [
         {
           validator: (v) => v === true,
-          message: "Vous devez accepter les conditions d'utilisation",
+          message: t('auth.register.validation.termsRequired'),
         },
       ],
     },

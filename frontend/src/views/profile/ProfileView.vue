@@ -1,23 +1,20 @@
 <template>
   <div class="profile-view min-h-screen bg-secondary-900">
-    <!-- Skip link -->
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:p-4 focus:bg-primary-600 focus:text-white focus:z-50"
     >
-      Aller au contenu principal
+      {{ t('profile.skipLink') }}
     </a>
 
-    <!-- Navbar -->
     <DashboardNav />
 
-    <!-- Header -->
     <header role="banner" class="bg-secondary-800 border-b border-secondary-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-2xl font-bold text-secondary-50">Mon profil</h1>
-            <p class="text-secondary-400 mt-1">Gérez vos informations personnelles</p>
+            <h1 class="text-2xl font-bold text-secondary-50">{{ t('profile.header.title') }}</h1>
+            <p class="text-secondary-400 mt-1">{{ t('profile.header.subtitle') }}</p>
           </div>
           <RouterLink
             to="/dashboard"
@@ -37,58 +34,53 @@
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Retour au dashboard
+            {{ t('profile.header.backToDashboard') }}
           </RouterLink>
         </div>
       </div>
     </header>
 
-    <!-- Main content -->
     <main
       id="main-content"
       role="main"
       tabindex="-1"
       class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
     >
-      <!-- Loading state -->
       <div
         v-if="isLoading"
         class="flex justify-center py-12"
         role="status"
-        aria-label="Chargement en cours"
+        :aria-label="t('profile.loading.ariaLabel')"
       >
         <div
           class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
           aria-hidden="true"
         ></div>
-        <span class="sr-only">Chargement du profil...</span>
+        <span class="sr-only">{{ t('profile.loading.screenReader') }}</span>
       </div>
 
-      <!-- Error state -->
       <div
         v-else-if="loadError"
         role="alert"
         class="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-400"
       >
-        <strong class="font-semibold">Erreur :</strong> {{ loadError }}
+        <strong class="font-semibold">{{ t('profile.error.label') }}</strong> {{ loadError }}
         <button
           type="button"
           class="ml-4 text-red-300 underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
           @click="loadProfile"
         >
-          Réessayer
+          {{ t('profile.error.retry') }}
         </button>
       </div>
 
-      <!-- Profile content -->
       <div v-else-if="profile" class="space-y-8">
-        <!-- Section Avatar -->
         <section
           aria-labelledby="avatar-section-heading"
           class="bg-secondary-800 rounded-lg p-6 border border-secondary-700"
         >
           <h2 id="avatar-section-heading" class="text-lg font-semibold text-secondary-50 mb-4">
-            Photo de profil
+            {{ t('profile.avatar.sectionTitle') }}
           </h2>
           <AvatarUploader
             :avatar="profile.avatar"
@@ -97,22 +89,20 @@
           />
         </section>
 
-        <!-- Section Informations -->
         <section
           aria-labelledby="info-section-heading"
           class="bg-secondary-800 rounded-lg p-6 border border-secondary-700"
         >
           <h2 id="info-section-heading" class="text-lg font-semibold text-secondary-50 mb-4">
-            Informations personnelles
+            {{ t('profile.info.sectionTitle') }}
           </h2>
 
           <form @submit.prevent="handleProfileUpdate" novalidate class="space-y-6">
-            <!-- Pseudo -->
             <div class="form-group">
               <label :for="pseudoId" class="form-label">
-                Pseudo
+                {{ t('profile.info.pseudo.label') }}
                 <span class="text-red-500" aria-hidden="true">*</span>
-                <span class="sr-only">(obligatoire)</span>
+                <span class="sr-only">{{ t('profile.info.pseudo.required') }}</span>
               </label>
               <input
                 :id="pseudoId"
@@ -136,9 +126,8 @@
               </p>
             </div>
 
-            <!-- Email (lecture seule) -->
             <div class="form-group">
-              <label :for="emailId" class="form-label"> Adresse email </label>
+              <label :for="emailId" class="form-label"> {{ t('profile.info.email.label') }} </label>
               <input
                 :id="emailId"
                 :value="profile.email"
@@ -149,13 +138,12 @@
                 class="form-input bg-secondary-800 text-secondary-400 cursor-not-allowed"
               />
               <p class="mt-1 text-xs text-secondary-500">
-                L'adresse email ne peut pas être modifiée.
+                {{ t('profile.info.email.hint') }}
               </p>
             </div>
 
-            <!-- Fuseau horaire -->
             <div class="form-group">
-              <label :for="timezoneId" class="form-label"> Fuseau horaire </label>
+              <label :for="timezoneId" class="form-label"> {{ t('profile.info.timezone.label') }} </label>
               <select :id="timezoneId" v-model="editForm.timezone" class="form-input">
                 <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
                 <option value="Europe/London">Europe/London (UTC+0/+1)</option>
@@ -166,16 +154,14 @@
               </select>
             </div>
 
-            <!-- Langue -->
             <div class="form-group">
-              <label :for="languageId" class="form-label"> Langue préférée </label>
+              <label :for="languageId" class="form-label"> {{ t('profile.info.language.label') }} </label>
               <select :id="languageId" v-model="editForm.language" class="form-input">
-                <option value="fr">Français</option>
-                <option value="en">English</option>
+                <option value="fr">{{ t('profile.info.language.options.fr') }}</option>
+                <option value="en">{{ t('profile.info.language.options.en') }}</option>
               </select>
             </div>
 
-            <!-- Message de succès -->
             <div
               v-if="profileSuccess"
               role="status"
@@ -185,7 +171,6 @@
               {{ profileSuccess }}
             </div>
 
-            <!-- Message d'erreur -->
             <div
               v-if="profileGlobalError"
               role="alert"
@@ -195,7 +180,6 @@
               {{ profileGlobalError }}
             </div>
 
-            <!-- Bouton submit -->
             <div class="flex justify-end">
               <button
                 type="submit"
@@ -207,15 +191,14 @@
                     class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
                     aria-hidden="true"
                   ></span>
-                  Enregistrement...
+                  {{ t('profile.info.submit.saving') }}
                 </span>
-                <span v-else>Enregistrer les modifications</span>
+                <span v-else>{{ t('profile.info.submit.save') }}</span>
               </button>
             </div>
           </form>
         </section>
 
-        <!-- Section Sécurité -->
         <section
           aria-labelledby="security-section-heading"
           class="bg-secondary-800 rounded-lg p-6 border border-secondary-700"
@@ -223,28 +206,27 @@
           <PasswordChangeForm @success="handlePasswordChanged" />
         </section>
 
-        <!-- Section Compte -->
         <section
           aria-labelledby="account-section-heading"
           class="bg-secondary-800 rounded-lg p-6 border border-secondary-700"
         >
           <h2 id="account-section-heading" class="text-lg font-semibold text-secondary-50 mb-4">
-            Informations du compte
+            {{ t('profile.account.sectionTitle') }}
           </h2>
 
           <dl class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <dt class="text-secondary-400">Membre depuis</dt>
+              <dt class="text-secondary-400">{{ t('profile.account.memberSince') }}</dt>
               <dd class="text-secondary-200">{{ formatDate(profile.createdAt) }}</dd>
             </div>
             <div>
-              <dt class="text-secondary-400">Dernière connexion</dt>
+              <dt class="text-secondary-400">{{ t('profile.account.lastLogin') }}</dt>
               <dd class="text-secondary-200">
-                {{ profile.lastLogin ? formatDate(profile.lastLogin) : 'Jamais' }}
+                {{ profile.lastLogin ? formatDate(profile.lastLogin) : t('profile.account.lastLoginNever') }}
               </dd>
             </div>
             <div>
-              <dt class="text-secondary-400">Statut du compte</dt>
+              <dt class="text-secondary-400">{{ t('profile.account.accountStatus') }}</dt>
               <dd>
                 <span
                   v-if="profile.isVerified"
@@ -264,18 +246,18 @@
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Vérifié
+                  {{ t('profile.account.verified') }}
                 </span>
                 <span
                   v-else
                   class="inline-flex items-center px-2 py-1 text-xs rounded bg-yellow-500/20 text-yellow-400"
                 >
-                  En attente de vérification
+                  {{ t('profile.account.pendingVerification') }}
                 </span>
               </dd>
             </div>
             <div>
-              <dt class="text-secondary-400">Rôles</dt>
+              <dt class="text-secondary-400">{{ t('profile.account.roles') }}</dt>
               <dd class="flex flex-wrap gap-1">
                 <span
                   v-for="role in profile.roles"
@@ -300,11 +282,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { profileApi, type UserProfile } from '@/services/api/profileApi'
 import { AvatarUploader, PasswordChangeForm } from '@/components/profile'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
 import { useAuthStore } from '@/stores/auth'
 
+const { t, locale } = useI18n()
 const authStore = useAuthStore()
 
 const pseudoId = useId()
@@ -330,7 +314,7 @@ const isUpdating = ref(false)
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('fr-FR', {
+  return date.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
@@ -351,7 +335,7 @@ const loadProfile = async () => {
     editForm.timezone = data.timezone || 'Europe/Paris'
     editForm.language = data.language || 'fr'
   } catch (err) {
-    loadError.value = err instanceof Error ? err.message : 'Erreur lors du chargement du profil'
+    loadError.value = err instanceof Error ? err.message : t('profile.error.loadProfile')
   } finally {
     isLoading.value = false
   }
@@ -363,12 +347,12 @@ const handleProfileUpdate = async () => {
   profileSuccess.value = null
 
   if (!editForm.pseudo.trim()) {
-    profileErrors.pseudo = 'Le pseudo est requis'
+    profileErrors.pseudo = t('profile.info.pseudo.errors.required')
     return
   }
 
   if (editForm.pseudo.length < 3) {
-    profileErrors.pseudo = 'Le pseudo doit contenir au moins 3 caractères'
+    profileErrors.pseudo = t('profile.info.pseudo.errors.minLength')
     return
   }
 
@@ -382,7 +366,9 @@ const handleProfileUpdate = async () => {
     })
 
     profile.value = updatedProfile
-    profileSuccess.value = 'Vos informations ont été mises à jour avec succès.'
+    locale.value = editForm.language
+    localStorage.setItem('locale', editForm.language)
+    profileSuccess.value = t('profile.info.success')
 
     setTimeout(() => {
       profileSuccess.value = null
@@ -398,10 +384,10 @@ const handleProfileUpdate = async () => {
       } else if (response?.data?.error) {
         profileGlobalError.value = response.data.error
       } else {
-        profileGlobalError.value = 'Une erreur est survenue.'
+        profileGlobalError.value = t('profile.error.generic')
       }
     } else {
-      profileGlobalError.value = err instanceof Error ? err.message : 'Une erreur est survenue.'
+      profileGlobalError.value = err instanceof Error ? err.message : t('profile.error.generic')
     }
   } finally {
     isUpdating.value = false

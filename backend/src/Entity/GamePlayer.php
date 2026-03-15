@@ -66,8 +66,6 @@ class GamePlayer
         }
     }
 
-    // Méthodes métier
-
     public function canEdit(): bool
     {
         return $this->role->canEdit();
@@ -100,8 +98,6 @@ class GamePlayer
         $this->status = PlayerStatus::ACTIVE;
         $this->leftAt = null;
     }
-
-    // Getters & Setters
 
     public function getId(): ?int
     {

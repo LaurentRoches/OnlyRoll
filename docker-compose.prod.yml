@@ -93,6 +93,7 @@ services:
       - backend-var:/var/www/html/var
       - backend-uploads:/var/www/html/public/uploads
       - ./backend/.env:/var/www/html/.env:ro
+      - ./docs:/var/www/docs:ro
     depends_on:
       mysql:
         condition: service_healthy

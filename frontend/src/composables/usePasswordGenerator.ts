@@ -4,6 +4,7 @@ import {
   type GeneratePasswordOptions,
   type PasswordStrengthResult,
 } from '@/services/api/securityApi'
+import i18n from '@/i18n'
 
 /**
  * Composable pour la génération et l'évaluation de mots de passe sécurisés
@@ -49,7 +50,7 @@ export const usePasswordGenerator = () => {
 
       return generatedPassword.value
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Erreur lors de la génération'
+      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
       return null
     } finally {
       isGenerating.value = false
@@ -80,7 +81,7 @@ export const usePasswordGenerator = () => {
 
       return generatedPasswords.value
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Erreur lors de la génération'
+      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
       return []
     } finally {
       isGenerating.value = false
@@ -104,7 +105,7 @@ export const usePasswordGenerator = () => {
       strengthResult.value = result
       return result
     } catch (err) {
-      error.value = err instanceof Error ? err.message : "Erreur lors de l'évaluation"
+      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.evaluationError')
       return null
     } finally {
       isEvaluating.value = false

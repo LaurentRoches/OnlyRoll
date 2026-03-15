@@ -2,17 +2,15 @@
   <div
     class="accessible-table-container"
     role="region"
-    :aria-label="caption || 'Tableau de données'"
+    :aria-label="caption || t('common.accessibleTable.regionLabel')"
   >
     <table class="w-full" :aria-describedby="descriptionId">
-      <!-- Caption pour décrire le tableau -->
       <caption v-if="caption" class="sr-only">
         {{
           caption
         }}
       </caption>
 
-      <!-- En-têtes de colonnes -->
       <thead class="bg-secondary-700">
         <tr>
           <th
@@ -86,8 +84,8 @@
               <span v-if="sortColumn === column.key" class="sr-only">
                 {{
                   sortDirection === 'ASC'
-                    ? 'trié par ordre croissant'
-                    : 'trié par ordre décroissant'
+                    ? t('common.accessibleTable.sortedAsc')
+                    : t('common.accessibleTable.sortedDesc')
                 }}
               </span>
             </span>
@@ -95,12 +93,11 @@
         </tr>
       </thead>
 
-      <!-- Corps du tableau -->
       <tbody class="divide-y divide-secondary-700">
         <tr v-if="data.length === 0">
           <td :colspan="columns.length" class="px-4 py-8 text-center text-secondary-400">
             <slot name="empty">
-              {{ emptyMessage }}
+              {{ emptyMessage || t('common.accessibleTable.emptyMessage') }}
             </slot>
           </td>
         </tr>
@@ -130,9 +127,9 @@
     </table>
 
     <p :id="descriptionId" class="sr-only">
-      Ce tableau contient {{ data.length }} {{ data.length > 1 ? 'lignes' : 'ligne' }}.
+      {{ t('common.accessibleTable.description', { count: data.length }, data.length) }}
       <template v-if="sortable">
-        Cliquez sur les en-têtes de colonnes pour trier les données.
+        {{ t('common.accessibleTable.sortHint') }}
       </template>
     </p>
 
@@ -144,6 +141,9 @@
 
 <script setup lang="ts">
 import { ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 export interface TableColumn {
   key: string
@@ -167,7 +167,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   caption: '',
-  emptyMessage: 'Aucune donnée disponible',
+  emptyMessage: '',
   sortable: false,
   initialSortDirection: 'ASC',
 })
@@ -229,8 +229,13 @@ const handleSort = (columnKey: string) => {
   }
 
   const column = props.columns.find((c) => c.key === columnKey)
-  const directionText = sortDirection.value === 'ASC' ? 'ordre croissant' : 'ordre décroissant'
-  announcement.value = `Tableau trié par ${column?.label || columnKey}, ${directionText}`
+  const directionText = sortDirection.value === 'ASC'
+    ? t('common.accessibleTable.ascending')
+    : t('common.accessibleTable.descending')
+  announcement.value = t('common.accessibleTable.sortAnnouncement', {
+    column: column?.label || columnKey,
+    direction: directionText,
+  })
 
   setTimeout(() => {
     announcement.value = ''

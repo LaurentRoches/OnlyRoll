@@ -8,6 +8,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
 import LoginForm from '@/components/auth/LoginForm.vue'
+import i18n from '@/i18n'
 import { useAuth } from '@/composables/useAuth'
 
 vi.mock('@/composables/useAuth', () => ({
@@ -41,6 +42,7 @@ describe('LoginForm.vue', () => {
 
     wrapper = mount(LoginForm, {
       global: {
+        plugins: [i18n],
         stubs: {
           RouterLink: true,
         },
@@ -193,6 +195,7 @@ describe('LoginForm.vue', () => {
 
     wrapper = mount(LoginForm, {
       global: {
+        plugins: [i18n],
         stubs: {
           RouterLink: true,
         },
@@ -210,6 +213,7 @@ describe('LoginForm.vue', () => {
 
     wrapper = mount(LoginForm, {
       global: {
+        plugins: [i18n],
         stubs: {
           RouterLink: true,
         },
@@ -228,6 +232,7 @@ describe('LoginForm.vue', () => {
 
     wrapper = mount(LoginForm, {
       global: {
+        plugins: [i18n],
         stubs: {
           RouterLink: true,
         },
@@ -244,6 +249,7 @@ describe('LoginForm.vue', () => {
 
     wrapper = mount(LoginForm, {
       global: {
+        plugins: [i18n],
         stubs: {
           RouterLink: true,
         },

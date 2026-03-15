@@ -9,6 +9,7 @@ import { chatApi } from '@/services/api'
 import type { GameMessage, MessageType } from '@/types/game'
 import { logger } from '@/utils/logger'
 import { getErrorMessage } from '@/utils/errorHelpers'
+import i18n from '@/i18n'
 import type {
   MercureChatMessageData,
   MercureDiceRollData,
@@ -117,9 +118,9 @@ export const useChatStore = defineStore('chat', () => {
       messages.value = []
 
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du chargement des messages'
+        error.value = (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
       } else {
-        error.value = 'Erreur lors du chargement des messages'
+        error.value = i18n.global.t('game.stores.chat.loadError')
       }
       logger.error('Erreur loadRecentMessages:', e)
       throw e
@@ -154,9 +155,9 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du chargement des messages'
+        error.value = (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
       } else {
-        error.value = 'Erreur lors du chargement des messages'
+        error.value = i18n.global.t('game.stores.chat.loadError')
       }
       logger.error('Erreur loadMoreMessages:', e)
       throw e
@@ -183,9 +184,9 @@ export const useChatStore = defineStore('chat', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors du chargement des nouveaux messages'
+          (e as { message: string }).message || i18n.global.t('game.stores.chat.loadNewError')
       } else {
-        error.value = 'Erreur lors du chargement des nouveaux messages'
+        error.value = i18n.global.t('game.stores.chat.loadNewError')
       }
       logger.error('Erreur loadMessagesSince:', e)
       throw e
@@ -204,7 +205,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message")
+      error.value = getErrorMessage(e, i18n.global.t('game.stores.chat.sendError'))
       logger.error('Erreur sendMessage:', e)
       throw e
     } finally {
@@ -224,7 +225,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      error.value = getErrorMessage(e, "Erreur lors de l'envoi de l'émote")
+      error.value = getErrorMessage(e, i18n.global.t('game.stores.chat.sendEmoteError'))
       logger.error('Erreur sendEmote:', e)
       throw e
     } finally {
@@ -244,7 +245,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      error.value = getErrorMessage(e, "Erreur lors de l'envoi du chuchotement")
+      error.value = getErrorMessage(e, i18n.global.t('game.stores.chat.sendWhisperError'))
       logger.error('Erreur sendWhisper:', e)
       throw e
     } finally {
@@ -264,7 +265,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      error.value = getErrorMessage(e, "Erreur lors de l'envoi du message système")
+      error.value = getErrorMessage(e, i18n.global.t('game.stores.chat.sendSystemError'))
       logger.error('Erreur sendSystemMessage:', e)
       throw e
     } finally {
@@ -294,7 +295,7 @@ export const useChatStore = defineStore('chat', () => {
       addMessageToList(message)
       return message
     } catch (e: unknown) {
-      error.value = getErrorMessage(e, 'Erreur lors du lancer de dés')
+      error.value = getErrorMessage(e, i18n.global.t('game.stores.chat.rollError'))
       logger.error('Erreur rollDice:', e)
       throw e
     } finally {
@@ -314,9 +315,9 @@ export const useChatStore = defineStore('chat', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors de la suppression du message'
+          (e as { message: string }).message || i18n.global.t('game.stores.chat.deleteError')
       } else {
-        error.value = 'Erreur lors de la suppression du message'
+        error.value = i18n.global.t('game.stores.chat.deleteError')
       }
       logger.error('Erreur deleteMessage:', e)
       throw e

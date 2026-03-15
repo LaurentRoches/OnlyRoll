@@ -1,6 +1,6 @@
 # Structure du Projet OnlyRoll
 
-**Stack technique** : Symfony 7.1 (PHP 8.3) + Vue.js 3.4 (TypeScript) + Docker
+**Stack technique** : Symfony 7.3 (PHP 8.3) + Vue.js 3.5 (TypeScript) + Docker
 
 ```
 OnlyRoll/
@@ -78,6 +78,7 @@ backend/
 │   │   ├── PresenceController.php              # Présence utilisateurs
 │   │   ├── SecurityController.php              # Génération mots de passe (OWASP)
 │   │   ├── ProfileController.php               # Gestion profil utilisateur
+│   │   ├── WikiController.php                  # Wiki D&D 5e (public + favoris)
 │   │   └── Admin/                              # Administration (ROLE_ADMIN)
 │   │       ├── AdminDashboardController.php    # Dashboard admin
 │   │       ├── AdminUserController.php         # CRUD utilisateurs
@@ -90,7 +91,34 @@ backend/
 │   │   ├── GameMap.php                         # Carte
 │   │   ├── GameToken.php                       # Token sur la carte
 │   │   ├── GameMessage.php                     # Message chat
-│   │   └── AuditLog.php                        # Logs de sécurité (OWASP A09)
+│   │   ├── AuditLog.php                        # Logs de sécurité (OWASP A09)
+│   │   ├── Reference/                          # Données de référence D&D
+│   │   │   ├── ContentSource.php               # Sources (PHB, DMG, MM, etc.)
+│   │   │   ├── DamageType.php                  # Types de dégâts
+│   │   │   ├── WeaponProperty.php              # Propriétés d'armes
+│   │   │   ├── ItemCategory.php                # Catégories d'objets
+│   │   │   ├── ItemRarity.php                  # Raretés d'objets
+│   │   │   ├── CreatureSize.php                # Tailles de créature
+│   │   │   ├── CreatureType.php                # Types de créature
+│   │   │   ├── Alignment.php                   # Alignements
+│   │   │   ├── SpellSchool.php                 # Écoles de magie
+│   │   │   ├── ConditionType.php               # États (aveuglé, charmé, etc.)
+│   │   │   ├── Skill.php                       # Compétences
+│   │   │   └── Language.php                    # Langues
+│   │   ├── Srd/                                # Contenu D&D (System Reference Document)
+│   │   │   ├── Spell.php + SpellComponent/Class/DamageType  # Sorts
+│   │   │   ├── SrdClass.php + Subclass/ClassFeature         # Classes
+│   │   │   ├── Race.php + Subrace/RaceTrait/RaceSpeed/RaceLanguage  # Races
+│   │   │   ├── Item.php + ItemWeapon/ItemArmor/ItemWeaponProperty/ItemWeaponDamage  # Équipement
+│   │   │   ├── Monster.php + 10 entités liées               # Monstres
+│   │   │   ├── Background.php + BackgroundSkill/Language/Equipment  # Historiques
+│   │   │   └── Feat.php + FeatAbilityModifier/Prerequisite/Benefit  # Dons
+│   │   └── Wiki/                               # Couche wiki i18n
+│   │       ├── WikiCategory.php                # 7 catégories (sorts, races, classes, etc.)
+│   │       ├── WikiCategoryTranslation.php     # Traductions catégories (EN/FR)
+│   │       ├── WikiArticle.php                 # Lien SRD ↔ article wiki
+│   │       ├── WikiArticleTranslation.php      # Titre + contenu Markdown localisé
+│   │       └── WikiFavorite.php                # Favoris utilisateur (user_id + srd_table + srd_id)
 │   │
 │   ├── Service/                                # Logique métier
 │   │   ├── GameService.php                     # Logique de jeu
@@ -102,6 +130,17 @@ backend/
 │   │   ├── PasswordGeneratorService.php        # Génération mots de passe sécurisés
 │   │   ├── AuditLogService.php                 # Logging sécurisé (RGPD: hash IP)
 │   │   ├── ProfileService.php                  # Gestion profil & changement MDP
+│   │   ├── Import/                             # Import données 5etools
+│   │   │   ├── EntryParser.php                 # Convertit entries 5etools → Markdown
+│   │   │   ├── SpellImportMapper.php           # Mapping sorts
+│   │   │   ├── RaceImportMapper.php            # Mapping races
+│   │   │   ├── ClassImportMapper.php           # Mapping classes
+│   │   │   ├── ItemImportMapper.php            # Mapping équipement
+│   │   │   ├── BackgroundImportMapper.php      # Mapping historiques
+│   │   │   ├── FeatImportMapper.php            # Mapping dons
+│   │   │   └── MonsterImportMapper.php         # Mapping monstres
+│   │   ├── Wiki/                               # Services wiki
+│   │   │   └── WikiSrdSyncService.php          # Sync SRD → wiki_article + traduction EN
 │   │   └── Admin/                              # Services administration
 │   │       └── AdminUserService.php            # CRUD users, soft delete, lock/unlock
 │   │
@@ -120,14 +159,38 @@ backend/
 │   │       ├── UserUpdateDTO.php               # Mise à jour utilisateur
 │   │       └── AuditLogFilterDTO.php           # Filtres logs d'audit
 │   │
+│   ├── Command/Import/                         # Commandes d'import CLI
+│   │   ├── ImportSpellsCommand.php             # app:import:spells
+│   │   ├── ImportRacesCommand.php              # app:import:races
+│   │   ├── ImportClassesCommand.php            # app:import:classes
+│   │   ├── ImportItemsCommand.php              # app:import:items
+│   │   ├── ImportBackgroundsCommand.php        # app:import:backgrounds
+│   │   ├── ImportFeatsCommand.php              # app:import:feats
+│   │   ├── ImportMonstersCommand.php           # app:import:monsters
+│   │   ├── ImportSkillsCommand.php             # app:import:skills
+│   │   ├── ImportConditionsCommand.php         # app:import:conditions
+│   │   └── ImportAllCommand.php                # app:import:all (orchestrateur)
+│   │
 │   ├── Enum/                                   # Énumérations
 │   │   ├── GameStatus.php                      # Statut partie (waiting, active, finished)
 │   │   ├── PlayerRole.php                      # Rôle (gm, player)
 │   │   ├── TokenType.php                       # Type token (character, monster, npc)
 │   │   ├── MessageType.php                     # Type message (text, roll, system)
-│   │   └── AuditAction.php                     # Actions auditables (OWASP A09)
+│   │   └── AuditAction.php                     # Actions auditables (OWASP A09, wiki favoris)
 │   │
 │   ├── Repository/                             # Requêtes Doctrine
+│   │   ├── Srd/                                # Repositories SRD (findWithFilters + findByNameAndSource)
+│   │   │   ├── SpellRepository.php             # Filtres niveau/école/dégâts/classe/source
+│   │   │   ├── RaceRepository.php
+│   │   │   ├── ClassRepository.php
+│   │   │   ├── ItemRepository.php
+│   │   │   ├── MonsterRepository.php           # Filtres type/taille/CR/source
+│   │   │   ├── BackgroundRepository.php
+│   │   │   └── FeatRepository.php
+│   │   └── Wiki/
+│   │       ├── WikiArticleRepository.php       # findBySrdEntity()
+│   │       ├── WikiCategoryRepository.php
+│   │       └── WikiFavoriteRepository.php      # isFavorited(), getFavoritedIds()
 │   │
 │   ├── EventSubscriber/                        # Event Subscribers
 │   │   ├── AuthenticationSuccessSubscriber.php  # Cookie JWT + sliding session
@@ -253,6 +316,10 @@ frontend/
 │   │   ├── games/
 │   │   │   ├── GameListView.vue    # Liste des parties (scroll infini)
 │   │   │   └── GamePlayView.vue    # Table de jeu (carte + chat + dés)
+│   │   ├── wiki/                   # Wiki D&D 5e (public)
+│   │   │   ├── WikiHomeView.vue    # Accueil : grille 7 catégories + recherche
+│   │   │   ├── WikiCategoryView.vue # Liste paginée + filtres sidebar + scroll infini
+│   │   │   └── WikiDetailView.vue  # Détail entité + calculateur dégâts (sorts)
 │   │   └── admin/
 │   │       ├── AdminDashboardView.vue   # Dashboard admin
 │   │       ├── AdminUsersView.vue       # Gestion utilisateurs
@@ -277,6 +344,13 @@ frontend/
 │   │   ├── profile/
 │   │   │   ├── AvatarUploader.vue  # Upload avatar
 │   │   │   └── PasswordChangeForm.vue  # Formulaire changement MDP
+│   │   ├── wiki/                   # Composants wiki
+│   │   │   ├── WikiCategoryCard.vue     # Carte catégorie (grille accueil)
+│   │   │   ├── WikiSpellCard.vue        # Carte sort (niveau, école, composants)
+│   │   │   ├── WikiItemCard.vue         # Carte générique (race/classe/monstre/…)
+│   │   │   ├── WikiFilters.vue          # Panneau filtres (sidebar/mobile)
+│   │   │   ├── WikiFavoriteButton.vue   # Bouton étoile (⭐/☆, redirige si non connecté)
+│   │   │   └── SpellDamageCalculator.vue # Calculateur min/moy/max par niveau de slot
 │   │   └── game/
 │   │       ├── GameCard.vue             # Carte de partie (liste)
 │   │       ├── GameHeader.vue           # En-tête table de jeu
@@ -301,7 +375,8 @@ frontend/
 │   │   ├── game.ts                 # Parties (liste + partie courante, pagination serveur)
 │   │   ├── mapStore.ts             # État de la carte tactique
 │   │   ├── chatStore.ts            # Messages chat (historique paginé)
-│   │   └── presenceStore.ts        # Présence utilisateurs en ligne
+│   │   ├── presenceStore.ts        # Présence utilisateurs en ligne
+│   │   └── wikiStore.ts            # État wiki (catégories, liste, détail, favoris)
 │   │
 │   ├── composables/                # Logique réutilisable
 │   │   ├── useAuth.ts              # Gestion auth (wrapper store + utilitaires erreurs)
@@ -326,13 +401,15 @@ frontend/
 │   │       ├── securityApi.ts      # API sécurité (génération MDP)
 │   │       ├── profileApi.ts       # API profil utilisateur
 │   │       ├── adminApi.ts         # API administration (dashboard, users, audit)
+│   │       ├── wikiApi.ts          # API wiki D&D 5e (sorts, races, monstres, favoris…)
 │   │       └── index.ts            # Export centralisé
 │   │
 │   ├── types/                      # Types TypeScript
 │   │   ├── game.ts                 # Entités jeu (Game, GameMessage, DiceResult, etc.)
 │   │   ├── auth.ts                 # Types auth (User, LoginCredentials, etc.)
 │   │   ├── errors.ts               # Types erreurs
-│   │   └── websocket.ts            # Types événements Mercure
+│   │   ├── websocket.ts            # Types événements Mercure
+│   │   └── wiki.ts                 # Types wiki (SpellDetail, MonsterDetail, WikiFavorite…)
 │   │
 │   └── utils/
 │       ├── logger.ts               # Utilitaire de logging

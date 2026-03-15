@@ -4,6 +4,9 @@ import type { CreateGameDTO } from '@/types/game'
 import { useGameStore } from '@/stores/game'
 import { useRouter } from 'vue-router'
 import { XMarkIcon, UsersIcon, LockClosedIcon, GlobeAltIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   close: []
@@ -29,11 +32,11 @@ function validateForm(): boolean {
   errors.value = {}
 
   if (formData.value.name.length < 3) {
-    errors.value.name = 'Le nom doit faire au moins 3 caractères'
+    errors.value.name = t('game.create.name.error')
   }
 
   if (!formData.value.isPublic && !formData.value.password) {
-    errors.value.password = 'Mot de passe requis pour une partie privée'
+    errors.value.password = t('game.create.password.error')
   }
 
   return Object.keys(errors.value).length === 0
@@ -70,12 +73,12 @@ async function handleSubmit() {
     >
       <div class="flex items-center justify-between mb-6">
         <h2 id="create-game-modal-title" class="text-2xl font-bold text-secondary-50">
-          Créer une nouvelle partie
+          {{ t('game.create.title') }}
         </h2>
         <button
           @click="emit('close')"
           class="text-secondary-400 hover:text-secondary-50 transition-colors p-1 hover:bg-secondary-700 rounded-md"
-          aria-label="Fermer la modale"
+          :aria-label="t('game.create.closeModal')"
         >
           <XMarkIcon class="w-6 h-6" aria-hidden="true" />
         </button>
@@ -84,14 +87,14 @@ async function handleSubmit() {
       <form @submit.prevent="handleSubmit" class="space-y-5">
         <div>
           <label class="block text-sm font-medium text-secondary-300 mb-2">
-            Nom de la partie <span class="text-accent-rose">*</span>
+            {{ t('game.create.name.label') }} <span class="text-accent-rose">*</span>
           </label>
           <input
             v-model="formData.name"
             type="text"
             required
             class="w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-            placeholder="Ex: La Campagne des Dragons Oubliés"
+            :placeholder="t('game.create.name.placeholder')"
           />
           <p v-if="errors.name" class="text-accent-rose text-sm mt-1.5 flex items-center gap-1">
             <span class="inline-block w-1 h-1 bg-accent-rose rounded-full"></span>
@@ -100,19 +103,19 @@ async function handleSubmit() {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-secondary-300 mb-2"> Description </label>
+          <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.create.description.label') }} </label>
           <textarea
             v-model="formData.description"
             rows="3"
             class="w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none"
-            placeholder="Décrivez votre campagne, son univers, son ambiance..."
+            :placeholder="t('game.create.description.placeholder')"
           />
         </div>
 
         <div>
           <label for="maxPlayers" class="block text-sm font-medium text-secondary-300 mb-2">
             <UsersIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
-            Nombre maximum de joueurs
+            {{ t('game.create.maxPlayers.label') }}
           </label>
           <div class="relative">
             <input
@@ -126,7 +129,7 @@ async function handleSubmit() {
             <span
               class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary-400 text-sm pointer-events-none"
             >
-              joueurs max
+              {{ t('game.create.maxPlayers.suffix') }}
             </span>
           </div>
         </div>
@@ -151,14 +154,14 @@ async function handleSubmit() {
                 />
                 <LockClosedIcon v-else class="w-5 h-5 text-accent-amber" aria-hidden="true" />
                 <span class="text-secondary-50 font-medium">
-                  {{ formData.isPublic ? 'Partie publique' : 'Partie privée' }}
+                  {{ formData.isPublic ? t('game.create.visibility.public') : t('game.create.visibility.private') }}
                 </span>
               </div>
               <p class="text-secondary-400 text-sm mt-1">
                 {{
                   formData.isPublic
-                    ? 'Visible par tous les joueurs dans la liste publique'
-                    : 'Accessible uniquement avec le mot de passe'
+                    ? t('game.create.visibility.publicHint')
+                    : t('game.create.visibility.privateHint')
                 }}
               </p>
             </div>
@@ -168,14 +171,14 @@ async function handleSubmit() {
         <div v-if="!formData.isPublic">
           <label for="gamePassword" class="block text-sm font-medium text-secondary-300 mb-2">
             <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
-            Mot de passe <span class="text-accent-rose">*</span>
+            {{ t('game.create.password.label') }} <span class="text-accent-rose">*</span>
           </label>
           <input
             id="gamePassword"
             v-model="formData.password"
             type="password"
             class="w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-            placeholder="Mot de passe de la partie"
+            :placeholder="t('game.create.password.placeholder')"
           />
           <p v-if="errors.password" class="text-accent-rose text-sm mt-1.5 flex items-center gap-1">
             <span class="inline-block w-1 h-1 bg-accent-rose rounded-full"></span>
@@ -209,7 +212,7 @@ async function handleSubmit() {
             @click="emit('close')"
             class="px-6 py-2.5 border border-secondary-600 text-secondary-300 rounded-md hover:bg-secondary-700 hover:text-secondary-50 transition-all duration-200"
           >
-            Annuler
+            {{ t('game.create.cancel') }}
           </button>
           <button
             type="submit"
@@ -233,9 +236,9 @@ async function handleSubmit() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Création...
+              {{ t('game.create.submit.creating') }}
             </span>
-            <span v-else>Créer la partie</span>
+            <span v-else>{{ t('game.create.submit.create') }}</span>
           </button>
         </div>
       </form>

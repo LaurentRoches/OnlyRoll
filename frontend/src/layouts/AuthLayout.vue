@@ -11,7 +11,7 @@
         </div>
         <h1 class="text-2xl font-bold text-secondary-50 mb-2 text-shadow-strong">OnlyRoll</h1>
         <p class="text-secondary-300 text-sm text-shadow-strong">
-          {{ pageTitle }}
+          {{ t(`auth.layout.pageTitle.${pageTitleKey}`) }}
         </p>
       </div>
 
@@ -22,28 +22,28 @@
       <div class="text-center mt-6 space-y-2">
         <div class="text-sm text-secondary-300 text-shadow-strong">
           <template v-if="$route.name === 'login'">
-            Pas encore de compte ?
+            {{ t('auth.layout.noAccount') }}
             <RouterLink
               to="/auth/register"
               class="text-primary-300 hover:text-primary-200 font-medium transition-colors text-shadow-strong"
             >
-              S'inscrire
+              {{ t('auth.layout.signUp') }}
             </RouterLink>
           </template>
           <template v-else>
-            Déjà un compte ?
+            {{ t('auth.layout.hasAccount') }}
             <RouterLink
               to="/auth/login"
               class="text-primary-300 hover:text-primary-200 font-medium transition-colors text-shadow-strong"
             >
-              Se connecter
+              {{ t('auth.layout.signIn') }}
             </RouterLink>
           </template>
         </div>
 
         <div class="text-xs text-secondary-400 text-shadow-strong">
           <RouterLink to="/" class="hover:text-secondary-300 transition-colors">
-            ← Retour à l'accueil
+            {{ t('auth.layout.backToHome') }}
           </RouterLink>
         </div>
       </div>
@@ -54,17 +54,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 
-const pageTitle = computed(() => {
+const pageTitleKey = computed(() => {
   switch (route.name) {
     case 'login':
-      return 'Connectez-vous à votre compte'
+      return 'login'
     case 'register':
-      return 'Créez votre compte de joueur'
+      return 'register'
     default:
-      return 'Authentification'
+      return 'default'
   }
 })
 </script>

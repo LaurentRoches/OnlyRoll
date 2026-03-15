@@ -22,6 +22,13 @@ export interface UseInfiniteScrollOptions {
    * Utiliser pour stopper le scroll infini quand il n'y a plus de données.
    */
   disabled?: Ref<boolean>
+
+  /**
+   * Conteneur scrollable racine pour l'IntersectionObserver.
+   * Par défaut null = viewport (scroll page classique).
+   * Passer la ref du div scrollable en mode tablette/desktop (overflow-y-auto).
+   */
+  root?: Ref<HTMLElement | null>
 }
 
 /**
@@ -55,7 +62,7 @@ export function useInfiniteScroll(
   callback: () => Promise<void>,
   options: UseInfiniteScrollOptions = {}
 ) {
-  const { rootMargin = '150px', threshold = 0, disabled } = options
+  const { rootMargin = '150px', threshold = 0, disabled, root } = options
 
   const isLoading = ref(false)
   let observer: IntersectionObserver | null = null
@@ -75,7 +82,11 @@ export function useInfiniteScroll(
 
   function setup() {
     if (!sentinel.value || typeof IntersectionObserver === 'undefined') return
-    observer = new IntersectionObserver(handleIntersection, { rootMargin, threshold })
+    observer = new IntersectionObserver(handleIntersection, {
+      root: root?.value ?? null,
+      rootMargin,
+      threshold,
+    })
     observer.observe(sentinel.value)
   }
 
@@ -91,6 +102,13 @@ export function useInfiniteScroll(
     if (oldEl) cleanup()
     if (newEl) setup()
   })
+
+  if (root) {
+    watch(root, () => {
+      cleanup()
+      setup()
+    })
+  }
 
   return { isLoading }
 }

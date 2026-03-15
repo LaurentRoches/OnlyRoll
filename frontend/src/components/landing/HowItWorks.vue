@@ -6,14 +6,14 @@
           class="text-3xl md:text-4xl font-bold text-secondary-50 mb-4 text-shadow-strong reveal-up"
           :class="{ revealed: isVisible }"
         >
-          Comment ça marche
+          {{ t('landing.howItWorks.title') }}
         </h2>
         <p
           class="text-secondary-400 text-lg reveal-up"
           :class="{ revealed: isVisible }"
           style="transition-delay: 100ms"
         >
-          Prêt à jouer en moins de 2 minutes
+          {{ t('landing.howItWorks.subtitle') }}
         </p>
       </div>
 
@@ -30,9 +30,9 @@
           >
             1
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">Créez votre compte</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step1.title') }}</h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
-            Inscription gratuite en 30 secondes. Aucune carte bancaire.
+            {{ t('landing.howItWorks.step1.description') }}
           </p>
         </div>
 
@@ -52,9 +52,9 @@
           >
             2
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">Lancez une partie</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step2.title') }}</h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
-            Invitez vos amis avec un simple lien. Rejoindre prend 10 secondes.
+            {{ t('landing.howItWorks.step2.description') }}
           </p>
         </div>
 
@@ -74,9 +74,9 @@
           >
             3
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">Jouez !</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step3.title') }}</h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
-            Chat, dés, wiki D&D... tout est prêt. L'aventure commence.
+            {{ t('landing.howItWorks.step3.description') }}
           </p>
         </div>
       </div>
@@ -86,8 +86,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useScrollReveal } from '@/composables/useScrollReveal'
 
+const { t } = useI18n()
 const sectionRef = ref<HTMLElement>()
 const { isVisible } = useScrollReveal(sectionRef, { threshold: 0.2 })
 </script>

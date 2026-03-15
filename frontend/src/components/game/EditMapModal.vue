@@ -3,6 +3,9 @@ import { ref, computed, watch } from 'vue'
 import { useMapStore } from '@/stores/mapStore'
 import { XMarkIcon, ArrowUpTrayIcon, PencilIcon } from '@heroicons/vue/24/outline'
 import type { GameMap } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   gameId: number
@@ -79,13 +82,13 @@ function handleFileSelect(event: Event) {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
+    uploadError.value = t('game.editMap.errors.invalidType')
     return
   }
 
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
-    uploadError.value = "L'image est trop volumineuse (max 10 Mo)"
+    uploadError.value = t('game.editMap.errors.tooLarge')
     return
   }
 
@@ -140,7 +143,7 @@ async function handleUpdate() {
     if (!response.ok) {
       const error = await response.json()
       console.error('Erreur backend:', error)
-      throw new Error(error.error || 'Erreur lors de la mise à jour')
+      throw new Error(error.error || t('game.editMap.errors.updateFailed'))
     }
 
     const updatedMap = await response.json()
@@ -156,7 +159,7 @@ async function handleUpdate() {
   } catch (error: unknown) {
     console.error('Erreur update:', error)
     uploadError.value =
-      error instanceof Error ? error.message : 'Erreur lors de la mise à jour de la carte'
+      error instanceof Error ? error.message : t('game.editMap.errors.updateFailed')
   } finally {
     isUploading.value = false
   }
@@ -183,9 +186,9 @@ function close() {
         >
           <div class="flex items-center justify-between p-6 border-b border-secondary-700">
             <div>
-              <h2 class="text-2xl font-bold text-white">✏️ Éditer la carte</h2>
+              <h2 class="text-2xl font-bold text-white">✏️ {{ t('game.editMap.title') }}</h2>
               <p class="text-secondary-400 text-sm mt-1">
-                Modifiez les informations de votre carte
+                {{ t('game.editMap.subtitle') }}
               </p>
             </div>
             <button @click="close" class="text-secondary-400 hover:text-white transition-colors">
@@ -196,9 +199,9 @@ function close() {
           <form @submit.prevent="handleUpdate" class="p-6 space-y-6">
             <div class="space-y-2">
               <label class="block text-sm font-medium text-secondary-300">
-                Image de la carte
+                {{ t('game.editMap.image.label') }}
                 <span class="text-secondary-500 text-xs ml-2"
-                  >(Optionnel - Laissez vide pour conserver l'image actuelle)</span
+                  >{{ t('game.editMap.image.optional') }}</span
                 >
               </label>
 
@@ -216,38 +219,38 @@ function close() {
                 <label for="map-file-input" class="cursor-pointer">
                   <ArrowUpTrayIcon class="w-12 h-12 mx-auto text-secondary-400 mb-3" />
                   <p class="text-secondary-300 font-medium mb-1">
-                    Cliquez pour sélectionner une nouvelle image
+                    {{ t('game.editMap.image.selectPrompt') }}
                   </p>
-                  <p class="text-secondary-500 text-sm">JPEG, PNG, WebP ou GIF (max 10 Mo)</p>
+                  <p class="text-secondary-500 text-sm">{{ t('game.editMap.image.formats') }}</p>
                 </label>
               </div>
 
               <div v-else class="relative">
                 <img
                   :src="imagePreview"
-                  alt="Aperçu"
+                  :alt="t('game.editMap.image.preview')"
                   class="w-full h-64 object-contain bg-secondary-900 rounded-lg"
                 />
                 <button
                   type="button"
                   @click="removeFile"
                   class="absolute top-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full transition-colors"
-                  title="Changer l'image"
+                  :title="t('game.editMap.image.changeTitle')"
                 >
                   <XMarkIcon class="w-5 h-5" />
                 </button>
                 <p v-if="selectedFile" class="text-secondary-400 text-sm mt-2">
-                  Nouvelle image : {{ selectedFile.name }}
+                  {{ t('game.editMap.image.newImage', { name: selectedFile.name }) }}
                 </p>
                 <p v-else class="text-secondary-500 text-sm mt-2">
-                  Image actuelle - Cliquez sur ✕ pour changer
+                  {{ t('game.editMap.image.currentImage') }}
                 </p>
               </div>
             </div>
 
             <div class="space-y-2">
               <label for="map-name" class="block text-sm font-medium text-secondary-300">
-                Nom de la carte *
+                {{ t('game.editMap.name.label') }}
               </label>
               <input
                 id="map-name"
@@ -256,20 +259,20 @@ function close() {
                 required
                 minlength="3"
                 maxlength="250"
-                placeholder="Ex: Donjon du Dragon Rouge"
+                :placeholder="t('game.editMap.name.placeholder')"
                 class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div class="space-y-2">
               <label for="map-description" class="block text-sm font-medium text-secondary-300">
-                Description
+                {{ t('game.editMap.description.label') }}
               </label>
               <textarea
                 id="map-description"
                 v-model="mapDescription"
                 rows="3"
-                placeholder="Décrivez brièvement votre carte..."
+                :placeholder="t('game.editMap.description.placeholder')"
                 class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               ></textarea>
             </div>
@@ -277,22 +280,22 @@ function close() {
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
                 <label for="grid-type" class="block text-sm font-medium text-secondary-300">
-                  Type de grille
+                  {{ t('game.editMap.grid.type.label') }}
                 </label>
                 <select
                   id="grid-type"
                   v-model="gridType"
                   class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="square">Carrée</option>
-                  <option value="hex">Hexagonale</option>
-                  <option value="none">Aucune</option>
+                  <option value="square">{{ t('game.editMap.grid.type.square') }}</option>
+                  <option value="hex">{{ t('game.editMap.grid.type.hex') }}</option>
+                  <option value="none">{{ t('game.editMap.grid.type.none') }}</option>
                 </select>
               </div>
 
               <div class="space-y-2">
                 <label for="grid-size" class="block text-sm font-medium text-secondary-300">
-                  Taille de case (px)
+                  {{ t('game.editMap.grid.size') }}
                 </label>
                 <input
                   id="grid-size"
@@ -306,7 +309,7 @@ function close() {
 
               <div class="space-y-2">
                 <label for="grid-width" class="block text-sm font-medium text-secondary-300">
-                  Largeur (cases)
+                  {{ t('game.editMap.grid.width') }}
                 </label>
                 <input
                   id="grid-width"
@@ -320,7 +323,7 @@ function close() {
 
               <div class="space-y-2">
                 <label for="grid-height" class="block text-sm font-medium text-secondary-300">
-                  Hauteur (cases)
+                  {{ t('game.editMap.grid.height') }}
                 </label>
                 <input
                   id="grid-height"
@@ -346,7 +349,7 @@ function close() {
                 @click="close"
                 class="flex-1 px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-white font-medium rounded-lg transition-colors"
               >
-                Annuler
+                {{ t('game.editMap.cancel') }}
               </button>
               <button
                 type="submit"
@@ -375,7 +378,7 @@ function close() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {{ isUploading ? 'Mise à jour...' : 'Mettre à jour' }}
+                {{ isUploading ? t('game.editMap.submit.updating') : t('game.editMap.submit.update') }}
               </button>
             </div>
           </form>

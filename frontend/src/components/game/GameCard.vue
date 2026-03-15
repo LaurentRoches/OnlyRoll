@@ -6,6 +6,9 @@ import { usePresenceStore } from '@/stores/presenceStore'
 import { useAuthStore } from '@/stores/auth'
 import { UsersIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
 import { gameApi } from '@/services/api/gameApi'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   game: Game
@@ -30,23 +33,23 @@ const authStore = useAuthStore()
 const statusConfig = computed(() => {
   const configs = {
     preparation: {
-      label: 'En préparation',
+      label: t('game.card.status.preparation'),
       class: 'bg-info text-white',
     },
     in_progress: {
-      label: 'En cours',
+      label: t('game.card.status.in_progress'),
       class: 'bg-accent-emerald text-white',
     },
     paused: {
-      label: 'En pause',
+      label: t('game.card.status.paused'),
       class: 'bg-warning text-primary-900',
     },
     completed: {
-      label: 'Terminée',
+      label: t('game.card.status.completed'),
       class: 'bg-secondary-600 text-white',
     },
     archived: {
-      label: 'Archivée',
+      label: t('game.card.status.archived'),
       class: 'bg-secondary-700 text-secondary-300',
     },
   }
@@ -95,9 +98,7 @@ function handleJoin(event: Event) {
 async function handleDelete(event: Event) {
   event.stopPropagation()
   if (
-    !confirm(
-      `Êtes-vous sûr de vouloir supprimer "${props.game.name}" ?\n\nCette action est définitive : tous les joueurs, messages et cartes associés seront effacés.`
-    )
+    !confirm(t('game.card.deleteConfirm', { name: props.game.name }))
   )
     return
   isDeleting.value = true
@@ -106,7 +107,7 @@ async function handleDelete(event: Event) {
     emit('deleted', props.game)
   } catch (e) {
     console.error('Erreur lors de la suppression:', e)
-    alert('Impossible de supprimer cette partie')
+    alert(t('game.card.deleteError'))
   } finally {
     isDeleting.value = false
   }
@@ -121,7 +122,7 @@ async function handleDelete(event: Event) {
     @keydown.space.prevent="viewGame"
     tabindex="0"
     role="button"
-    :aria-label="`Voir la partie ${game.name}`"
+    :aria-label="t('game.card.viewLabel', { name: game.name })"
   >
     <div
       class="h-32 bg-gradient-to-br from-secondary-600 via-secondary-500 to-primary-400 relative"
@@ -134,7 +135,7 @@ async function handleDelete(event: Event) {
           @click="handleDelete"
           :disabled="isDeleting"
           class="p-1.5 bg-secondary-900/80 hover:bg-error/80 rounded-md text-secondary-300 hover:text-white transition-colors disabled:opacity-50"
-          title="Supprimer la partie"
+          :title="t('game.card.deleteTitle')"
         >
           <svg
             v-if="!isDeleting"
@@ -170,7 +171,7 @@ async function handleDelete(event: Event) {
           class="flex items-center gap-1 text-secondary-200 text-xs bg-secondary-900/60 px-2 py-1 rounded-md backdrop-blur-sm"
         >
           <LockClosedIcon class="w-3 h-3" aria-hidden="true" />
-          <span>Privée</span>
+          <span>{{ t('game.card.private') }}</span>
         </div>
       </div>
     </div>
@@ -182,8 +183,8 @@ async function handleDelete(event: Event) {
         {{ game.name }}
       </h3>
 
-      <p class="text-secondary-400 text-sm mb-1">Maître du jeu</p>
-      <p class="text-secondary-300 text-sm mb-4">Campagne niveau : {{ campaignLevel }}</p>
+      <p class="text-secondary-400 text-sm mb-1">{{ t('game.card.gameMaster') }}</p>
+      <p class="text-secondary-300 text-sm mb-4">{{ t('game.card.campaignLevel', { level: campaignLevel }) }}</p>
 
       <div class="flex items-center justify-between">
         <div class="flex items-center text-sm gap-2">
@@ -196,7 +197,7 @@ async function handleDelete(event: Event) {
             <span :class="onlinePlayersCount > 0 ? 'text-success font-semibold' : ''">{{
               onlinePlayersCount
             }}</span>
-            joueur(s) connecté(s)
+            {{ t('game.card.onlinePlayers') }}
           </span>
         </div>
 
@@ -211,7 +212,7 @@ async function handleDelete(event: Event) {
               : 'bg-primary-500 hover:bg-primary-600 text-white hover:shadow-purple',
           ]"
         >
-          {{ isFull ? 'Complète' : 'Rejoindre' }}
+          {{ isFull ? t('game.card.fullButton') : t('game.card.joinButton') }}
         </button>
       </div>
     </div>
@@ -222,8 +223,7 @@ async function handleDelete(event: Event) {
         class="absolute inset-x-0 bottom-0 bg-primary-900/90 backdrop-blur-sm rounded-b-lg px-4 py-3 border-t border-primary-500/50"
       >
         <p class="text-sm text-primary-200 text-center">
-          Cliquez sur <span class="font-semibold text-white">"Rejoindre"</span> pour accéder à cette
-          partie
+          {{ t('game.card.joinHint') }}
         </p>
       </div>
     </Transition>

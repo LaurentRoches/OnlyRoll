@@ -18,19 +18,19 @@
               to="/games"
               class="text-secondary-300 hover:text-secondary-50 transition-colors"
             >
-              Parties
+              {{ t('landing.home.nav.games') }}
             </RouterLink>
             <a
               href="#features"
               class="text-secondary-300 hover:text-secondary-50 transition-colors"
             >
-              Fonctionnalités
+              {{ t('landing.home.nav.features') }}
             </a>
             <a href="#about" class="text-secondary-300 hover:text-secondary-50 transition-colors">
-              À propos
+              {{ t('landing.home.nav.about') }}
             </a>
             <a href="#contact" class="text-secondary-300 hover:text-secondary-50 transition-colors">
-              Contact
+              {{ t('landing.home.nav.contact') }}
             </a>
           </div>
 
@@ -49,13 +49,13 @@
                 to="/auth/login"
                 class="hidden sm:inline-flex px-4 py-2 text-secondary-300 hover:text-secondary-50 transition-colors"
               >
-                Connexion
+                {{ t('landing.home.nav.login') }}
               </RouterLink>
               <RouterLink
                 to="/auth/register"
                 class="px-3 py-2 sm:px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors text-sm sm:text-base whitespace-nowrap"
               >
-                Inscription
+                {{ t('landing.home.nav.register') }}
               </RouterLink>
             </template>
           </div>
@@ -90,16 +90,14 @@
           :class="{ revealed: heroReady }"
           style="transition-delay: 200ms"
         >
-          One site to Roll them all
+          {{ t('landing.home.hero.subtitle') }}
         </p>
         <p
-          class="text-lg text-secondary-400 mb-12 max-w-3xl mx-auto text-shadow-strong reveal-up"
+          class="text-lg text-secondary-400 mb-12 max-w-3xl mx-auto text-shadow-strong reveal-up whitespace-pre-line"
           :class="{ revealed: heroReady }"
           style="transition-delay: 400ms"
         >
-          Votre prochaine aventure commence ici.<br />
-          Lancez les dés, explorez les donjons,<br />
-          le tout depuis votre navigateur.
+          {{ t('landing.home.hero.description') }}
         </p>
 
         <div
@@ -112,13 +110,13 @@
               to="/dashboard"
               class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
             >
-              Mon Dashboard
+              {{ t('landing.home.hero.myDashboard') }}
             </RouterLink>
             <RouterLink
               to="/games"
               class="px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
             >
-              Voir les parties
+              {{ t('landing.home.hero.viewGames') }}
             </RouterLink>
           </template>
           <template v-else>
@@ -126,13 +124,13 @@
               to="/auth/register"
               class="px-8 py-4 bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold rounded-lg shadow-purple transition-all duration-200 hover:shadow-purple-lg transform hover:-translate-y-1"
             >
-              Inscription
+              {{ t('landing.home.hero.register') }}
             </RouterLink>
             <RouterLink
               to="/auth/login"
               class="px-8 py-4 bg-secondary-700 hover:bg-secondary-600 text-secondary-50 text-lg font-semibold rounded-lg border border-secondary-600 transition-colors"
             >
-              Connexion
+              {{ t('landing.home.hero.login') }}
             </RouterLink>
           </template>
         </div>
@@ -167,7 +165,7 @@
                 d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Parcourir les parties sans inscription
+            {{ t('landing.home.hero.browseWithout') }}
           </RouterLink>
         </div>
       </div>
@@ -176,7 +174,7 @@
         class="absolute bottom-8 left-1/2 -translate-x-1/2 text-secondary-500 animate-bounce-gentle reveal-up"
         :class="{ revealed: heroReady }"
         style="transition-delay: 800ms"
-        aria-label="Défiler vers le bas"
+        :aria-label="t('landing.home.hero.scrollDown')"
       >
         <svg
           class="w-6 h-6"
@@ -216,12 +214,12 @@
               <span class="text-xl font-bold text-secondary-50">OnlyRoll</span>
             </div>
             <p class="text-secondary-400 text-sm max-w-md">
-              La table virtuelle moderne pour D&D 5e
+              {{ t('landing.home.footer.tagline') }}
             </p>
           </div>
 
           <div>
-            <h3 class="text-secondary-200 font-semibold mb-4">Réseaux sociaux</h3>
+            <h3 class="text-secondary-200 font-semibold mb-4">{{ t('landing.home.footer.socialLinks') }}</h3>
             <ul class="space-y-2 text-sm text-secondary-400">
               <li><a href="#" class="hover:text-secondary-300 transition-colors">GitHub</a></li>
               <li><a href="#" class="hover:text-secondary-300 transition-colors">Discord</a></li>
@@ -229,7 +227,7 @@
           </div>
 
           <div>
-            <h3 class="text-secondary-200 font-semibold mb-4">Support</h3>
+            <h3 class="text-secondary-200 font-semibold mb-4">{{ t('landing.home.footer.support') }}</h3>
             <ul class="space-y-2 text-sm text-secondary-400">
               <li><a href="#" class="hover:text-secondary-300 transition-colors">FAQ</a></li>
               <li><a href="#" class="hover:text-secondary-300 transition-colors">Contact</a></li>
@@ -239,9 +237,7 @@
 
         <div class="border-t border-secondary-800 mt-8 pt-8 text-center">
           <p class="text-secondary-500 text-sm">
-            © 2025 OnlyRoll • Tous droits réservés
-            <span class="mx-2">🇫🇷</span>
-            Français
+            {{ t('landing.home.footer.copyright') }}
           </p>
         </div>
       </div>
@@ -251,6 +247,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 import HeroParticles from '@/components/landing/HeroParticles.vue'
@@ -260,6 +257,7 @@ import GamePreview from '@/components/landing/GamePreview.vue'
 import HowItWorks from '@/components/landing/HowItWorks.vue'
 import FinalCTA from '@/components/landing/FinalCTA.vue'
 
+const { t } = useI18n()
 const { isAuthenticated } = useAuth()
 
 const heroReady = ref(false)

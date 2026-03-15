@@ -3,6 +3,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useMapStore } from '@/stores/mapStore'
 import { PencilIcon } from '@heroicons/vue/24/outline'
 import type { GameMap } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   isGameMaster: boolean
@@ -35,17 +38,17 @@ const showGridSettings = ref(false)
 type SecondaryBarSection = 'maps' | 'tools' | null
 const openSecondaryBar = ref<SecondaryBarSection>(null)
 
-const tools = [
-  { id: 'select', icon: '🖱️', label: 'Sélection', gmOnly: false },
-  { id: 'token', icon: '🎭', label: 'Ajouter Token', gmOnly: true },
-  { id: 'fog', icon: '☁️', label: 'Brouillard', gmOnly: true },
-  { id: 'measure', icon: '📏', label: 'Mesure', gmOnly: false },
-  { id: 'draw', icon: '✏️', label: 'Dessin', gmOnly: false },
-  { id: 'ping', icon: '📍', label: 'Ping', gmOnly: false },
-]
+const tools = computed(() => [
+  { id: 'select', icon: '🖱️', label: t('game.toolbar.toolNames.select'), gmOnly: false },
+  { id: 'token', icon: '🎭', label: t('game.toolbar.toolNames.token'), gmOnly: true },
+  { id: 'fog', icon: '☁️', label: t('game.toolbar.toolNames.fog'), gmOnly: true },
+  { id: 'measure', icon: '📏', label: t('game.toolbar.toolNames.measure'), gmOnly: false },
+  { id: 'draw', icon: '✏️', label: t('game.toolbar.toolNames.draw'), gmOnly: false },
+  { id: 'ping', icon: '📍', label: t('game.toolbar.toolNames.ping'), gmOnly: false },
+])
 
 const availableTools = computed(() => {
-  return tools.filter((tool) => !tool.gmOnly || props.isGameMaster)
+  return tools.value.filter((tool) => !tool.gmOnly || props.isGameMaster)
 })
 
 const filteredMaps = computed(() => {
@@ -220,7 +223,7 @@ function editMapConfirm(map: GameMap, event: Event) {
 async function deleteMapConfirm(map: GameMap, event: Event) {
   event.stopPropagation()
 
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer la carte "${map.name}" ?`)) {
+  if (!confirm(t('game.toolbar.mapSelector.deleteConfirm', { name: map.name }))) {
     return
   }
 
@@ -228,7 +231,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
     await mapStore.deleteMap(map.id)
   } catch (error) {
     console.error('Erreur lors de la suppression de la carte:', error)
-    alert('Erreur lors de la suppression de la carte')
+    alert(t('game.toolbar.mapSelector.deleteError'))
   }
 }
 </script>
@@ -245,10 +248,10 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             ? 'bg-primary-500 text-white shadow-purple'
             : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600',
         ]"
-        title="Gestion des cartes"
+        :title="t('game.toolbar.mapTitle')"
       >
         <span>🗺️</span>
-        <span class="text-sm">Carte</span>
+        <span class="text-sm">{{ t('game.toolbar.map') }}</span>
       </button>
 
       <button
@@ -259,10 +262,10 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             ? 'bg-primary-500 text-white shadow-purple'
             : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600',
         ]"
-        title="Outils de dessin"
+        :title="t('game.toolbar.toolsTitle')"
       >
         <span>🛠️</span>
-        <span class="text-sm">Outils</span>
+        <span class="text-sm">{{ t('game.toolbar.tools') }}</span>
       </button>
 
       <div class="flex-1"></div>
@@ -271,7 +274,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
         <button
           @click="adjustZoom(-25)"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
-          title="Dézoomer"
+          :title="t('game.toolbar.zoom.out')"
         >
           −
         </button>
@@ -281,7 +284,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             v-if="!isEditingZoom"
             @click="startEditingZoom"
             class="w-full px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-mono transition-colors"
-            title="Cliquer pour entrer une valeur personnalisée"
+            :title="t('game.toolbar.zoom.customTitle')"
           >
             {{ zoomLevel }}%
           </button>
@@ -301,7 +304,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
         <button
           @click="adjustZoom(25)"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
-          title="Zoomer"
+          :title="t('game.toolbar.zoom.in')"
         >
           +
         </button>
@@ -310,10 +313,10 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
       <button
         @click="centerMap"
         class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 flex items-center gap-2 transition-colors"
-        title="Centrer la vue"
+        :title="t('game.toolbar.centerTitle')"
       >
         <span>🎯</span>
-        <span class="text-sm">Centrer</span>
+        <span class="text-sm">{{ t('game.toolbar.center') }}</span>
       </button>
     </div>
 
@@ -327,11 +330,11 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
             <button
               @click="toggleMapDropdown"
               class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 flex items-center gap-2 min-w-[200px] transition-colors"
-              title="Sélectionner une carte"
+              :title="t('game.toolbar.mapSelector.selectTitle')"
             >
               <span>📋</span>
               <span class="text-sm flex-1 text-left truncate">
-                {{ mapStore.activeMap?.name || 'Aucune carte active' }}
+                {{ mapStore.activeMap?.name || t('game.toolbar.mapSelector.noActiveMap') }}
               </span>
               <svg
                 class="w-4 h-4 transition-transform"
@@ -359,7 +362,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                     id="map-search-input"
                     v-model="mapSearchQuery"
                     type="text"
-                    placeholder="Filtrer les cartes..."
+                    :placeholder="t('game.toolbar.mapSelector.searchPlaceholder')"
                     class="w-full px-3 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                     @click.stop
                   />
@@ -385,19 +388,19 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                       </div>
                     </div>
                     <span v-if="map.id === activeMapId" class="text-xs text-primary-400 mr-2"
-                      >✓ Active</span
+                      >✓ {{ t('game.toolbar.mapSelector.active') }}</span
                     >
                     <button
                       @click="editMapConfirm(map, $event)"
                       class="p-2 rounded-lg text-secondary-400 hover:text-blue-400 hover:bg-blue-900/20 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Éditer cette carte"
+                      :title="t('game.toolbar.mapSelector.editTitle')"
                     >
                       <PencilIcon class="w-5 h-5" />
                     </button>
                     <button
                       @click="deleteMapConfirm(map, $event)"
                       class="p-2 rounded-lg text-secondary-400 hover:text-red-400 hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
-                      title="Supprimer cette carte"
+                      :title="t('game.toolbar.mapSelector.deleteTitle')"
                     >
                       🗑️
                     </button>
@@ -407,7 +410,7 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
                     v-if="filteredMaps.length === 0"
                     class="px-4 py-6 text-center text-secondary-500 text-sm"
                   >
-                    Aucune carte trouvée
+                    {{ t('game.toolbar.mapSelector.noMaps') }}
                   </div>
                 </div>
               </div>
@@ -417,10 +420,10 @@ async function deleteMapConfirm(map: GameMap, event: Event) {
           <button
             @click="openUploadModal"
             class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2 transition-colors"
-            title="Créer une nouvelle carte"
+            :title="t('game.toolbar.newMapTitle')"
           >
             <span>➕</span>
-            <span class="text-sm font-medium">Nouvelle carte</span>
+            <span class="text-sm font-medium">{{ t('game.toolbar.newMap') }}</span>
           </button>
 
           <div class="h-8 w-px bg-secondary-600 mx-2"></div>

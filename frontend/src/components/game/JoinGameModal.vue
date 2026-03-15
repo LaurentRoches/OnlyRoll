@@ -4,6 +4,9 @@ import type { Game } from '@/types/game'
 import { getErrorMessage } from '@/types/errors'
 import { useGameStore } from '@/stores/game'
 import { XMarkIcon, LockClosedIcon, GlobeAltIcon, UsersIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Props {
   game: Game
@@ -28,7 +31,7 @@ async function handleJoin() {
   if (isFull.value) return
 
   if (needsPassword.value && !password.value) {
-    error.value = 'Le mot de passe est requis'
+    error.value = t('game.join.password.error')
     return
   }
 
@@ -44,7 +47,7 @@ async function handleJoin() {
     emit('success')
     emit('close')
   } catch (e: unknown) {
-    error.value = getErrorMessage(e) || 'Impossible de rejoindre la partie'
+    error.value = getErrorMessage(e) || t('game.join.joinError')
   } finally {
     isSubmitting.value = false
   }
@@ -65,12 +68,12 @@ async function handleJoin() {
     >
       <div class="flex items-center justify-between mb-6">
         <h2 id="join-game-modal-title" class="text-2xl font-bold text-secondary-50">
-          Rejoindre la partie
+          {{ t('game.join.title') }}
         </h2>
         <button
           @click="emit('close')"
           class="text-secondary-400 hover:text-secondary-50 transition-colors p-1 hover:bg-secondary-700 rounded-md"
-          aria-label="Fermer la modale"
+          :aria-label="t('game.join.closeModal')"
         >
           <XMarkIcon class="w-6 h-6" aria-hidden="true" />
         </button>
@@ -83,7 +86,7 @@ async function handleJoin() {
               {{ game.name }}
             </h3>
             <p class="text-secondary-400 text-sm">
-              Maître du jeu : <span class="text-primary-400">{{ game.gameMaster.pseudo }}</span>
+              {{ t('game.join.gameMaster') }} <span class="text-primary-400">{{ game.gameMaster.pseudo }}</span>
             </p>
           </div>
           <div
@@ -96,7 +99,7 @@ async function handleJoin() {
           >
             <GlobeAltIcon v-if="game.isPublic" class="w-3.5 h-3.5" aria-hidden="true" />
             <LockClosedIcon v-else class="w-3.5 h-3.5" aria-hidden="true" />
-            <span>{{ game.isPublic ? 'Publique' : 'Privée' }}</span>
+            <span>{{ game.isPublic ? t('game.join.public') : t('game.join.private') }}</span>
           </div>
         </div>
 
@@ -107,22 +110,22 @@ async function handleJoin() {
         <div class="flex items-center justify-between pt-3 border-t border-secondary-600">
           <div class="flex items-center gap-2 text-secondary-400 text-sm">
             <UsersIcon class="w-4 h-4" aria-hidden="true" />
-            <span>{{ game.currentPlayersCount }} / {{ game.maxPlayers }} joueurs</span>
+            <span>{{ t('game.join.players', { current: game.currentPlayersCount, max: game.maxPlayers }) }}</span>
           </div>
-          <span v-if="isFull" class="text-accent-rose text-sm font-medium"> Partie complète </span>
+          <span v-if="isFull" class="text-accent-rose text-sm font-medium"> {{ t('game.join.full') }} </span>
         </div>
       </div>
 
       <div v-if="needsPassword" class="mb-6">
         <label for="joinPassword" class="block text-sm font-medium text-secondary-300 mb-2">
           <LockClosedIcon class="w-4 h-4 inline-block mr-1.5 -mt-0.5" aria-hidden="true" />
-          Mot de passe <span class="text-accent-rose">*</span>
+          {{ t('game.join.password.label') }} <span class="text-accent-rose">*</span>
         </label>
         <input
           id="joinPassword"
           v-model="password"
           type="password"
-          placeholder="Entrez le mot de passe de la partie"
+          :placeholder="t('game.join.password.placeholder')"
           class="w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
           :disabled="isFull"
           @keyup.enter="handleJoin"
@@ -138,7 +141,7 @@ async function handleJoin() {
             aria-hidden="true"
           />
           <p class="text-secondary-300 text-sm">
-            Cette partie est publique, vous pouvez la rejoindre directement sans mot de passe.
+            {{ t('game.join.publicHint') }}
           </p>
         </div>
       </div>
@@ -169,7 +172,7 @@ async function handleJoin() {
           @click="emit('close')"
           class="px-6 py-2.5 border border-secondary-600 text-secondary-300 rounded-md hover:bg-secondary-700 hover:text-secondary-50 transition-all duration-200"
         >
-          Annuler
+          {{ t('game.join.cancel') }}
         </button>
         <button
           @click="handleJoin"
@@ -193,10 +196,10 @@ async function handleJoin() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Connexion...
+            {{ t('game.join.submit.joining') }}
           </span>
-          <span v-else-if="isFull">Partie complète</span>
-          <span v-else>Rejoindre</span>
+          <span v-else-if="isFull">{{ t('game.join.submit.full') }}</span>
+          <span v-else>{{ t('game.join.submit.join') }}</span>
         </button>
       </div>
     </div>

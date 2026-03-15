@@ -1,8 +1,8 @@
 <template>
   <div class="admin-users">
     <header class="mb-6">
-      <h2 class="text-2xl font-bold text-secondary-50">Gestion des utilisateurs</h2>
-      <p class="text-secondary-400 mt-1">{{ meta.total }} utilisateurs au total</p>
+      <h2 class="text-2xl font-bold text-secondary-50">{{ t('admin.users.title') }}</h2>
+      <p class="text-secondary-400 mt-1">{{ t('admin.users.totalUsers', { count: meta.total }) }}</p>
     </header>
 
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
@@ -10,15 +10,15 @@
         @submit.prevent
         class="flex flex-wrap gap-4"
         role="search"
-        aria-label="Filtrer les utilisateurs"
+        :aria-label="t('admin.users.searchAriaLabel')"
       >
         <div class="flex flex-col">
-          <label for="search-users" class="sr-only">Rechercher un utilisateur</label>
+          <label for="search-users" class="sr-only">{{ t('admin.users.searchLabel') }}</label>
           <input
             id="search-users"
             v-model="filters.search"
             type="search"
-            placeholder="Rechercher..."
+            :placeholder="t('admin.users.searchPlaceholder')"
             autocomplete="off"
             class="px-4 py-2 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             @input="debouncedSearch"
@@ -26,32 +26,32 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-status" class="sr-only">Filtrer par statut</label>
+          <label for="filter-status" class="sr-only">{{ t('admin.users.filters.statusLabel') }}</label>
           <select
             id="filter-status"
             v-model="filters.status"
             class="px-4 py-2 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             @change="loadUsers"
           >
-            <option value="all">Tous les statuts</option>
-            <option value="active">Actifs</option>
-            <option value="inactive">Inactifs</option>
-            <option value="deleted">Supprimés</option>
-            <option value="locked">Verrouillés</option>
+            <option value="all">{{ t('admin.users.filters.allStatuses') }}</option>
+            <option value="active">{{ t('admin.users.filters.active') }}</option>
+            <option value="inactive">{{ t('admin.users.filters.inactive') }}</option>
+            <option value="deleted">{{ t('admin.users.filters.deleted') }}</option>
+            <option value="locked">{{ t('admin.users.filters.locked') }}</option>
           </select>
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-role" class="sr-only">Filtrer par rôle</label>
+          <label for="filter-role" class="sr-only">{{ t('admin.users.filters.roleLabel') }}</label>
           <select
             id="filter-role"
             v-model="filters.role"
             class="px-4 py-2 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             @change="loadUsers"
           >
-            <option value="">Tous les rôles</option>
-            <option value="ROLE_USER">Utilisateurs</option>
-            <option value="ROLE_ADMIN">Administrateurs</option>
+            <option value="">{{ t('admin.users.filters.allRoles') }}</option>
+            <option value="ROLE_USER">{{ t('admin.users.filters.users') }}</option>
+            <option value="ROLE_ADMIN">{{ t('admin.users.filters.administrators') }}</option>
           </select>
         </div>
       </form>
@@ -61,13 +61,13 @@
       v-if="isLoading"
       class="flex justify-center py-12"
       role="status"
-      aria-label="Chargement en cours"
+      :aria-label="t('admin.users.loading')"
     >
       <div
         class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"
         aria-hidden="true"
       ></div>
-      <span class="sr-only">Chargement des utilisateurs...</span>
+      <span class="sr-only">{{ t('admin.users.loadingUsers') }}</span>
     </div>
 
     <div
@@ -75,15 +75,15 @@
       role="alert"
       class="bg-red-500/10 border border-red-500/50 rounded-lg p-4 text-red-400"
     >
-      <strong class="font-semibold">Erreur :</strong> {{ error }}
+      <strong class="font-semibold">{{ t('admin.users.errorLabel') }}</strong> {{ error }}
     </div>
 
     <template v-else>
       <AccessibleTable
         :columns="usersColumns"
         :data="users"
-        caption="Liste des utilisateurs avec leurs informations et actions disponibles"
-        empty-message="Aucun utilisateur trouvé"
+        :caption="t('admin.users.table.caption')"
+        :empty-message="t('admin.users.table.emptyMessage')"
         row-key="id"
         sortable
         :initial-sort-column="filters.sortBy"
@@ -124,7 +124,7 @@
 
         <template #cell-lastLogin="{ value }">
           <span class="text-secondary-400">
-            {{ value ? formatDate(String(value)) : 'Jamais' }}
+            {{ value ? formatDate(String(value)) : t('admin.users.lastLoginNever') }}
           </span>
         </template>
 
@@ -134,19 +134,19 @@
               v-if="row.deletedAt"
               type="button"
               class="px-2 py-1 text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
-              :aria-label="`Restaurer l'utilisateur ${row.pseudo}`"
+              :aria-label="t('admin.users.actions.restoreAriaLabel', { pseudo: row.pseudo as string })"
               @click="restoreUser(row.id as number)"
             >
-              Restaurer
+              {{ t('admin.users.actions.restore') }}
             </button>
             <button
               v-else
               type="button"
               class="px-2 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-              :aria-label="`Supprimer l'utilisateur ${row.pseudo}`"
+              :aria-label="t('admin.users.actions.deleteAriaLabel', { pseudo: row.pseudo as string })"
               @click="confirmDelete(row)"
             >
-              Supprimer
+              {{ t('admin.users.actions.delete') }}
             </button>
           </div>
         </template>
@@ -158,7 +158,7 @@
           :total-pages="meta.totalPages"
           :total="meta.total"
           :per-page="meta.limit"
-          aria-label="Pagination des utilisateurs"
+          :aria-label="t('admin.users.pagination.ariaLabel')"
           @page-change="goToPage"
         />
       </div>
@@ -166,12 +166,11 @@
 
     <AccessibleModal
       :is-open="showDeleteModal"
-      :title="`Supprimer ${userToDelete?.pseudo || 'l\'utilisateur'} ?`"
+      :title="userToDelete?.pseudo ? t('admin.users.deleteModal.title', { pseudo: userToDelete.pseudo }) : t('admin.users.deleteModal.titleFallback')"
       @close="showDeleteModal = false"
     >
       <p class="text-secondary-300">
-        Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est réversible (soft
-        delete).
+        {{ t('admin.users.deleteModal.message') }}
       </p>
 
       <template #footer="{ close }">
@@ -180,14 +179,14 @@
           class="px-4 py-2 bg-secondary-700 hover:bg-secondary-600 text-secondary-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-secondary-500"
           @click="close"
         >
-          Annuler
+          {{ t('admin.users.deleteModal.cancel') }}
         </button>
         <button
           type="button"
           class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
           @click="deleteUser"
         >
-          Supprimer
+          {{ t('admin.users.deleteModal.confirm') }}
         </button>
       </template>
     </AccessibleModal>
@@ -195,7 +194,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { adminApi, type AdminUser, type UserFilterParams } from '@/services/api/adminApi'
 import {
   AccessibleTable,
@@ -203,6 +203,8 @@ import {
   AccessiblePagination,
   type TableColumn,
 } from '@/components/a11y'
+
+const { t, locale } = useI18n()
 
 const isLoading = ref(true)
 const error = ref<string | null>(null)
@@ -229,19 +231,19 @@ const userToDelete = ref<AdminUser | null>(null)
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
-const usersColumns: TableColumn[] = [
-  { key: 'id', label: 'ID', sortable: true },
-  { key: 'pseudo', label: 'Pseudo', sortable: true },
-  { key: 'email', label: 'Email', sortable: true },
-  { key: 'roles', label: 'Rôles', sortable: false },
-  { key: 'status', label: 'Statut', sortable: false },
-  { key: 'lastLogin', label: 'Dernière connexion', sortable: true },
-  { key: 'actions', label: 'Actions', align: 'right', sortable: false },
-]
+const usersColumns = computed<TableColumn[]>(() => [
+  { key: 'id', label: t('admin.users.columns.id'), sortable: true },
+  { key: 'pseudo', label: t('admin.users.columns.pseudo'), sortable: true },
+  { key: 'email', label: t('admin.users.columns.email'), sortable: true },
+  { key: 'roles', label: t('admin.users.columns.roles'), sortable: false },
+  { key: 'status', label: t('admin.users.columns.status'), sortable: false },
+  { key: 'lastLogin', label: t('admin.users.columns.lastLogin'), sortable: true },
+  { key: 'actions', label: t('admin.users.columns.actions'), align: 'right', sortable: false },
+])
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('fr-FR', {
+  return date.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -256,10 +258,10 @@ const getStatusClass = (user: Record<string, unknown>): string => {
 }
 
 const getStatusLabel = (user: Record<string, unknown>): string => {
-  if (user.deletedAt) return 'Supprimé'
-  if (user.lockedUntil) return 'Verrouillé'
-  if (user.isActive) return 'Actif'
-  return 'Inactif'
+  if (user.deletedAt) return t('admin.users.status.deleted')
+  if (user.lockedUntil) return t('admin.users.status.locked')
+  if (user.isActive) return t('admin.users.status.active')
+  return t('admin.users.status.inactive')
 }
 
 const loadUsers = async () => {
@@ -275,7 +277,7 @@ const loadUsers = async () => {
     users.value = response.data
     Object.assign(meta, response.meta)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erreur lors du chargement'
+    error.value = err instanceof Error ? err.message : t('admin.users.errorLoading')
   } finally {
     isLoading.value = false
   }
@@ -314,7 +316,7 @@ const deleteUser = async () => {
     userToDelete.value = null
     loadUsers()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erreur lors de la suppression'
+    error.value = err instanceof Error ? err.message : t('admin.users.errorDeleting')
   }
 }
 
@@ -323,7 +325,7 @@ const restoreUser = async (id: number) => {
     await adminApi.users.restore(id)
     loadUsers()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erreur lors de la restauration'
+    error.value = err instanceof Error ? err.message : t('admin.users.errorRestoring')
   }
 }
 

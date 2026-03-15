@@ -38,3 +38,10 @@ framework:
             policy: 'fixed_window'
             limit: 5
             interval: '1 hour'
+
+        # Rate limiter pour la recherche globale wiki
+        # 30 requêtes par minute par IP
+        wiki_search:
+            policy: 'sliding_window'
+            limit: 30
+            interval: '1 minute'

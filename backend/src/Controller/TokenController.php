@@ -46,7 +46,6 @@ final class TokenController extends AbstractController
 
     /**
      * Parse multipart/form-data for PUT/PATCH requests.
-     * PHP only automatically parses multipart data for POST requests.
      */
     private function parseMultipartFormData(Request $request): ?JsonResponse
     {
@@ -247,7 +246,6 @@ final class TokenController extends AbstractController
 
     /**
      * Créer un nouveau token.
-     * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
     #[OA\Post(
         path: '/api/games/{gameId}/maps/{mapId}/tokens',
@@ -727,7 +725,6 @@ final class TokenController extends AbstractController
 
     /**
      * Mettre à jour un token.
-     * Supporte à la fois JSON et multipart/form-data pour l'upload d'image.
      */
     #[OA\Patch(
         path: '/api/games/{gameId}/maps/{mapId}/tokens/{id}',

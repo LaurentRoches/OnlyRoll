@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue'
 import { useMapStore } from '@/stores/mapStore'
 import { XMarkIcon, ArrowUpTrayIcon, PhotoIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   gameId: number
@@ -41,13 +44,13 @@ function handleFileSelect(event: Event) {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
+    uploadError.value = t('game.uploadMap.errors.invalidType')
     return
   }
 
   const maxSize = 10 * 1024 * 1024
   if (file.size > maxSize) {
-    uploadError.value = "L'image est trop volumineuse (max 10 Mo)"
+    uploadError.value = t('game.uploadMap.errors.tooLarge')
     return
   }
 
@@ -94,7 +97,7 @@ async function handleUpload() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || "Erreur lors de l'upload")
+      throw new Error(error.error || t('game.uploadMap.errors.uploadFailed'))
     }
 
     const newMap = await response.json()
@@ -110,7 +113,7 @@ async function handleUpload() {
   } catch (error: unknown) {
     console.error('Erreur upload:', error)
     uploadError.value =
-      error instanceof Error ? error.message : "Erreur lors de l'upload de la carte"
+      error instanceof Error ? error.message : t('game.uploadMap.errors.uploadFailed')
   } finally {
     isUploading.value = false
   }
@@ -150,8 +153,8 @@ function close() {
         >
           <div class="flex items-center justify-between p-6 border-b border-secondary-700">
             <div>
-              <h2 class="text-2xl font-bold text-white">📍 Créer une carte</h2>
-              <p class="text-secondary-400 text-sm mt-1">Uploadez l'image de fond de votre carte</p>
+              <h2 class="text-2xl font-bold text-white">📍 {{ t('game.uploadMap.title') }}</h2>
+              <p class="text-secondary-400 text-sm mt-1">{{ t('game.uploadMap.subtitle') }}</p>
             </div>
             <button @click="close" class="text-secondary-400 hover:text-white transition-colors">
               <XMarkIcon class="w-6 h-6" />
@@ -161,7 +164,7 @@ function close() {
           <form @submit.prevent="handleUpload" class="p-6 space-y-6">
             <div class="space-y-2">
               <label class="block text-sm font-medium text-secondary-300">
-                Image de la carte *
+                {{ t('game.uploadMap.image.label') }}
               </label>
 
               <div
@@ -178,16 +181,16 @@ function close() {
                 <label for="map-file-input" class="cursor-pointer">
                   <ArrowUpTrayIcon class="w-12 h-12 mx-auto text-secondary-400 mb-3" />
                   <p class="text-secondary-300 font-medium mb-1">
-                    Cliquez pour sélectionner une image
+                    {{ t('game.uploadMap.image.selectPrompt') }}
                   </p>
-                  <p class="text-secondary-500 text-sm">JPEG, PNG, WebP ou GIF (max 10 Mo)</p>
+                  <p class="text-secondary-500 text-sm">{{ t('game.uploadMap.image.formats') }}</p>
                 </label>
               </div>
 
               <div v-else class="relative">
                 <img
                   :src="imagePreview"
-                  alt="Aperçu"
+                  :alt="t('game.uploadMap.image.preview')"
                   class="w-full h-64 object-contain bg-secondary-900 rounded-lg"
                 />
                 <button
@@ -205,7 +208,7 @@ function close() {
 
             <div class="space-y-2">
               <label for="map-name" class="block text-sm font-medium text-secondary-300">
-                Nom de la carte *
+                {{ t('game.uploadMap.name.label') }}
               </label>
               <input
                 id="map-name"
@@ -214,20 +217,20 @@ function close() {
                 required
                 minlength="3"
                 maxlength="250"
-                placeholder="Ex: Donjon du Dragon Rouge"
+                :placeholder="t('game.uploadMap.name.placeholder')"
                 class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div class="space-y-2">
               <label for="map-description" class="block text-sm font-medium text-secondary-300">
-                Description
+                {{ t('game.uploadMap.description.label') }}
               </label>
               <textarea
                 id="map-description"
                 v-model="mapDescription"
                 rows="3"
-                placeholder="Décrivez brièvement votre carte..."
+                :placeholder="t('game.uploadMap.description.placeholder')"
                 class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
               ></textarea>
             </div>
@@ -235,22 +238,22 @@ function close() {
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
                 <label for="grid-type" class="block text-sm font-medium text-secondary-300">
-                  Type de grille
+                  {{ t('game.uploadMap.grid.type.label') }}
                 </label>
                 <select
                   id="grid-type"
                   v-model="gridType"
                   class="w-full px-4 py-2 bg-secondary-900 border border-secondary-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="square">Carrée</option>
-                  <option value="hex">Hexagonale</option>
-                  <option value="none">Aucune</option>
+                  <option value="square">{{ t('game.uploadMap.grid.type.square') }}</option>
+                  <option value="hex">{{ t('game.uploadMap.grid.type.hex') }}</option>
+                  <option value="none">{{ t('game.uploadMap.grid.type.none') }}</option>
                 </select>
               </div>
 
               <div class="space-y-2">
                 <label for="grid-size" class="block text-sm font-medium text-secondary-300">
-                  Taille de case (px)
+                  {{ t('game.uploadMap.grid.size') }}
                 </label>
                 <input
                   id="grid-size"
@@ -264,7 +267,7 @@ function close() {
 
               <div class="space-y-2">
                 <label for="grid-width" class="block text-sm font-medium text-secondary-300">
-                  Largeur (cases)
+                  {{ t('game.uploadMap.grid.width') }}
                 </label>
                 <input
                   id="grid-width"
@@ -278,7 +281,7 @@ function close() {
 
               <div class="space-y-2">
                 <label for="grid-height" class="block text-sm font-medium text-secondary-300">
-                  Hauteur (cases)
+                  {{ t('game.uploadMap.grid.height') }}
                 </label>
                 <input
                   id="grid-height"
@@ -304,7 +307,7 @@ function close() {
                 @click="close"
                 class="flex-1 px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-white font-medium rounded-lg transition-colors"
               >
-                Annuler
+                {{ t('game.uploadMap.cancel') }}
               </button>
               <button
                 type="submit"
@@ -333,7 +336,7 @@ function close() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {{ isUploading ? 'Upload en cours...' : 'Créer la carte' }}
+                {{ isUploading ? t('game.uploadMap.submit.uploading') : t('game.uploadMap.submit.upload') }}
               </button>
             </div>
           </form>

@@ -4,6 +4,7 @@ import { authApi } from '@/services/api/authApi'
 import type { ApiError } from '@/services/api/apiClient'
 import type { User, LoginCredentials, RegisterCredentials } from '@/types/auth'
 import { logger } from '@/utils/logger'
+import i18n from '@/i18n'
 
 /**
  * Store Pinia pour la gestion de l'authentification
@@ -79,7 +80,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authApi.register(credentials)
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, "Erreur lors de l'inscription")
+      const errorMessage = getErrorMessage(err, i18n.global.t('auth.store.registerError'))
       error.value = errorMessage
       throw new Error(errorMessage)
     } finally {
@@ -99,7 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       await fetchMe()
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, 'Erreur lors de la connexion')
+      const errorMessage = getErrorMessage(err, i18n.global.t('auth.store.loginError'))
       error.value = errorMessage
       throw new Error(errorMessage)
     } finally {
@@ -127,12 +128,18 @@ export const useAuthStore = defineStore('auth', () => {
         createdAt: response.createdAt || new Date().toISOString(),
         updatedAt: response.updatedAt || new Date().toISOString(),
         avatar: response.avatar,
+        language: response.language,
+      }
+
+      if (userData.language) {
+        i18n.global.locale.value = userData.language as 'fr' | 'en'
+        localStorage.setItem('locale', userData.language)
       }
 
       setUser(userData)
     } catch (err: unknown) {
       await logout()
-      const errorMessage = getErrorMessage(err, 'Session expirée')
+      const errorMessage = getErrorMessage(err, i18n.global.t('auth.store.sessionExpired'))
       error.value = errorMessage
       throw new Error(errorMessage)
     } finally {

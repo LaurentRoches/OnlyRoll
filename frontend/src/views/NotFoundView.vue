@@ -11,12 +11,9 @@
 
       <h1 class="text-8xl md:text-9xl font-bold text-primary-400 mb-4 tracking-tighter">404</h1>
 
-      <h2 class="text-2xl md:text-4xl font-bold text-secondary-50 mb-6">Échec critique !</h2>
+      <h2 class="text-2xl md:text-4xl font-bold text-secondary-50 mb-6">{{ t('common.notFound.heading') }}</h2>
 
-      <p class="text-lg md:text-xl text-secondary-300 mb-8 leading-relaxed">
-        Vous avez fait un <span class="text-primary-400 font-semibold">1</span> sur votre jet de
-        navigation...<br />
-        Cette page semble avoir été dévorée par un Dragon Rouge.
+      <p class="text-lg md:text-xl text-secondary-300 mb-8 leading-relaxed" v-html="t('common.notFound.description', { roll: '1' })">
       </p>
 
       <div class="bg-secondary-800/50 rounded-xl p-6 mb-8 border border-secondary-700">
@@ -57,7 +54,7 @@
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          Retour
+          {{ t('common.notFound.back') }}
         </button>
 
         <RouterLink
@@ -72,39 +69,39 @@
               d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             />
           </svg>
-          Accueil
+          {{ t('common.notFound.home') }}
         </RouterLink>
       </div>
 
       <div class="mt-12 pt-8 border-t border-secondary-700">
-        <p class="text-secondary-400 text-sm mb-4">Peut-être cherchez-vous :</p>
+        <p class="text-secondary-400 text-sm mb-4">{{ t('common.notFound.suggestions') }}</p>
         <div class="flex flex-wrap justify-center gap-2">
           <RouterLink
             v-if="!isAuthenticated"
             to="/auth/login"
             class="px-4 py-2 text-sm bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-secondary-200 rounded-lg border border-secondary-600 transition-colors"
           >
-            Se connecter
+            {{ t('common.notFound.login') }}
           </RouterLink>
           <RouterLink
             v-if="!isAuthenticated"
             to="/auth/register"
             class="px-4 py-2 text-sm bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-secondary-200 rounded-lg border border-secondary-600 transition-colors"
           >
-            S'inscrire
+            {{ t('common.notFound.register') }}
           </RouterLink>
           <RouterLink
             v-if="isAuthenticated"
             to="/dashboard"
             class="px-4 py-2 text-sm bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-secondary-200 rounded-lg border border-secondary-600 transition-colors"
           >
-            Dashboard
+            {{ t('common.notFound.dashboard') }}
           </RouterLink>
           <RouterLink
             to="/wiki"
             class="px-4 py-2 text-sm bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-secondary-200 rounded-lg border border-secondary-600 transition-colors"
           >
-            Wiki D&D
+            {{ t('common.notFound.wiki') }}
           </RouterLink>
         </div>
       </div>
@@ -114,7 +111,7 @@
           @click="rollDice"
           class="text-xs text-secondary-500 hover:text-secondary-400 transition-colors"
         >
-          Relancer le dé pour une nouvelle citation
+          {{ t('common.notFound.rerollQuote') }}
         </button>
       </div>
     </div>
@@ -124,35 +121,37 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 
+const { t } = useI18n()
 const router = useRouter()
 const { isAuthenticated } = useAuth()
 
 const quotes = [
   {
-    text: 'Un aventurier averti en vaut deux !',
-    author: 'Proverbe de taverne',
+    text: t('common.notFound.quotes.0.text'),
+    author: t('common.notFound.quotes.0.author'),
   },
   {
-    text: "Il vaut mieux être perdu avec une carte qu'être trouvé sans direction.",
-    author: 'Sage Ranger',
+    text: t('common.notFound.quotes.1.text'),
+    author: t('common.notFound.quotes.1.author'),
   },
   {
-    text: 'Même les plus grands héros se perdent parfois en chemin.',
-    author: "Chroniques d'Astarion",
+    text: t('common.notFound.quotes.2.text'),
+    author: t('common.notFound.quotes.2.author'),
   },
   {
-    text: "Ce n'est pas l'erreur qui compte, c'est comment on s'en remet.",
-    author: 'Manuel du Maître de Donjon',
+    text: t('common.notFound.quotes.3.text'),
+    author: t('common.notFound.quotes.3.author'),
   },
   {
-    text: 'Parfois, se perdre mène aux plus grandes découvertes.',
-    author: "Journal d'un Explorateur",
+    text: t('common.notFound.quotes.4.text'),
+    author: t('common.notFound.quotes.4.author'),
   },
   {
-    text: 'Un chemin fermé en cache souvent un autre.',
-    author: 'Proverbe elfique',
+    text: t('common.notFound.quotes.5.text'),
+    author: t('common.notFound.quotes.5.author'),
   },
 ]
 

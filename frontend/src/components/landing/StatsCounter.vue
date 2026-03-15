@@ -4,7 +4,7 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div
           v-for="(stat, index) in stats"
-          :key="stat.label"
+          :key="stat.labelKey"
           class="reveal-up"
           :class="{ revealed: isVisible }"
           :style="{ transitionDelay: index * 150 + 'ms' }"
@@ -15,7 +15,7 @@
           >
             {{ Math.round(stat.display) }}+
           </div>
-          <div class="text-secondary-400 text-sm">{{ stat.label }}</div>
+          <div class="text-secondary-400 text-sm">{{ t(stat.labelKey) }}</div>
         </div>
       </div>
     </div>
@@ -24,8 +24,11 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTransition, TransitionPresets } from '@vueuse/core'
 import { useScrollReveal } from '@/composables/useScrollReveal'
+
+const { t } = useI18n()
 
 const sectionRef = ref<HTMLElement>()
 const { isVisible } = useScrollReveal(sectionRef, { threshold: 0.3 })
@@ -54,10 +57,10 @@ const spellsDisplay = useTransition(spellsBase, {
 })
 
 const stats = computed(() => [
-  { emoji: '🎲', label: 'Lancers de dés', display: dicesDisplay.value },
-  { emoji: '⚔️', label: 'Parties créées', display: gamesDisplay.value },
-  { emoji: '👥', label: 'Aventuriers inscrits', display: playersDisplay.value },
-  { emoji: '📜', label: 'Sorts dans le Wiki', display: spellsDisplay.value },
+  { emoji: '🎲', labelKey: 'landing.stats.diceRolls', display: dicesDisplay.value },
+  { emoji: '⚔️', labelKey: 'landing.stats.gamesCreated', display: gamesDisplay.value },
+  { emoji: '👥', labelKey: 'landing.stats.registeredAdventurers', display: playersDisplay.value },
+  { emoji: '📜', labelKey: 'landing.stats.wikiSpells', display: spellsDisplay.value },
 ])
 
 watch(isVisible, (visible) => {

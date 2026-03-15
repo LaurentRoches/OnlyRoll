@@ -6,7 +6,7 @@
           class="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"
         ></div>
       </div>
-      <p class="text-secondary-300">Vérification de votre email...</p>
+      <p class="text-secondary-300">{{ t('auth.verifyEmail.loading') }}</p>
     </div>
 
     <div v-else-if="status === 'success'" class="space-y-6">
@@ -22,16 +22,16 @@
         </div>
       </div>
       <div>
-        <h2 class="text-xl font-semibold text-secondary-50 mb-2">Email vérifié !</h2>
+        <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.verifyEmail.success.title') }}</h2>
         <p class="text-secondary-300">
-          Votre adresse email a été confirmée. Vous pouvez maintenant vous connecter.
+          {{ t('auth.verifyEmail.success.message') }}
         </p>
       </div>
       <RouterLink
         to="/auth/login"
         class="block w-full px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg text-center transition-colors duration-200"
       >
-        Se connecter
+        {{ t('auth.verifyEmail.success.login') }}
       </RouterLink>
     </div>
 
@@ -48,14 +48,14 @@
         </div>
       </div>
       <div>
-        <h2 class="text-xl font-semibold text-secondary-50 mb-2">Lien invalide</h2>
+        <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.verifyEmail.error.title') }}</h2>
         <p class="text-secondary-300">{{ errorMessage }}</p>
       </div>
       <RouterLink
         to="/auth/login"
         class="block w-full px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg text-center transition-colors duration-200"
       >
-        Retour à la connexion
+        {{ t('auth.verifyEmail.error.backToLogin') }}
       </RouterLink>
     </div>
   </div>
@@ -63,12 +63,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { authApi } from '@/services/api/authApi'
 
+const { t } = useI18n()
 const route = useRoute()
 const status = ref<'loading' | 'success' | 'error'>('loading')
-const errorMessage = ref('Ce lien de vérification est invalide ou a expiré.')
+const errorMessage = ref(t('auth.verifyEmail.error.defaultMessage'))
 
 onMounted(async () => {
   const token = route.query.token as string
@@ -84,7 +86,7 @@ onMounted(async () => {
   } catch (error: unknown) {
     const err = error as { response?: { data?: { error?: string } } }
     errorMessage.value =
-      err.response?.data?.error ?? 'Ce lien de vérification est invalide ou a expiré.'
+      err.response?.data?.error ?? t('auth.verifyEmail.error.defaultMessage')
     status.value = 'error'
   }
 })

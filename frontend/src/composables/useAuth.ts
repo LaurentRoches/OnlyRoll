@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import type { LoginCredentials, RegisterCredentials } from '@/types/auth'
 import type { ApiError } from '@/services/api/apiClient'
+import i18n from '@/i18n'
 
 /**
  * Composable pour la gestion de l'authentification
@@ -159,7 +160,7 @@ export const useAuth = () => {
       return error.message
     }
 
-    return "Une erreur inattendue s'est produite"
+    return i18n.global.t('auth.composable.unexpectedError')
   }
 
   /**

@@ -8,7 +8,7 @@ import { gameApi } from '@/services/api/gameApi'
 import { presenceApi } from '@/services/api/presenceApi'
 import type { Game, GameFilters } from '@/types/game'
 import type { MercurePresenceEventData } from '@/types/websocket'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import DashboardNav from '@/components/dashboard/DashboardNav.vue'
 import GameCard from '@/components/game/GameCard.vue'
 import SkeletonCard from '@/components/game/SkeletonCard.vue'
@@ -16,15 +16,18 @@ import CreateGameModal from '@/components/game/CreateGameModal.vue'
 import JoinGameModal from '@/components/game/JoinGameModal.vue'
 import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, InboxIcon } from '@heroicons/vue/24/outline'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 const presenceStore = usePresenceStore()
 const router = useRouter()
+const route = useRoute()
 const showCreateModal = ref(false)
 const showJoinModal = ref(false)
 const selectedGame = ref<Game | null>(null)
-const activeTab = ref<'public' | 'my-games' | 'player-games'>('public')
+const activeTab = ref<'public' | 'my-games' | 'player-games' | 'my-all'>('public')
 const showFilters = ref(true)
 const connectedGameIds = ref<number[]>([])
 const loadMoreSentinel = ref<HTMLElement | null>(null)
@@ -99,6 +102,10 @@ async function connectToPresence() {
 onMounted(async () => {
   if (authStore.isAuthenticated) {
     mercureService.on('presence', handlePresenceEvent)
+    const tabParam = route.query.tab as string
+    if (tabParam && ['my-games', 'player-games', 'my-all'].includes(tabParam)) {
+      activeTab.value = tabParam as typeof activeTab.value
+    }
   }
 
   await loadGames()
@@ -165,7 +172,7 @@ watch(
   }
 )
 
-function handleTabChange(tab: 'public' | 'my-games' | 'player-games') {
+function handleTabChange(tab: 'public' | 'my-games' | 'player-games' | 'my-all') {
   activeTab.value = tab
   filters.value = {
     search: '',
@@ -270,12 +277,22 @@ const displayedGames = computed(() => {
         (game.title || game.name).toLowerCase().includes(titleFilter)
       )
     }
+    if (filters.value.gameMaster) {
+      const gmFilter = filters.value.gameMaster.toLowerCase()
+      result = result.filter((game) =>
+        game.gameMaster.pseudo.toLowerCase().includes(gmFilter)
+      )
+    }
     if (filters.value.status) {
       result = result.filter((game) => game.status === filters.value.status)
     }
     return result.sort((a, b) =>
       (a.title || a.name).toLowerCase().localeCompare((b.title || b.name).toLowerCase())
     )
+  }
+
+  if (activeTab.value === 'my-all') {
+    return applyLocalFilters(gameStore.myGames)
   }
 
   if (activeTab.value === 'my-games') {
@@ -308,19 +325,23 @@ watch(displayedGames, () => {
           <h1 class="text-3xl font-bold text-secondary-50">
             {{
               activeTab === 'public'
-                ? 'Parties Publiques'
+                ? t('game.list.titles.public')
                 : activeTab === 'my-games'
-                  ? 'Mes Parties (M.J.)'
-                  : 'Mes Parties (Joueur)'
+                  ? t('game.list.titles.myGames')
+                  : activeTab === 'player-games'
+                    ? t('game.list.titles.playerGames')
+                    : t('game.list.titles.myAll')
             }}
           </h1>
           <p class="text-secondary-400 mt-1">
             {{
               activeTab === 'public'
-                ? 'Découvrez et rejoignez des parties en cours'
+                ? t('game.list.subtitles.public')
                 : activeTab === 'my-games'
-                  ? 'Gérez vos parties actives et archivées'
-                  : 'Les parties auxquelles vous participez en tant que joueur'
+                  ? t('game.list.subtitles.myGames')
+                  : activeTab === 'player-games'
+                    ? t('game.list.subtitles.playerGames')
+                    : t('game.list.subtitles.myAll')
             }}
           </p>
         </div>
@@ -330,14 +351,14 @@ watch(displayedGames, () => {
           class="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-purple hover:shadow-purple-lg"
         >
           <PlusIcon class="w-5 h-5" />
-          Nouvelle
+          {{ t('game.list.newButton') }}
         </button>
         <RouterLink
           v-else
           :to="{ name: 'login', query: { redirect: '/games' } }"
           class="px-4 py-2 sm:px-6 sm:py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 text-sm sm:text-base"
         >
-          Se connecter
+          {{ t('game.list.loginButton') }}
         </RouterLink>
       </div>
 
@@ -352,7 +373,19 @@ watch(displayedGames, () => {
                 : 'text-secondary-400 hover:text-secondary-50',
             ]"
           >
-            Toutes
+            {{ t('game.list.tabs.all') }}
+          </button>
+          <button
+            v-if="authStore.isAuthenticated"
+            @click="handleTabChange('my-all')"
+            :class="[
+              'px-6 py-2 rounded-md font-medium transition-all duration-200',
+              activeTab === 'my-all'
+                ? 'bg-primary-500 text-white shadow-purple'
+                : 'text-secondary-400 hover:text-secondary-50',
+            ]"
+          >
+            {{ t('game.list.tabs.myGames') }}
           </button>
           <button
             v-if="authStore.isAuthenticated"
@@ -364,7 +397,7 @@ watch(displayedGames, () => {
                 : 'text-secondary-400 hover:text-secondary-50',
             ]"
           >
-            M.J.
+            {{ t('game.list.tabs.gm') }}
           </button>
           <button
             v-if="authStore.isAuthenticated"
@@ -376,7 +409,7 @@ watch(displayedGames, () => {
                 : 'text-secondary-400 hover:text-secondary-50',
             ]"
           >
-            Mes parties
+            {{ t('game.list.tabs.player') }}
           </button>
         </div>
 
@@ -385,7 +418,7 @@ watch(displayedGames, () => {
           class="lg:hidden px-4 py-2 bg-secondary-800 border border-secondary-700 rounded-lg text-secondary-300 hover:text-secondary-50 transition-colors flex items-center gap-2"
         >
           <FunnelIcon class="w-5 h-5" />
-          Filtres
+          {{ t('game.list.filtersToggle') }}
         </button>
       </div>
 
@@ -394,15 +427,15 @@ watch(displayedGames, () => {
           <div
             class="bg-secondary-800 rounded-lg border border-secondary-700 p-4 space-y-4 sticky top-6"
           >
-            <h3 class="text-lg font-semibold text-secondary-50 mb-4">Filtres de recherche</h3>
+            <h3 class="text-lg font-semibold text-secondary-50 mb-4">{{ t('game.list.filters.title') }}</h3>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> Recherche </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.search') }} </label>
               <div class="relative">
                 <input
                   v-model="filters.search"
                   type="text"
-                  placeholder="Rechercher..."
+                  :placeholder="t('game.list.filters.searchPlaceholder')"
                   class="w-full px-3 py-2 pr-10 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 <MagnifyingGlassIcon
@@ -412,38 +445,38 @@ watch(displayedGames, () => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> Titre </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.gameTitle') }} </label>
               <input
                 v-model="filters.title"
                 type="text"
-                placeholder="Titre de la campagne..."
+                :placeholder="t('game.list.filters.gameTitlePlaceholder')"
                 class="w-full px-3 py-2 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
-            <div v-if="activeTab === 'public'">
+            <div v-if="activeTab === 'public' || activeTab === 'player-games' || activeTab === 'my-all'">
               <label class="block text-sm font-medium text-secondary-300 mb-2">
-                Maître du Jeu
+                {{ t('game.list.filters.gameMaster') }}
               </label>
               <input
                 v-model="filters.gameMaster"
                 type="text"
-                placeholder="Nom du MJ..."
+                :placeholder="t('game.list.filters.gameMasterPlaceholder')"
                 class="w-full px-3 py-2 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> Statut </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.status') }} </label>
               <select
                 v-model="filters.status"
                 class="w-full px-3 py-2 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option :value="undefined">Tous les statuts</option>
-                <option value="preparation">En préparation</option>
-                <option value="in_progress">En cours</option>
-                <option value="paused">En pause</option>
-                <option value="completed">Terminée</option>
+                <option :value="undefined">{{ t('game.list.filters.statusAll') }}</option>
+                <option value="preparation">{{ t('game.list.filters.statusPreparation') }}</option>
+                <option value="in_progress">{{ t('game.list.filters.statusInProgress') }}</option>
+                <option value="paused">{{ t('game.list.filters.statusPaused') }}</option>
+                <option value="completed">{{ t('game.list.filters.statusCompleted') }}</option>
               </select>
             </div>
 
@@ -451,7 +484,7 @@ watch(displayedGames, () => {
               @click="resetFilters"
               class="w-full px-4 py-2 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-md transition-colors text-sm"
             >
-              Réinitialiser
+              {{ t('game.list.filters.reset') }}
             </button>
           </div>
         </aside>
@@ -460,9 +493,9 @@ watch(displayedGames, () => {
           <div v-if="displayedGames.length > 0" class="mb-4">
             <p class="text-secondary-400 text-sm">
               <span class="text-secondary-50 font-medium">{{ displayedGames.length }}</span>
-              {{ displayedGames.length > 1 ? 'parties chargées' : 'partie chargée' }}
+              {{ displayedGames.length > 1 ? t('game.list.count.plural') : t('game.list.count.singular') }}
               <template v-if="activeTab === 'public' && gameStore.pagination.total > 0">
-                sur
+                {{ t('game.list.count.outOf') }}
                 <span class="text-secondary-50 font-medium">{{ gameStore.pagination.total }}</span>
               </template>
             </p>
@@ -493,15 +526,17 @@ watch(displayedGames, () => {
           <div v-else-if="!gameStore.isLoading" class="text-center py-20">
             <InboxIcon class="w-24 h-24 mx-auto text-secondary-600 mb-4" />
             <h3 class="text-xl font-semibold text-secondary-300 mb-2">
-              {{ activeTab === 'public' ? 'Aucune partie trouvée' : 'Aucune partie' }}
+              {{ activeTab === 'public' ? t('game.list.empty.publicTitle') : activeTab === 'my-all' ? t('game.list.empty.myAllTitle') : t('game.list.empty.defaultTitle') }}
             </h3>
             <p class="text-secondary-400 mb-6">
               {{
                 activeTab === 'public'
-                  ? 'Aucune partie publique ne correspond à vos critères'
+                  ? t('game.list.empty.publicMessage')
                   : activeTab === 'my-games'
-                    ? 'Vous ne gérez aucune partie pour le moment'
-                    : 'Vous ne participez à aucune partie en tant que joueur'
+                    ? t('game.list.empty.myGamesMessage')
+                    : activeTab === 'player-games'
+                      ? t('game.list.empty.playerGamesMessage')
+                      : t('game.list.empty.myAllMessage')
               }}
             </p>
             <button
@@ -510,14 +545,14 @@ watch(displayedGames, () => {
               class="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-all duration-200 inline-flex items-center gap-2 shadow-purple hover:shadow-purple-lg"
             >
               <PlusIcon class="w-5 h-5" />
-              Créer votre première partie
+              {{ t('game.list.empty.createFirst') }}
             </button>
             <button
               v-else-if="activeTab === 'public'"
               @click="resetFilters"
               class="px-6 py-3 bg-secondary-700 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-50 rounded-lg transition-colors"
             >
-              Réinitialiser les filtres
+              {{ t('game.list.empty.resetFilters') }}
             </button>
           </div>
 

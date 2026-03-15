@@ -35,6 +35,9 @@ enum AuditAction: string
     case ADMIN_ACCESS = 'admin_access';
     case ADMIN_ACTION = 'admin_action';
 
+    case WIKI_FAVORITE_ADD = 'wiki_favorite_add';
+    case WIKI_FAVORITE_REMOVE = 'wiki_favorite_remove';
+
     public function getLabel(): string
     {
         return match ($this) {
@@ -59,6 +62,8 @@ enum AuditAction: string
             self::EMAIL_CHANGED => 'Email modifié',
             self::ADMIN_ACCESS => 'Accès administration',
             self::ADMIN_ACTION => 'Action administration',
+            self::WIKI_FAVORITE_ADD => 'Favori wiki ajouté',
+            self::WIKI_FAVORITE_REMOVE => 'Favori wiki supprimé',
         };
     }
 

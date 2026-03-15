@@ -3,6 +3,7 @@ name: Deploy to Production
 on:
   push:
     branches: [main]
+    tags: ['v*.*.*', '*-importWiki']
   workflow_dispatch:
 
 env:
@@ -72,7 +73,7 @@ jobs:
               
               echo "Backup completed"
             else
-              echo "ℹNo existing deployment found - first deployment"
+              echo "No existing deployment found - first deployment"
               mkdir -p "$DEPLOY_PATH"
             fi
           ENDSSH
@@ -210,13 +211,23 @@ jobs:
             cat "$ROLLBACK_STATE_FILE"
           ENDSSH
 
+      - name: Determine import flag
+        id: import_flag
+        run: |
+          if [[ "${{ github.ref }}" == *-importWiki ]]; then
+            echo "run_imports=true" >> $GITHUB_OUTPUT
+          else
+            echo "run_imports=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy on VPS
         id: deploy
         run: |
           ssh -i ~/.ssh/deploy_key ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'ENDSSH'
             set -e
-            
+
             DEPLOY_PATH="/home/onlyroll/production"
+            RUN_IMPORTS="${{ steps.import_flag.outputs.run_imports }}"
             
             cd "$DEPLOY_PATH"
             
@@ -239,7 +250,6 @@ jobs:
             
             echo "backend/.env found"
             
-            # IMPORTANT: Utiliser UNIQUEMENT docker-compose.prod.yml en production
             COMPOSE_FILE="docker-compose.prod.yml"
             
             echo "Stopping existing containers..."
@@ -270,7 +280,7 @@ jobs:
             docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
 
             # Initialize SSL certificates - Always ensure they exist
-            echo "🔐 Initializing SSL certificates..."
+            echo "Initializing SSL certificates..."
 
             # Create certbot volumes first
             docker volume create production_certbot-certs 2>/dev/null || true
@@ -282,7 +292,7 @@ jobs:
               "test -f /etc/letsencrypt/live/onlyroll.cloud/privkey.pem && echo 'yes' || echo 'no'")
 
             if [ "$CERT_EXISTS" = "no" ]; then
-              echo "📝 SSL certificates not found. Creating dummy certificates for initial nginx start..."
+              echo "SSL certificates not found. Creating dummy certificates for initial nginx start..."
 
               docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c "
                 mkdir -p /etc/letsencrypt/live/onlyroll.cloud && \
@@ -291,12 +301,12 @@ jobs:
                   -keyout privkey.pem \
                   -out fullchain.pem \
                   -subj '/CN=onlyroll.cloud' 2>/dev/null
-              " && echo "✅ Dummy certificates created" || {
-                echo "❌ Failed to create dummy certificates"
+              " && echo "Dummy certificates created" || {
+                echo "Failed to create dummy certificates"
                 exit 1
               }
             else
-              echo "✅ SSL certificates already exist"
+              echo "SSL certificates already exist"
             fi
 
             echo "Starting all services..."
@@ -305,11 +315,6 @@ jobs:
             echo "Waiting for services to be ready (30s)..."
             sleep 30
             
-            # Afficher les logs MySQL pour debug
-            echo "MySQL logs (for debugging):"
-            docker compose -f $COMPOSE_FILE logs mysql --tail=50
-            
-            # Vérifier que MySQL est prêt
             echo "Checking MySQL status..."
             for i in {1..10}; do
               if docker compose -f $COMPOSE_FILE exec -T mysql mysqladmin ping -h localhost --silent; then
@@ -323,7 +328,6 @@ jobs:
               sleep 3
             done
             
-            # Vérifier que Redis est prêt
             echo "Checking Redis status..."
             if docker compose -f $COMPOSE_FILE exec -T redis redis-cli ping | grep -q PONG; then
               echo "Redis is ready"
@@ -333,14 +337,14 @@ jobs:
             fi
             
             # Obtain real SSL certificate if needed
-            echo "🔐 Checking if real SSL certificate is needed..."
+            echo "Checking if real SSL certificate is needed..."
 
             # Check if certificate is valid for more than 30 days (dummy certs are only valid for 1 day)
             CERT_IS_DUMMY=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
               "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -checkend 2592000 2>/dev/null && echo 'no' || echo 'yes'")
 
             if [ "$CERT_IS_DUMMY" = "yes" ]; then
-              echo "📝 Certificate needs renewal or is dummy. Obtaining certificate from Let's Encrypt..."
+              echo "Certificate needs renewal or is dummy. Obtaining certificate from Let's Encrypt..."
 
               # Wait a bit for nginx to be fully ready
               sleep 5
@@ -354,23 +358,42 @@ jobs:
                 --force-renewal \
                 -d onlyroll.cloud \
                 -d www.onlyroll.cloud && {
-                  echo "✅ Real SSL certificate obtained!"
-                  echo "🔄 Reloading Nginx..."
+                  echo "Real SSL certificate obtained!"
+                  echo "Reloading Nginx..."
                   docker compose -f $COMPOSE_FILE exec -T nginx nginx -s reload || docker compose -f $COMPOSE_FILE restart nginx
                   sleep 5
                 } || {
-                  echo "⚠️  Failed to obtain real certificate. Using dummy certificate for now."
-                  echo "   The site will work but with a self-signed certificate warning."
-                  echo "   Please verify DNS is propagated and try running the deployment again later."
+                  echo "Failed to obtain real certificate. Using dummy certificate for now."
+                  echo "The site will work but with a self-signed certificate warning."
+                  echo "Please verify DNS is propagated and try running the deployment again later."
                 }
             else
-              echo "✅ Real SSL certificate already in place"
+              echo "Real SSL certificate already in place"
             fi
 
             echo "Running database migrations..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm php bin/console doctrine:migrations:migrate --no-interaction || {
-              echo "Migrations failed or already applied"
+              echo "Migrations failed"
+              exit 1
             }
+
+            echo "Loading reference data (alignments, damage types, etc.)..."
+            docker compose -f $COMPOSE_FILE exec -T php-fpm \
+              php bin/console doctrine:fixtures:load --group=reference --append --no-interaction
+
+            if [ "$RUN_IMPORTS" = "true" ]; then
+              echo "Importing SRD data (spells, monsters, races, classes...) - may take several minutes..."
+              docker compose -f $COMPOSE_FILE exec -T php-fpm \
+                php -d memory_limit=2G bin/console app:import:all
+
+              echo "Loading wiki categories..."
+              docker compose -f $COMPOSE_FILE exec -T php-fpm \
+                php bin/console doctrine:fixtures:load --group=wiki --append --no-interaction
+
+              echo "SRD data import complete."
+            else
+              echo "Skipping SRD imports (tag does not end with -importWiki)."
+            fi
             
             echo "Container status:"
             docker compose -f $COMPOSE_FILE ps

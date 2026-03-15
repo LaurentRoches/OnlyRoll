@@ -13,6 +13,9 @@ import type {
   LegacyDiceResult,
   GamePlayer,
 } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   messages: GameMessage[]
@@ -66,9 +69,6 @@ const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(0)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
-// ============================================
-// Messages filtrés (whispers et jets de dés privés)
-// ============================================
 const visibleMessages = computed(() => {
   const currentUserId = authStore.user?.id
   if (!currentUserId) return props.messages
@@ -82,9 +82,6 @@ const visibleMessages = computed(() => {
   })
 })
 
-// ============================================
-// Autocomplétion des pseudos
-// ============================================
 const filteredPlayers = computed(() => {
   if (!showSuggestions.value) return []
 
@@ -118,9 +115,6 @@ function selectPlayer(player: GamePlayer) {
   }
 }
 
-// ============================================
-// Auto-scroll
-// ============================================
 watch(
   () => props.messages.length,
   async () => {
@@ -152,9 +146,6 @@ watch(messageInput, () => {
   if (chatInputError.value) clearInputError()
 })
 
-// ============================================
-// Envoi de messages
-// ============================================
 async function sendMessage() {
   if (!messageInput.value.trim()) return
 
@@ -169,9 +160,7 @@ async function sendMessage() {
 
       const firstSpaceIndex = content.indexOf(' ')
       if (firstSpaceIndex === -1) {
-        showInputError(
-          'Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>'
-        )
+        showInputError(t('game.chat.errors.invalidWhisperFormat'))
         return
       }
 
@@ -179,7 +168,7 @@ async function sendMessage() {
       const message = content.substring(firstSpaceIndex + 1).trim()
 
       if (!message) {
-        showInputError('Le message ne peut pas être vide.')
+        showInputError(t('game.chat.errors.emptyMessage'))
         return
       }
 
@@ -188,14 +177,14 @@ async function sendMessage() {
       )
 
       if (!recipient) {
-        showInputError(`Joueur "${recipientPseudo}" introuvable dans cette partie.`)
+        showInputError(t('game.chat.errors.playerNotFound', { pseudo: recipientPseudo }))
         return
       }
 
       if (message.startsWith('/roll ') || message.startsWith('/r ')) {
         const formula = message.replace(/^\/(roll|r) /, '').trim()
         if (!formula) {
-          showInputError('La formule de dés ne peut pas être vide.')
+          showInputError(t('game.chat.errors.emptyDiceFormula'))
           return
         }
         await chatStore.rollDice(props.gameId, formula, isInCharacter.value, recipient.user.id)
@@ -211,7 +200,7 @@ async function sendMessage() {
 
     messageInput.value = ''
   } catch (error) {
-    showInputError(getErrorMessage(error, "Une erreur est survenue lors de l'envoi."))
+    showInputError(getErrorMessage(error, t('game.chat.errors.sendFailed')))
   }
 }
 
@@ -251,9 +240,6 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-// ============================================
-// Formatage des messages
-// ============================================
 function getMessageClass(type: MessageType) {
   const classes = {
     system: 'bg-cyan-900/50 border-l-4 border-cyan-500',
@@ -342,9 +328,6 @@ function normalizeDiceResult(result: unknown): DiceResult | null {
   return null
 }
 
-// ============================================
-// Helpers pour les avatars
-// ============================================
 function getAvatarColor(userId: number): string {
   const colors = [
     'bg-primary-500',
@@ -403,8 +386,8 @@ function getAvatarColor(userId: number): string {
 
       <div v-if="visibleMessages.length === 0" class="text-center py-8 text-secondary-400">
         <p class="text-lg mb-2">💬</p>
-        <p>Aucun message pour le moment</p>
-        <p class="text-sm mt-1">Soyez le premier à parler !</p>
+        <p>{{ t('game.chat.empty.title') }}</p>
+        <p class="text-sm mt-1">{{ t('game.chat.empty.subtitle') }}</p>
       </div>
     </div>
 
@@ -413,7 +396,7 @@ function getAvatarColor(userId: number): string {
         v-if="!isAtBottom"
         @click="scrollToBottom"
         class="absolute bottom-24 right-8 px-3 py-2 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 transition-colors"
-        title="Aller en bas"
+        :title="t('game.chat.scrollDown')"
       >
         ↓
       </button>
@@ -430,12 +413,11 @@ function getAvatarColor(userId: number): string {
               : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600',
           ]"
         >
-          {{ isInCharacter ? '🎭 In Character' : '🗣️ Out of Character' }}
+          {{ isInCharacter ? '🎭 ' + t('game.chat.inCharacter') : '🗣️ ' + t('game.chat.outOfCharacter') }}
         </button>
 
         <div class="text-xs text-secondary-400">
-          Commandes: /roll (/r) 1d20 • /whisper (/w) pseudo message • /w pseudo /r formule • /me
-          action
+          {{ t('game.chat.commands') }}
         </div>
       </div>
 
@@ -450,7 +432,7 @@ function getAvatarColor(userId: number): string {
           <button
             @click="clearInputError"
             class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
-            aria-label="Fermer"
+            :aria-label="t('game.chat.closeError')"
           >
             ✕
           </button>
@@ -465,7 +447,7 @@ function getAvatarColor(userId: number): string {
           >
             <div class="px-3 py-2 bg-secondary-800 border-b border-secondary-600">
               <span class="text-xs text-secondary-400">
-                Suggestions (↑↓ pour naviguer, Tab/Enter pour sélectionner)
+                {{ t('game.chat.suggestions.title') }}
               </span>
             </div>
             <div class="overflow-y-auto max-h-40">
@@ -499,7 +481,7 @@ function getAvatarColor(userId: number): string {
           v-model="messageInput"
           @keydown="handleKeyDown"
           rows="2"
-          placeholder="Enter text... (Shift+Enter pour nouvelle ligne)"
+          :placeholder="t('game.chat.placeholder')"
           class="form-input resize-none pr-12"
           :disabled="chatStore.isSending"
         />
@@ -508,7 +490,7 @@ function getAvatarColor(userId: number): string {
           @click="sendMessage"
           :disabled="!messageInput.trim() || chatStore.isSending"
           class="absolute right-2 bottom-2 p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          title="Envoyer (Enter)"
+          :title="t('game.chat.sendTitle')"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

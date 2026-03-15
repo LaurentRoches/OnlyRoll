@@ -175,7 +175,7 @@ export const validators = {
   },
 
   /**
-   * Vérifie si deux valeurs sont identiques (pour confirmation de mot de passe).
+   * Vérifie si deux valeurs sont identiques.
    */
   matches:
     (otherValue: unknown) =>

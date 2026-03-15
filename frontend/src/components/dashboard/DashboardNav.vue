@@ -30,7 +30,7 @@
                 : 'text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700',
             ]"
           >
-            Parties
+            {{ t('common.nav.games') }}
           </RouterLink>
           <RouterLink
             v-if="isAdmin"
@@ -83,7 +83,7 @@
                 class="absolute right-0 top-12 w-80 sm:w-96 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50"
               >
                 <div class="p-4 border-b border-secondary-700 flex items-center justify-between">
-                  <h3 class="font-semibold text-secondary-50">Invitations en attente</h3>
+                  <h3 class="font-semibold text-secondary-50">{{ t('common.nav.invitations.title') }}</h3>
                   <button
                     @click="showNotifications = false"
                     class="text-secondary-400 hover:text-secondary-200 transition-colors"
@@ -112,7 +112,7 @@
                     <div
                       class="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"
                     ></div>
-                    Chargement...
+                    {{ t('common.nav.invitations.loading') }}
                   </div>
 
                   <div
@@ -120,7 +120,7 @@
                     class="p-6 text-center text-secondary-400"
                   >
                     <div class="text-3xl mb-2">🔔</div>
-                    <p class="text-sm">Aucune invitation en attente</p>
+                    <p class="text-sm">{{ t('common.nav.invitations.empty') }}</p>
                   </div>
 
                   <div v-else class="divide-y divide-secondary-700">
@@ -134,7 +134,7 @@
                           {{ invitation.game.name }}
                         </p>
                         <p class="text-xs text-secondary-400 mt-0.5">
-                          MJ : {{ invitation.gameMaster.pseudo }}
+                          {{ t('common.nav.invitations.gameMaster', { pseudo: invitation.gameMaster.pseudo }) }}
                         </p>
                       </div>
                       <div class="flex gap-2">
@@ -143,14 +143,14 @@
                           :disabled="processingId === invitation.id"
                           class="flex-1 px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
                         >
-                          Rejoindre
+                          {{ t('common.nav.invitations.accept') }}
                         </button>
                         <button
                           @click="handleDecline(invitation)"
                           :disabled="processingId === invitation.id"
                           class="flex-1 px-3 py-1.5 bg-secondary-600 text-secondary-200 text-sm rounded-lg hover:bg-secondary-500 transition-colors disabled:opacity-50"
                         >
-                          Refuser
+                          {{ t('common.nav.invitations.decline') }}
                         </button>
                       </div>
                     </div>
@@ -166,14 +166,14 @@
               @click="handleLogout"
               class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
             >
-              Déconnexion
+              {{ t('common.nav.logout') }}
             </button>
           </div>
 
           <button
             class="md:hidden p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
             :aria-expanded="isMobileMenuOpen"
-            aria-label="Menu de navigation"
+            :aria-label="t('common.nav.navigationMenu')"
             @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
             <svg
@@ -233,7 +233,7 @@
               : 'text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700',
           ]"
         >
-          Parties
+          {{ t('common.nav.games') }}
         </RouterLink>
         <RouterLink
           v-if="isAdmin"
@@ -254,7 +254,7 @@
           @click="handleLogout"
           class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
         >
-          Déconnexion
+          {{ t('common.nav.logout') }}
         </button>
       </div>
     </div>
@@ -264,12 +264,14 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notificationStore'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 import type { GameInvitation } from '@/types/game'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { logout } = useAuth()
@@ -319,7 +321,7 @@ async function handleAccept(invitation: GameInvitation) {
     showNotifications.value = false
     router.push(`/games/${invitation.game.id}/play`)
   } catch {
-    alert("Erreur lors de l'acceptation de l'invitation")
+    alert(t('common.nav.invitations.acceptError'))
   } finally {
     processingId.value = null
   }
@@ -330,7 +332,7 @@ async function handleDecline(invitation: GameInvitation) {
   try {
     await notificationStore.declineInvitation(invitation.game.id)
   } catch {
-    alert("Erreur lors du refus de l'invitation")
+    alert(t('common.nav.invitations.declineError'))
   } finally {
     processingId.value = null
   }

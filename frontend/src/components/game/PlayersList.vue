@@ -7,6 +7,9 @@ import { gameApi } from '@/services/api/gameApi'
 import type { GamePlayer } from '@/types/game'
 import { PlayerRole, PlayerStatus } from '@/types/game'
 import InvitePlayerModal from './InvitePlayerModal.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   players: GamePlayer[]
@@ -85,11 +88,11 @@ const playersByRole = computed(() => {
 
 function getRoleLabel(role: PlayerRole): string {
   const labels = {
-    [PlayerRole.GAME_MASTER]: 'MJ',
-    [PlayerRole.PLAYER]: 'Joueur',
-    [PlayerRole.SPECTATOR]: 'Spectateur',
+    [PlayerRole.GAME_MASTER]: t('game.players.roles.gameMaster'),
+    [PlayerRole.PLAYER]: t('game.players.roles.player'),
+    [PlayerRole.SPECTATOR]: t('game.players.roles.spectator'),
   }
-  return labels[role] || 'Inconnu'
+  return labels[role] || t('game.players.roles.unknown')
 }
 
 function getRoleColor(role: PlayerRole): string {
@@ -119,14 +122,14 @@ function formatJoinedAt(dateString: string): string {
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
 
-  if (diffMins < 1) return "À l'instant"
-  if (diffMins < 60) return `Il y a ${diffMins} min`
+  if (diffMins < 1) return t('game.players.timeAgo.justNow')
+  if (diffMins < 60) return t('game.players.timeAgo.minutes', { count: diffMins })
 
   const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `Il y a ${diffHours}h`
+  if (diffHours < 24) return t('game.players.timeAgo.hours', { count: diffHours })
 
   const diffDays = Math.floor(diffHours / 24)
-  return `Il y a ${diffDays}j`
+  return t('game.players.timeAgo.days', { count: diffDays })
 }
 
 function isCurrentUserGameMaster(player: GamePlayer): boolean {
@@ -134,7 +137,7 @@ function isCurrentUserGameMaster(player: GamePlayer): boolean {
 }
 
 async function handleKick(player: GamePlayer) {
-  if (!confirm(`Êtes-vous sûr de vouloir expulser ${player.user.pseudo} de la partie ?`)) return
+  if (!confirm(t('game.players.kick.confirm', { pseudo: player.user.pseudo }))) return
 
   kickingPlayerId.value = player.id
   try {
@@ -142,7 +145,7 @@ async function handleKick(player: GamePlayer) {
     emit('playerKicked')
   } catch (e) {
     console.error("Erreur lors de l'expulsion:", e)
-    alert("Impossible d'expulser ce joueur")
+    alert(t('game.players.kick.error'))
   } finally {
     kickingPlayerId.value = null
   }
@@ -154,21 +157,21 @@ async function handleKick(player: GamePlayer) {
     <div class="mb-6">
       <h3 class="font-bold text-secondary-50 text-lg mb-2 flex items-center gap-2">
         <span>👥</span>
-        Joueurs
+        {{ t('game.players.title') }}
       </h3>
 
       <div class="grid grid-cols-3 gap-2 text-center text-sm">
         <div class="bg-secondary-700 rounded-lg p-2">
           <div class="text-success font-bold">{{ onlinePlayers.length }}</div>
-          <div class="text-secondary-400 text-xs">En ligne</div>
+          <div class="text-secondary-400 text-xs">{{ t('game.players.stats.online') }}</div>
         </div>
         <div class="bg-secondary-700 rounded-lg p-2">
           <div class="text-secondary-50 font-bold">{{ activePlayers.length }}</div>
-          <div class="text-secondary-400 text-xs">Membres</div>
+          <div class="text-secondary-400 text-xs">{{ t('game.players.stats.members') }}</div>
         </div>
         <div class="bg-secondary-700 rounded-lg p-2">
           <div class="text-accent-purple font-bold">{{ playersByRole.gameMaster.length }}</div>
-          <div class="text-secondary-400 text-xs">MJ</div>
+          <div class="text-secondary-400 text-xs">{{ t('game.players.stats.gm') }}</div>
         </div>
       </div>
     </div>
@@ -194,7 +197,7 @@ async function handleKick(player: GamePlayer) {
                 'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-secondary-800',
                 isPlayerOnline(player) ? 'bg-success' : 'bg-secondary-500',
               ]"
-              :title="isPlayerOnline(player) ? 'En ligne' : 'Hors ligne'"
+              :title="isPlayerOnline(player) ? t('game.players.status.online') : t('game.players.status.offline')"
             ></div>
           </div>
 
@@ -217,13 +220,13 @@ async function handleKick(player: GamePlayer) {
                 v-if="player.status === PlayerStatus.PENDING"
                 class="px-2 py-0.5 text-xs font-medium rounded whitespace-nowrap bg-accent-amber/20 text-accent-amber border border-accent-amber/30"
               >
-                En attente
+                {{ t('game.players.status.pending') }}
               </span>
             </div>
 
             <div class="flex items-center gap-2 text-xs text-secondary-400">
               <span :class="isPlayerOnline(player) ? 'text-success' : 'text-secondary-400'">
-                {{ isPlayerOnline(player) ? 'En ligne' : 'Hors ligne' }}
+                {{ isPlayerOnline(player) ? t('game.players.status.online') : t('game.players.status.offline') }}
               </span>
               <span>•</span>
               <span>{{ formatJoinedAt(player.joinedAt) }}</span>
@@ -238,7 +241,7 @@ async function handleKick(player: GamePlayer) {
               @click="handleKick(player)"
               :disabled="kickingPlayerId === player.id"
               class="p-1.5 hover:bg-error/20 rounded transition-colors text-secondary-400 hover:text-error disabled:opacity-50"
-              title="Expulser ce joueur"
+              :title="t('game.players.kick.title')"
             >
               <svg
                 v-if="kickingPlayerId !== player.id"
@@ -266,8 +269,8 @@ async function handleKick(player: GamePlayer) {
 
     <div v-if="sortedPlayers.length === 0" class="text-center py-8 text-secondary-400">
       <div class="text-4xl mb-3">👥</div>
-      <p class="text-lg">Aucun joueur dans la partie</p>
-      <p class="text-sm mt-1">Invitez vos amis à vous rejoindre</p>
+      <p class="text-lg">{{ t('game.players.empty.title') }}</p>
+      <p class="text-sm mt-1">{{ t('game.players.empty.subtitle') }}</p>
     </div>
 
     <div v-if="isGameMaster" class="mt-4">
@@ -279,20 +282,20 @@ async function handleKick(player: GamePlayer) {
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        Inviter un joueur
+        {{ t('game.players.invite.button') }}
       </button>
       <div
         v-else
         class="w-full text-center py-2 text-secondary-400 text-xs bg-secondary-700/50 rounded-lg"
       >
-        Partie complète ({{ activeAndPendingCount }}/{{ maxPlayers }})
+        {{ t('game.players.invite.atCapacity', { current: activeAndPendingCount, max: maxPlayers }) }}
       </div>
     </div>
 
     <div v-if="playersByRole.spectators.length > 0" class="mt-6 pt-6 border-t border-secondary-700">
       <h4 class="text-sm font-semibold text-secondary-400 mb-3 flex items-center gap-2">
         <span>👁️</span>
-        Spectateurs ({{ playersByRole.spectators.length }})
+        {{ t('game.players.spectators.title', { count: playersByRole.spectators.length }) }}
       </h4>
       <div class="space-y-2">
         <div

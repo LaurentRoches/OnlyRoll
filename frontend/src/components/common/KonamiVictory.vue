@@ -11,7 +11,7 @@
             <span class="score-value">{{ animatedScore }}</span>
           </div>
 
-          <p class="konami-message">🎮 Vous avez découvert l'easter egg ! 🎮</p>
+          <p class="konami-message">🎮 {{ t('common.konami.message') }} 🎮</p>
 
           <button class="konami-close" @click.stop="close">[ PRESS START ]</button>
         </div>
@@ -22,7 +22,10 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import confetti from 'canvas-confetti'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   isActive: boolean
@@ -335,7 +338,6 @@ watch(
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .konami-container {
     padding: 1rem;
