@@ -108,6 +108,68 @@ export default {
     settingsTitle: 'Game settings',
     leaveButton: 'Leave game',
     leaveTitle: 'Permanently leave this game',
+    help: {
+      buttonLabel: 'Help',
+      buttonTitle: 'Game user guide',
+      modalTitle: 'Game Guide',
+      gm: {
+        title: 'Game Master Guide',
+        settings: {
+          title: '\u2699\ufe0f Game Settings',
+          description:
+            'Click the gear icon in the top bar to modify the game name, description, maximum players and visibility (public/private). Only available during the preparation phase.',
+        },
+        maps: {
+          title: '\ud83d\uddfa\ufe0f Map Management',
+          description:
+            'Use the toolbar above the map to create a new map, upload an image, edit or delete an existing map. You can set the active map that all players will see. Configure the grid (color, opacity) from map settings.',
+        },
+        tokens: {
+          title: '\ud83c\udfad Token Management',
+          description:
+            'Select the placement tool from the toolbar, then click on the map to place a token. You can create tokens for NPCs and monsters, edit them (name, color, size) and move them freely on the map.',
+        },
+        players: {
+          title: '\ud83d\udc65 Player Management',
+          description:
+            'From the Players panel, you can invite new players by username, view their connection status and kick a player if necessary. Invitations will appear in the player\'s notifications.',
+        },
+        chat: {
+          title: '\ud83d\udcac Chat & System Messages',
+          description:
+            'As GM, you have access to all standard chat commands (/roll, /whisper, /me) as well as the ability to send system messages visible to everyone. Use In Character mode to speak as an NPC.',
+        },
+        gameControl: {
+          title: '\ud83c\udfae Game Control',
+          description:
+            'You can start the game once at least one player has joined (during preparation phase). The "Leave game" button permanently removes you \u2014 this action is irreversible.',
+        },
+      },
+      player: {
+        title: 'Player Guide',
+        chat: {
+          title: '\ud83d\udcac Chat',
+          description:
+            'Send messages by typing in the text area and pressing Enter. Use Shift+Enter for a new line. Toggle between "In Character" (speak as your character) and "Out of Character" mode with the IC/OOC button.',
+        },
+        dice: {
+          title: '\ud83c\udfb2 Dice Roller',
+          description:
+            'The Dice panel lets you quickly roll predefined dice (d4 to d20), use common rolls (Initiative, Attack, Damage...) or compose a custom formula. You can also roll from chat with /roll or /r followed by the formula.',
+        },
+        map: {
+          title: '\ud83d\uddfa\ufe0f Map & Tokens',
+          description:
+            'View the map shared by the GM. Use the scroll wheel to zoom, and click-drag to navigate. Your tokens are visible on the map if the GM has placed them for you.',
+        },
+        leave: {
+          title: '\ud83d\udeaa Leave Game',
+          description:
+            'The "Leave game" button in the top bar permanently removes you from the game. This action is irreversible. The "Back" button takes you to the game list without leaving.',
+        },
+      },
+      close: 'Close',
+    },
   },
 
   chat: {
@@ -118,7 +180,54 @@ export default {
     scrollDown: 'Scroll to bottom',
     inCharacter: 'In Character',
     outOfCharacter: 'Out of Character',
-    commands: 'Commands: /roll (/r) 1d20 \u2022 /whisper (/w) username message \u2022 /w username /r formula \u2022 /me action',
+    help: {
+      tooltip: '/roll \u2022 /whisper \u2022 /me \u2022 Click for details',
+      modalTitle: 'Chat Commands',
+      commands: {
+        title: 'Commands',
+        roll: {
+          name: '/roll (/r)',
+          syntax: '1d20, 2d6+3, 3d8...',
+          description: 'Roll dice using standard notation. The result is visible to all players.',
+        },
+        whisper: {
+          name: '/whisper (/w)',
+          syntax: '/w username message',
+          description: 'Send a private message to a specific player. Only you and the recipient can see it.',
+        },
+        whisperRoll: {
+          name: '/w username /r',
+          syntax: '/w username /r 1d20+5',
+          description: 'Roll dice privately. Only you and the recipient see the result.',
+        },
+        emote: {
+          name: '/me',
+          syntax: '/me action',
+          description: 'Perform a narrative action. E.g.: "/me draws their sword" displays your username followed by the action.',
+        },
+      },
+      dice: {
+        title: 'Pre-built Dice',
+        quickDice: 'Quick dice: d4, d6, d8, d10, d12, d20 \u2014 one click to roll.',
+        commonRolls: 'Common rolls: Initiative, Attack, Damage (sword/bow), Saving throw, Healing.',
+        commonRollsHint: 'Available in the Dice panel to the right of the chat.',
+      },
+      advantage: {
+        title: 'Advantage / Disadvantage',
+        normal: 'Normal \u2014 Roll dice normally.',
+        advantage: 'Advantage \u2014 Roll 2 dice and keep the highest (2d20kh1).',
+        disadvantage: 'Disadvantage \u2014 Roll 2 dice and keep the lowest (2d20kl1).',
+        super: 'Super advantage \u2014 Roll 3 dice and keep the highest.',
+      },
+      modes: {
+        title: 'Chat Modes',
+        inCharacter: 'In Character (IC)',
+        inCharacterDesc: 'Your messages appear as your character\'s words. Ideal for roleplay.',
+        outOfCharacter: 'Out of Character (OOC)',
+        outOfCharacterDesc: 'Your messages appear as yourself, the player. For out-of-game discussions.',
+      },
+      close: 'Close',
+    },
     placeholder: 'Enter text... (Shift+Enter for new line)',
     sendTitle: 'Send (Enter)',
     closeError: 'Close',

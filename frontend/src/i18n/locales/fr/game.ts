@@ -108,6 +108,68 @@ export default {
     settingsTitle: 'Param\u00e8tres de la partie',
     leaveButton: 'Quitter la partie',
     leaveTitle: 'Se retirer d\u00e9finitivement de cette partie',
+    help: {
+      buttonLabel: 'Aide',
+      buttonTitle: "Guide d'utilisation de la partie",
+      modalTitle: 'Guide de la partie',
+      gm: {
+        title: 'Guide du Ma\u00eetre du Jeu',
+        settings: {
+          title: '\u2699\ufe0f Param\u00e8tres de la partie',
+          description:
+            "Cliquez sur l'ic\u00f4ne engrenage dans la barre sup\u00e9rieure pour modifier le nom, la description, le nombre maximum de joueurs et la visibilit\u00e9 (publique/priv\u00e9e) de votre partie. Disponible uniquement en phase de pr\u00e9paration.",
+        },
+        maps: {
+          title: '\ud83d\uddfa\ufe0f Gestion des cartes',
+          description:
+            "Utilisez la barre d'outils au-dessus de la carte pour cr\u00e9er une nouvelle carte, importer une image, modifier ou supprimer une carte existante. Vous pouvez d\u00e9finir la carte active que tous les joueurs verront. Configurez la grille (couleur, opacit\u00e9) depuis les param\u00e8tres de carte.",
+        },
+        tokens: {
+          title: '\ud83c\udfad Gestion des tokens',
+          description:
+            "S\u00e9lectionnez l'outil de placement dans la barre d'outils, puis cliquez sur la carte pour placer un token. Vous pouvez cr\u00e9er des tokens pour les PNJ et monstres, les \u00e9diter (nom, couleur, taille) et les d\u00e9placer librement sur la carte.",
+        },
+        players: {
+          title: '\ud83d\udc65 Gestion des joueurs',
+          description:
+            "Depuis le panneau Joueurs, vous pouvez inviter de nouveaux joueurs par pseudo, voir leur statut de connexion et exclure un joueur si n\u00e9cessaire. Les invitations appara\u00eetront dans les notifications du joueur.",
+        },
+        chat: {
+          title: '\ud83d\udcac Tchat et messages syst\u00e8me',
+          description:
+            "En tant que MJ, vous disposez de toutes les commandes de tchat classiques (/roll, /whisper, /me) ainsi que la possibilit\u00e9 d'envoyer des messages syst\u00e8me visibles par tous. Utilisez le mode In Character pour parler en tant que PNJ.",
+        },
+        gameControl: {
+          title: '\ud83c\udfae Contr\u00f4le de la partie',
+          description:
+            "Vous pouvez d\u00e9marrer la partie une fois qu'au moins un joueur a rejoint (en phase de pr\u00e9paration). Le bouton \u00ab Quitter la partie \u00bb vous retire d\u00e9finitivement \u2014 cette action est irr\u00e9versible.",
+        },
+      },
+      player: {
+        title: 'Guide du Joueur',
+        chat: {
+          title: '\ud83d\udcac Tchat',
+          description:
+            "Envoyez des messages dans le tchat en tapant dans la zone de texte et en appuyant sur Entr\u00e9e. Utilisez Shift+Entr\u00e9e pour un retour \u00e0 la ligne. Basculez entre le mode \u00ab In Character \u00bb (parler en tant que personnage) et \u00ab Out of Character \u00bb (hors personnage) avec le bouton IC/OOC.",
+        },
+        dice: {
+          title: '\ud83c\udfb2 Lanceur de d\u00e9s',
+          description:
+            "Le panneau D\u00e9s vous permet de lancer rapidement des d\u00e9s pr\u00e9d\u00e9finis (d4 \u00e0 d20), d'utiliser des lancers courants (Initiative, Attaque, D\u00e9g\u00e2ts...) ou de composer une formule personnalis\u00e9e. Vous pouvez aussi lancer depuis le tchat avec /roll ou /r suivi de la formule.",
+        },
+        map: {
+          title: '\ud83d\uddfa\ufe0f Carte et tokens',
+          description:
+            "Visualisez la carte partag\u00e9e par le MJ. Utilisez la molette pour zoomer, et cliquez-glissez pour naviguer. Vos tokens sont visibles sur la carte si le MJ en a plac\u00e9 pour vous.",
+        },
+        leave: {
+          title: '\ud83d\udeaa Quitter la partie',
+          description:
+            "Le bouton \u00ab Quitter la partie \u00bb dans la barre sup\u00e9rieure vous retire d\u00e9finitivement de la partie. Cette action est irr\u00e9versible. Le bouton \u00ab Retour \u00bb vous ram\u00e8ne \u00e0 la liste des parties sans quitter.",
+        },
+      },
+      close: 'Fermer',
+    },
   },
 
   chat: {
@@ -118,7 +180,54 @@ export default {
     scrollDown: 'Aller en bas',
     inCharacter: 'In Character',
     outOfCharacter: 'Out of Character',
-    commands: 'Commandes: /roll (/r) 1d20 \u2022 /whisper (/w) pseudo message \u2022 /w pseudo /r formule \u2022 /me action',
+    help: {
+      tooltip: '/roll \u2022 /whisper \u2022 /me \u2022 Cliquez pour plus de d\u00e9tails',
+      modalTitle: 'Commandes du tchat',
+      commands: {
+        title: 'Commandes',
+        roll: {
+          name: '/roll (/r)',
+          syntax: '1d20, 2d6+3, 3d8...',
+          description: 'Lance des d\u00e9s en utilisant la notation standard. Le r\u00e9sultat est visible par tous les joueurs.',
+        },
+        whisper: {
+          name: '/whisper (/w)',
+          syntax: '/w pseudo message',
+          description: 'Envoie un message priv\u00e9 \u00e0 un joueur sp\u00e9cifique. Seuls vous et le destinataire pouvez le voir.',
+        },
+        whisperRoll: {
+          name: '/w pseudo /r',
+          syntax: '/w pseudo /r 1d20+5',
+          description: 'Lance des d\u00e9s en priv\u00e9. Seuls vous et le destinataire voyez le r\u00e9sultat.',
+        },
+        emote: {
+          name: '/me',
+          syntax: '/me action',
+          description: "Effectue une action narrative. Ex : « /me d\u00e9gaine son \u00e9p\u00e9e » affiche votre pseudo suivi de l'action.",
+        },
+      },
+      dice: {
+        title: 'D\u00e9s pr\u00e9construits',
+        quickDice: 'D\u00e9s rapides : d4, d6, d8, d10, d12, d20 \u2014 un clic pour lancer.',
+        commonRolls: 'Lancers courants : Initiative, Attaque, D\u00e9g\u00e2ts (\u00e9p\u00e9e/arc), Jet de sauvegarde, Soin.',
+        commonRollsHint: 'Disponibles dans le panneau D\u00e9s \u00e0 droite du tchat.',
+      },
+      advantage: {
+        title: 'Avantage / D\u00e9savantage',
+        normal: 'Normal \u2014 Lance les d\u00e9s normalement.',
+        advantage: 'Avantage \u2014 Lance 2 d\u00e9s et garde le meilleur (2d20kh1).',
+        disadvantage: 'D\u00e9savantage \u2014 Lance 2 d\u00e9s et garde le pire (2d20kl1).',
+        super: 'Super-avantage \u2014 Lance 3 d\u00e9s et garde le meilleur.',
+      },
+      modes: {
+        title: 'Modes de discussion',
+        inCharacter: 'In Character (IC)',
+        inCharacterDesc: 'Vos messages apparaissent comme paroles de votre personnage. Id\u00e9al pour le roleplay.',
+        outOfCharacter: 'Out of Character (OOC)',
+        outOfCharacterDesc: 'Vos messages apparaissent comme vous-m\u00eame, le joueur. Pour les discussions hors-jeu.',
+      },
+      close: 'Fermer',
+    },
     placeholder: 'Enter text... (Shift+Enter pour nouvelle ligne)',
     sendTitle: 'Envoyer (Enter)',
     closeError: 'Fermer',

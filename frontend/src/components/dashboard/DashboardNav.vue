@@ -160,6 +160,39 @@
             </Transition>
           </div>
 
+          <div class="relative hidden md:block" ref="langRef">
+            <button
+              @click="toggleLangDropdown"
+              class="p-2 rounded-lg hover:bg-secondary-700 transition-colors"
+              :title="t('common.nav.language.switchLanguage')"
+            >
+              <img
+                :src="currentFlag"
+                :alt="t('common.nav.language.current')"
+                class="w-5 h-5 rounded-sm object-cover"
+              />
+            </button>
+
+            <Transition name="fade-down">
+              <div
+                v-if="showLangDropdown"
+                class="absolute right-0 top-12 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50 py-1 min-w-max"
+              >
+                <button
+                  @click="switchLanguage(otherLocale)"
+                  class="flex items-center gap-2 px-4 py-2 text-sm text-secondary-200 hover:bg-secondary-700 transition-colors w-full"
+                >
+                  <img
+                    :src="otherFlag"
+                    :alt="otherLocale.toUpperCase()"
+                    class="w-5 h-5 rounded-sm object-cover"
+                  />
+                  <span>{{ t(`common.nav.language.${otherLocale}`) }}</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
+
           <div class="hidden md:flex items-center space-x-4 ml-2">
             <UserProfileBadge />
             <button
@@ -248,6 +281,31 @@
           Admin
         </RouterLink>
       </div>
+      <div class="border-t border-secondary-700 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-secondary-400">{{ t('common.nav.language.label') }}</span>
+          <div class="flex gap-2">
+            <button
+              v-for="lang in (['fr', 'en'] as const)"
+              :key="lang"
+              @click="switchLanguage(lang); isMobileMenuOpen = false"
+              class="p-1.5 rounded-lg transition-colors"
+              :class="[
+                locale === lang
+                  ? 'bg-primary-500/20 ring-2 ring-primary-500'
+                  : 'hover:bg-secondary-700'
+              ]"
+            >
+              <img
+                :src="`/images/flag/${lang}.png`"
+                :alt="t(`common.nav.language.${lang}`)"
+                class="w-6 h-6 rounded-sm object-cover"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="border-t border-secondary-700 px-4 py-3 flex items-center justify-between">
         <UserProfileBadge />
         <button
@@ -268,10 +326,12 @@ import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notificationStore'
+import { profileApi } from '@/services/api/profileApi'
+import { logger } from '@/utils/logger'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 import type { GameInvitation } from '@/types/game'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { logout } = useAuth()
@@ -281,20 +341,29 @@ const notificationStore = useNotificationStore()
 const isAdmin = computed(() => authStore.isAdmin)
 const isMobileMenuOpen = ref(false)
 const showNotifications = ref(false)
+const showLangDropdown = ref(false)
 const processingId = ref<number | null>(null)
 const bellRef = ref<HTMLElement | null>(null)
+const langRef = ref<HTMLElement | null>(null)
+
+const currentFlag = computed(() => `/images/flag/${locale.value}.png`)
+const otherLocale = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
+const otherFlag = computed(() => `/images/flag/${otherLocale.value}.png`)
 
 watch(
   () => route.path,
   () => {
     isMobileMenuOpen.value = false
     showNotifications.value = false
+    showLangDropdown.value = false
   }
 )
 
 onMounted(async () => {
-  await notificationStore.fetchInvitations()
-  await notificationStore.connectToNotifications()
+  if (authStore.isAuthenticated) {
+    await notificationStore.fetchInvitations()
+    await notificationStore.connectToNotifications()
+  }
 
   document.addEventListener('click', handleClickOutside)
 })
@@ -308,10 +377,36 @@ function handleClickOutside(event: MouseEvent) {
   if (bellRef.value && !bellRef.value.contains(event.target as Node)) {
     showNotifications.value = false
   }
+  if (langRef.value && !langRef.value.contains(event.target as Node)) {
+    showLangDropdown.value = false
+  }
 }
 
 function toggleNotifications() {
   showNotifications.value = !showNotifications.value
+  showLangDropdown.value = false
+}
+
+function toggleLangDropdown() {
+  showLangDropdown.value = !showLangDropdown.value
+  showNotifications.value = false
+}
+
+async function switchLanguage(lang: 'fr' | 'en') {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  showLangDropdown.value = false
+
+  if (authStore.isAuthenticated) {
+    try {
+      await profileApi.update({ language: lang })
+      if (authStore.user) {
+        authStore.user.language = lang
+      }
+    } catch (err) {
+      logger.error('Failed to persist language preference:', err)
+    }
+  }
 }
 
 async function handleAccept(invitation: GameInvitation) {

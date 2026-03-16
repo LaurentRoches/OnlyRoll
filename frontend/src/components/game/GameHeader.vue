@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Game } from '@/types/game'
 import { useI18n } from 'vue-i18n'
+import AccessibleModal from '@/components/a11y/AccessibleModal.vue'
 
 const { t } = useI18n()
 
@@ -9,6 +10,7 @@ const props = defineProps<{
   game: Game | null
   isConnected: boolean
   connectionState: 'connecting' | 'open' | 'closed' | 'reconnecting' | 'error'
+  isGameMaster: boolean
 }>()
 
 const emit = defineEmits<{
@@ -16,6 +18,8 @@ const emit = defineEmits<{
   leaveGame: []
   goBack: []
 }>()
+
+const showHelpModal = ref(false)
 
 const connectionStatusClass = computed(() => {
   switch (props.connectionState) {
@@ -56,6 +60,17 @@ const playersCount = computed(() => {
 const maxPlayers = computed(() => {
   return props.game?.maxPlayers || 0
 })
+
+const gmSections = [
+  'settings',
+  'maps',
+  'tokens',
+  'players',
+  'chat',
+  'gameControl',
+] as const
+
+const playerSections = ['chat', 'dice', 'map', 'leave'] as const
 </script>
 
 <template>
@@ -103,6 +118,28 @@ const maxPlayers = computed(() => {
             {{ connectionStatusText }}
           </span>
         </div>
+
+        <button
+          @click="showHelpModal = true"
+          class="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 rounded-lg bg-secondary-700/50 hover:bg-secondary-600 text-secondary-300 hover:text-secondary-100 transition-colors"
+          :title="t('game.header.help.buttonTitle')"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span class="hidden sm:inline text-sm">{{ t('game.header.help.buttonLabel') }}</span>
+        </button>
 
         <div class="flex items-center gap-1 sm:gap-2">
           <button
@@ -166,6 +203,65 @@ const maxPlayers = computed(() => {
       </div>
     </div>
   </header>
+
+  <AccessibleModal
+    :is-open="showHelpModal"
+    :title="t('game.header.help.modalTitle')"
+    size="lg"
+    @close="showHelpModal = false"
+  >
+    <div class="space-y-6">
+      <template v-if="isGameMaster">
+        <h3 class="text-base font-bold text-secondary-50 flex items-center gap-2">
+          <span>👑</span> {{ t('game.header.help.gm.title') }}
+        </h3>
+        <div class="space-y-3">
+          <div
+            v-for="section in gmSections"
+            :key="section"
+            class="bg-secondary-700/50 rounded-lg p-4"
+          >
+            <h4 class="font-semibold text-secondary-100 text-sm mb-1">
+              {{ t(`game.header.help.gm.${section}.title`) }}
+            </h4>
+            <p class="text-secondary-300 text-sm">
+              {{ t(`game.header.help.gm.${section}.description`) }}
+            </p>
+          </div>
+        </div>
+      </template>
+
+      <template v-else>
+        <h3 class="text-base font-bold text-secondary-50 flex items-center gap-2">
+          <span>🎮</span> {{ t('game.header.help.player.title') }}
+        </h3>
+        <div class="space-y-3">
+          <div
+            v-for="section in playerSections"
+            :key="section"
+            class="bg-secondary-700/50 rounded-lg p-4"
+          >
+            <h4 class="font-semibold text-secondary-100 text-sm mb-1">
+              {{ t(`game.header.help.player.${section}.title`) }}
+            </h4>
+            <p class="text-secondary-300 text-sm">
+              {{ t(`game.header.help.player.${section}.description`) }}
+            </p>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <template #footer="{ close }">
+      <button
+        type="button"
+        class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+        @click="close"
+      >
+        {{ t('game.header.help.close') }}
+      </button>
+    </template>
+  </AccessibleModal>
 </template>
 
 <style scoped>

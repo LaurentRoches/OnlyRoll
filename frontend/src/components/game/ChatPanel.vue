@@ -6,6 +6,7 @@ import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
 import SkeletonMessage from '@/components/game/SkeletonMessage.vue'
 import { getErrorMessage } from '@/utils/errorHelpers'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import AccessibleModal from '@/components/a11y/AccessibleModal.vue'
 import type {
   GameMessage,
   MessageType,
@@ -65,6 +66,7 @@ function clearInputError() {
   chatInputError.value = null
 }
 
+const showChatHelpModal = ref(false)
 const showSuggestions = ref(false)
 const selectedSuggestionIndex = ref(0)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -416,8 +418,19 @@ function getAvatarColor(userId: number): string {
           {{ isInCharacter ? '🎭 ' + t('game.chat.inCharacter') : '🗣️ ' + t('game.chat.outOfCharacter') }}
         </button>
 
-        <div class="text-xs text-secondary-400">
-          {{ t('game.chat.commands') }}
+        <div class="relative group ml-auto">
+          <button
+            @click="showChatHelpModal = true"
+            class="w-6 h-6 rounded-full bg-secondary-700 text-secondary-400 hover:bg-primary-500 hover:text-white flex items-center justify-center text-xs font-bold transition-colors"
+            :aria-label="t('game.chat.help.tooltip')"
+          >
+            ?
+          </button>
+          <div
+            class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-secondary-900 text-secondary-200 text-xs rounded-lg shadow-lg w-56 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 border border-secondary-700"
+          >
+            {{ t('game.chat.help.tooltip') }}
+          </div>
         </div>
       </div>
 
@@ -506,6 +519,127 @@ function getAvatarColor(userId: number): string {
         </button>
       </div>
     </div>
+
+    <AccessibleModal
+      :is-open="showChatHelpModal"
+      :title="t('game.chat.help.modalTitle')"
+      size="lg"
+      @close="showChatHelpModal = false"
+    >
+      <div class="space-y-6">
+        <div>
+          <h3
+            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
+          >
+            {{ t('game.chat.help.commands.title') }}
+          </h3>
+          <div class="space-y-3">
+            <div
+              v-for="cmd in ['roll', 'whisper', 'whisperRoll', 'emote']"
+              :key="cmd"
+              class="bg-secondary-700/50 rounded-lg p-3"
+            >
+              <div class="flex items-center gap-2 mb-1">
+                <code class="text-primary-400 font-mono text-sm font-bold">
+                  {{ t(`game.chat.help.commands.${cmd}.name`) }}
+                </code>
+                <span class="text-secondary-400 text-xs font-mono">
+                  {{ t(`game.chat.help.commands.${cmd}.syntax`) }}
+                </span>
+              </div>
+              <p class="text-secondary-300 text-sm">
+                {{ t(`game.chat.help.commands.${cmd}.description`) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3
+            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
+          >
+            {{ t('game.chat.help.dice.title') }}
+          </h3>
+          <div class="bg-secondary-700/50 rounded-lg p-3 space-y-2">
+            <p class="text-secondary-300 text-sm">
+              {{ t('game.chat.help.dice.quickDice') }}
+            </p>
+            <p class="text-secondary-300 text-sm">
+              {{ t('game.chat.help.dice.commonRolls') }}
+            </p>
+            <p class="text-secondary-400 text-xs italic">
+              {{ t('game.chat.help.dice.commonRollsHint') }}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3
+            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
+          >
+            {{ t('game.chat.help.advantage.title') }}
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div class="bg-secondary-700/50 rounded-lg p-3 border-l-4 border-secondary-500">
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.advantage.normal') }}
+              </p>
+            </div>
+            <div class="bg-secondary-700/50 rounded-lg p-3 border-l-4 border-green-500">
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.advantage.advantage') }}
+              </p>
+            </div>
+            <div class="bg-secondary-700/50 rounded-lg p-3 border-l-4 border-red-500">
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.advantage.disadvantage') }}
+              </p>
+            </div>
+            <div class="bg-secondary-700/50 rounded-lg p-3 border-l-4 border-yellow-500">
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.advantage.super') }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3
+            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
+          >
+            {{ t('game.chat.help.modes.title') }}
+          </h3>
+          <div class="space-y-2">
+            <div class="bg-secondary-700/50 rounded-lg p-3">
+              <p class="text-sm font-medium text-primary-400 mb-1">
+                {{ t('game.chat.help.modes.inCharacter') }}
+              </p>
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.modes.inCharacterDesc') }}
+              </p>
+            </div>
+            <div class="bg-secondary-700/50 rounded-lg p-3">
+              <p class="text-sm font-medium text-secondary-200 mb-1">
+                {{ t('game.chat.help.modes.outOfCharacter') }}
+              </p>
+              <p class="text-secondary-300 text-sm">
+                {{ t('game.chat.help.modes.outOfCharacterDesc') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer="{ close }">
+        <button
+          type="button"
+          class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+          @click="close"
+        >
+          {{ t('game.chat.help.close') }}
+        </button>
+      </template>
+    </AccessibleModal>
   </div>
 </template>
 

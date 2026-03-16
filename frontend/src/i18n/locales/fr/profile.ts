@@ -116,7 +116,7 @@ export default {
         lowercase: 'Au moins une minuscule requise',
         uppercase: 'Au moins une majuscule requise',
         digit: 'Au moins un chiffre requis',
-        special: 'Au moins un caract\u00e8re sp\u00e9cial requis (!@#$%&*()_+-=[]{}|;:,.<>?)',
+        special: "Au moins un caract\u00e8re sp\u00e9cial requis (!{'@'}#$%&*()_+-=[]{}|;:,.<>?)",
       },
     },
     submit: {

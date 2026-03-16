@@ -55,6 +55,13 @@ export default {
     logout: 'Déconnexion',
     notifications: 'Notifications',
     navigationMenu: 'Menu de navigation',
+    language: {
+      label: 'Langue',
+      switchLanguage: 'Changer de langue',
+      current: 'Langue actuelle',
+      fr: 'Français',
+      en: 'Anglais',
+    },
     invitations: {
       title: 'Invitations en attente',
       loading: 'Chargement...',

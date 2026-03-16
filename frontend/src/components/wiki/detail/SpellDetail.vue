@@ -156,7 +156,7 @@ function handleSimilarClick(id: number) {
     <div v-if="spell.components?.length">
       <h3 class="text-xl font-bold text-secondary-100 mb-4">{{ t('wiki.spellDetail.components') }}</h3>
       <div class="bg-secondary-800 border border-secondary-700 rounded-xl p-5">
-        <div class="flex items-start gap-6">
+        <div class="flex items-start gap-6 justify-center">
           <div v-for="comp in spell.components" :key="comp.type" class="flex flex-col items-center gap-2">
             <div
               class="w-14 h-14 rounded-full bg-secondary-800 border-2 flex items-center justify-center text-secondary-100 font-bold text-lg"
@@ -234,11 +234,5 @@ function handleSimilarClick(id: number) {
       </div>
     </div>
 
-    <!-- Image décorative circulaire -->
-    <div v-if="bannerUrl && mode === 'page'" class="flex justify-center py-6">
-      <div class="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden border-2 border-secondary-700 shadow-lg shadow-secondary-900/50">
-        <img :src="bannerUrl" :alt="spell.name" class="w-full h-full object-cover" />
-      </div>
-    </div>
   </div>
 </template>

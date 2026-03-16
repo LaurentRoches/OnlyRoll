@@ -137,8 +137,11 @@ class EntryParser
         $text = preg_replace('/\{@spell\s+([^|}]+)[^}]*\}/', '$1', $text);
         // {@creature Name} → Name
         $text = preg_replace('/\{@creature\s+([^|}]+)[^}]*\}/', '$1', $text);
-        // {@item Name} → Name
-        $text = preg_replace('/\{@item\s+([^|}]+)[^}]*\}/', '$1', $text);
+        // {@item Name|source|display} → display (or Name if no display text)
+        $text = preg_replace_callback('/\{@item\s+([^}]+)\}/', function ($m) {
+            $parts = explode('|', $m[1]);
+            return isset($parts[2]) && $parts[2] !== '' ? $parts[2] : $parts[0];
+        }, $text);
         // {@condition Name} → Name
         $text = preg_replace('/\{@condition\s+([^|}]+)[^}]*\}/', '$1', $text);
         // {@skill Name} → Name
@@ -157,6 +160,8 @@ class EntryParser
         $text = preg_replace('/\{@note\s+([^}]+)\}/', '($1)', $text);
         // {@chance X} → X%
         $text = preg_replace('/\{@chance\s+(\d+)[^}]*\}/', '$1%', $text);
+        // {@filter display text|...} → display text
+        $text = preg_replace('/\{@filter\s+([^|}]+)[^}]*\}/', '$1', $text);
         // Remove remaining tags with content: {@tag content|extra} → content
         $text = preg_replace('/\{@\w+\s+([^|}]*)[^}]*\}/', '$1', $text);
         // Remove remaining empty tags: {@tag}

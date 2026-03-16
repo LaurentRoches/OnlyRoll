@@ -56,10 +56,9 @@ const availableLevels = computed(() => {
 
 <template>
   <div v-if="results" class="bg-secondary-800 border border-secondary-700 rounded-lg p-4">
-    <!-- Niveau du sort + boutons -->
     <div class="flex items-center gap-3 mb-4 flex-wrap">
       <span class="text-sm text-secondary-400 whitespace-nowrap">{{ t('wiki.damageCalculator.spellLevel') }}</span>
-      <div class="flex gap-1.5">
+      <div class="flex gap-1.5 flex-wrap">
         <button
           v-for="lvl in availableLevels"
           :key="lvl"
@@ -74,13 +73,11 @@ const availableLevels = computed(() => {
       </div>
     </div>
 
-    <!-- Formule + type de dégât -->
     <p class="text-center text-primary-400 font-bold mb-2">
       {{ results.formula }}
       <span v-if="damageType" class="capitalize"> {{ t('wiki.damageCalculator.damageOf', { type: damageType }) }}</span>
     </p>
 
-    <!-- Stats inline -->
     <p class="text-center text-sm text-secondary-400">
       {{ t('wiki.damageCalculator.min') }} {{ results.min }} | {{ t('wiki.damageCalculator.avg') }} {{ results.avg }} | {{ t('wiki.damageCalculator.max') }} {{ results.max }}
     </p>

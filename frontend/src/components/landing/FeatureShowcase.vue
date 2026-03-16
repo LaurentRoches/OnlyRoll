@@ -110,8 +110,9 @@
           </div>
 
           <div class="reveal-up" :class="{ revealed: isVisible }" style="transition-delay: 500ms">
-            <div
-              class="bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-rose-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
+            <RouterLink
+              to="/games"
+              class="block bg-secondary-800 rounded-xl p-6 border border-secondary-700 hover:border-rose-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg cursor-pointer"
             >
               <div
                 class="flex items-center justify-center w-16 h-16 mb-4 group-hover:scale-110 transition-transform duration-200"
@@ -126,7 +127,7 @@
               <p class="text-secondary-400 text-sm leading-relaxed">
                 {{ t('landing.features.multiplayer.description') }}
               </p>
-            </div>
+            </RouterLink>
           </div>
         </div>
 
@@ -135,8 +136,9 @@
           :class="{ revealed: isVisible }"
           style="transition-delay: 300ms"
         >
-          <div
-            class="h-full bg-secondary-800 rounded-xl p-8 border border-secondary-700 hover:border-purple-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg"
+          <RouterLink
+            to="/games"
+            class="block h-full bg-secondary-800 rounded-xl p-8 border border-secondary-700 hover:border-purple-500/50 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg cursor-pointer"
             style="min-height: 260px"
           >
             <div
@@ -152,7 +154,7 @@
             <p class="text-secondary-400 leading-relaxed">
               {{ t('landing.features.virtualTable.description') }}
             </p>
-          </div>
+          </RouterLink>
         </div>
       </div>
     </div>

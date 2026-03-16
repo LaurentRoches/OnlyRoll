@@ -55,6 +55,13 @@ export default {
     logout: 'Logout',
     notifications: 'Notifications',
     navigationMenu: 'Navigation menu',
+    language: {
+      label: 'Language',
+      switchLanguage: 'Switch language',
+      current: 'Current language',
+      fr: 'French',
+      en: 'English',
+    },
     invitations: {
       title: 'Pending invitations',
       loading: 'Loading...',

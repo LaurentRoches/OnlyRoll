@@ -84,7 +84,7 @@ async function toggleSubclass(id: number) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 overflow-hidden">
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
       <div class="bg-secondary-800 rounded-lg p-3 text-center">
         <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.classDetail.hitDie') }}</p>

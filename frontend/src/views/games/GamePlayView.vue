@@ -341,6 +341,7 @@ async function handleTokenCreated() {
       :game="currentGame"
       :is-connected="isConnected"
       :connection-state="connectionState"
+      :is-game-master="isGameMaster"
       @go-back="handleGoBack"
       @open-settings="handleOpenSettings"
       @leave-game="handleLeaveGame"

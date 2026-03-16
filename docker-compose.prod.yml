@@ -178,6 +178,7 @@ services:
       - certbot-certs:/etc/letsencrypt:ro
       - certbot-var:/var/lib/letsencrypt:ro
       - ./docker/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - /var/www/portfolio:/var/www/portfolio:ro
     ports:
       - "80:80"
       - "443:443"

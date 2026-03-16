@@ -116,7 +116,7 @@ export default {
         lowercase: 'At least one lowercase letter required',
         uppercase: 'At least one uppercase letter required',
         digit: 'At least one digit required',
-        special: 'At least one special character required (!@#$%&*()_+-=[]{}|;:,.<>?)',
+        special: "At least one special character required (!{'@'}#$%&*()_+-=[]{}|;:,.<>?)",
       },
     },
     submit: {

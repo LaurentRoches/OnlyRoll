@@ -37,7 +37,11 @@ class ClassImportMapper
             'skills'  => $prof['skills'] ?? [],
         ]);
 
-        $class->setStartingEquipment($data['startingEquipment']['default'] ?? []);
+        $rawEquipment = $data['startingEquipment']['default'] ?? [];
+        $class->setStartingEquipment(array_map(
+            fn(string $line) => $this->parser->parseText($line),
+            $rawEquipment,
+        ));
 
         $mc = $data['multiclassing'] ?? null;
         $class->setMulticlassing($mc);
@@ -123,9 +127,21 @@ class ClassImportMapper
         $result = [];
         foreach ($items as $item) {
             if (is_string($item)) {
-                $result[] = $item;
+                $result[] = $this->parser->parseText($item);
             } elseif (is_array($item)) {
-                $result[] = $item['full'] ?? $item['srd'] ?? json_encode($item);
+                if (isset($item['full'])) {
+                    $result[] = $this->parser->parseText($item['full']);
+                } elseif (isset($item['srd'])) {
+                    $result[] = $this->parser->parseText($item['srd']);
+                } elseif (isset($item['proficiency'])) {
+                    $label = ucfirst($item['proficiency']);
+                    if (!empty($item['optional'])) {
+                        $label .= ' (optional)';
+                    }
+                    $result[] = $label;
+                } else {
+                    $result[] = $this->parser->parseText(json_encode($item));
+                }
             }
         }
         return $result;
