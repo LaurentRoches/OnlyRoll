@@ -295,8 +295,8 @@
               v-for="lang in ['fr', 'en'] as const"
               :key="lang"
               @click="
-                switchLanguage(lang)
-                isMobileMenuOpen = false
+                switchLanguage(lang);
+                isMobileMenuOpen = false;
               "
               class="p-1.5 rounded-lg transition-colors"
               :class="[
