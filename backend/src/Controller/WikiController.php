@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Srd\Subclass;
 use App\Entity\Srd\Subrace;
+use App\Entity\User;
 use App\Entity\Wiki\WikiFavorite;
 use App\Enum\SrdTable;
 use App\Repository\Srd\BackgroundRepository;
@@ -49,6 +50,12 @@ final class WikiController extends AbstractController
         private readonly WikiSerializerService $serializer,
         private readonly WikiFavoritesService $favoritesService,
     ) {}
+
+    private function getAuthenticatedUser(): ?User
+    {
+        $user = $this->getUser();
+        return $user instanceof User ? $user : null;
+    }
 
     private function resolveLocale(Request $request): string
     {
@@ -95,7 +102,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'level', 'school', 'source', 'class', 'damage_type', 'components']);
         $result = $this->spellRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'spell') : [];
 
         $ids = array_map(fn($s) => $s->getId(), $result['data']);
@@ -116,7 +123,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Spell not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'spell', $id) : false;
         $similar = $this->spellRepo->findSimilarSpells($spell, 5);
         $article = $this->articleRepo->findBySrdEntity('spell', $id);
@@ -139,7 +146,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'source', 'size', 'speed_type', 'vision']);
         $result = $this->raceRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'race') : [];
 
         $ids = array_map(fn($r) => $r->getId(), $result['data']);
@@ -174,7 +181,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Race not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'race', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('race', $id, $locale) : null;
 
@@ -191,7 +198,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'source']);
         $result = $this->classRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'class') : [];
 
         $ids = array_map(fn($c) => $c->getId(), $result['data']);
@@ -226,7 +233,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Class not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'class', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('class', $id, $locale) : null;
 
@@ -243,7 +250,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'category', 'rarity', 'source']);
         $result = $this->itemRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'item') : [];
 
         $ids = array_map(fn($i) => $i->getId(), $result['data']);
@@ -264,7 +271,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Item not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'item', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('item', $id, $locale) : null;
 
@@ -281,7 +288,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'type', 'size', 'cr', 'source']);
         $result = $this->monsterRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'monster') : [];
 
         $ids = array_map(fn($m) => $m->getId(), $result['data']);
@@ -302,7 +309,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Monster not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'monster', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('monster', $id, $locale) : null;
 
@@ -319,7 +326,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'source']);
         $result = $this->bgRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'background') : [];
 
         $ids = array_map(fn($b) => $b->getId(), $result['data']);
@@ -340,7 +347,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Background not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'background', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('background', $id, $locale) : null;
 
@@ -354,7 +361,7 @@ final class WikiController extends AbstractController
         $filters = $this->extractFilters($request, ['search', 'source']);
         $result = $this->featRepo->findWithFilters($filters);
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'feat') : [];
 
         $ids = array_map(fn($f) => $f->getId(), $result['data']);
@@ -375,7 +382,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Feat not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $isFavorited = $user ? $this->favoriteRepo->isFavorited($user, 'feat', $id) : false;
         $translation = $locale !== 'en' ? $this->translationRepo->findTranslation('feat', $id, $locale) : null;
 
@@ -436,7 +443,7 @@ final class WikiController extends AbstractController
     #[Route('/favorites/items', name: 'favorites_items', methods: ['GET'])]
     public function favoritesItems(): JsonResponse
     {
-        $items = $this->favoritesService->getFavoriteItems($this->getUser());
+        $items = $this->favoritesService->getFavoriteItems($this->getAuthenticatedUser());
 
         return $this->json(['items' => $items]);
     }
@@ -444,7 +451,7 @@ final class WikiController extends AbstractController
     #[Route('/favorites', name: 'favorites_list', methods: ['GET'])]
     public function favoritesList(): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favorites = $this->favoriteRepo->findByUser($user);
 
         $data = array_map(fn(WikiFavorite $f) => [
@@ -476,7 +483,7 @@ final class WikiController extends AbstractController
             return $this->json(['error' => 'Invalid srdTable'], Response::HTTP_BAD_REQUEST);
         }
 
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
 
         if ($this->favoriteRepo->isFavorited($user, $srdTable, $srdId)) {
             return $this->json(['message' => 'Already favorited']);
@@ -493,7 +500,7 @@ final class WikiController extends AbstractController
     #[Route('/favorites/{srdTable}/{srdId}', name: 'favorites_remove', methods: ['DELETE'])]
     public function favoritesRemove(string $srdTable, int $srdId): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getAuthenticatedUser();
         $favorite = $this->favoriteRepo->findOne($user, $srdTable, $srdId);
 
         if (!$favorite) {

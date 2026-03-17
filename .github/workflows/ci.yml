@@ -215,7 +215,7 @@ jobs:
       
       - name: Run PHPStan
         working-directory: ./backend
-        run: vendor/bin/phpstan analyse src --level=5 || true
+        run: vendor/bin/phpstan analyse src --level=5
       
       - name: Run PHP-CS-Fixer (dry-run)
         working-directory: ./backend

@@ -7,7 +7,6 @@ namespace App\Controller\Admin;
 use App\Repository\AuditLogRepository;
 use App\Repository\GameRepository;
 use App\Repository\UserRepository;
-use App\Service\Admin\AdminUserService;
 use App\Service\AuditLogService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +25,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminDashboardController extends AbstractController
 {
     public function __construct(
-        private readonly AdminUserService $adminUserService,
         private readonly UserRepository $userRepository,
         private readonly GameRepository $gameRepository,
         private readonly AuditLogRepository $auditLogRepository,
