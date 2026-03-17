@@ -294,10 +294,7 @@
             <button
               v-for="lang in ['fr', 'en'] as const"
               :key="lang"
-              @click="
-                switchLanguage(lang);
-                isMobileMenuOpen = false;
-              "
+              @click="switchLanguageMobile(lang)"
               class="p-1.5 rounded-lg transition-colors"
               :class="[
                 locale === lang
@@ -399,6 +396,11 @@ function toggleNotifications() {
 function toggleLangDropdown() {
   showLangDropdown.value = !showLangDropdown.value
   showNotifications.value = false
+}
+
+function switchLanguageMobile(lang: 'fr' | 'en') {
+  switchLanguage(lang)
+  isMobileMenuOpen.value = false
 }
 
 async function switchLanguage(lang: 'fr' | 'en') {
