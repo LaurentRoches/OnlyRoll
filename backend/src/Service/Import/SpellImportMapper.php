@@ -222,8 +222,8 @@ class SpellImportMapper
             return;
         }
 
-        if (preg_match('/(\d+)d(\d+)/', $values[0] ?? '', $firstMatch) &&
-            preg_match('/(\d+)d(\d+)/', $values[1] ?? '', $secondMatch)) {
+        if (preg_match('/(\d+)d(\d+)/', $values[0], $firstMatch) &&
+            preg_match('/(\d+)d(\d+)/', $values[1], $secondMatch)) {
             $facesFirst = (int)$firstMatch[2];
             $facesSecond = (int)$secondMatch[2];
 

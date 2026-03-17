@@ -62,7 +62,7 @@ final class WikiFavoritesService
             $items[] = ['id' => $f->getId(), 'name' => $f->getName(), 'srdTable' => 'feat', 'source' => $f->getSources()->first()?->getCode() ?? '', 'prerequisite' => $f->getPrerequisiteText()];
         }
 
-        usort($items, fn($a, $b) => strcmp($a['name'], $b['name']));
+        usort($items, fn(array $a, array $b) => strcmp((string) $a['name'], (string) $b['name']));
 
         return $items;
     }
