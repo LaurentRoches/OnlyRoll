@@ -38,6 +38,7 @@ final class WikiFavoritesService
             $grouped[$fav->getSrdTable()][] = $fav->getSrdId();
         }
 
+        /** @var list<array<string, mixed>> $items */
         $items = [];
 
         foreach ($this->spellRepo->findBy(['id' => $grouped['spell'] ?? []]) as $s) {

@@ -40,7 +40,7 @@ class DiceService
         $sidesPerDie = (int) $matches[2];
         $keepType = isset($matches[3]) && $matches[3] !== '' ? strtolower($matches[3]) : null;
         $keepCount = isset($matches[4]) && $matches[4] !== '' ? (int) $matches[4] : null;
-        $modifier = isset($matches[5]) && $matches[5] !== '' ? (int) $matches[5] : 0;
+        $modifier = !empty($matches[5]) ? (int) $matches[5] : 0;
 
         if ($numberOfDice < 1 || $numberOfDice > 100) {
             throw new InvalidArgumentException('Le nombre de dés doit être entre 1 et 100');
