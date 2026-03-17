@@ -5,12 +5,16 @@
         <div
           class="w-24 h-24 rounded-full overflow-hidden bg-secondary-700 flex items-center justify-center"
           role="img"
-          :aria-label="avatar ? `Avatar de ${pseudo}` : 'Aucun avatar défini'"
+          :aria-label="
+            avatar
+              ? t('profile.avatar.altWithAvatar', { pseudo })
+              : t('profile.avatar.altWithoutAvatar')
+          "
         >
           <img
             v-if="avatar"
             :src="avatarUrl"
-            :alt="`Avatar de ${pseudo}`"
+            :alt="t('profile.avatar.altWithAvatar', { pseudo })"
             class="w-full h-full object-cover"
           />
           <svg
@@ -34,7 +38,7 @@
           v-if="isUploading"
           class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center"
           role="status"
-          aria-label="Upload en cours"
+          :aria-label="t('profile.avatar.uploadInProgress')"
         >
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
         </div>
@@ -57,8 +61,8 @@
           :disabled="isUploading"
           @click="triggerFileInput"
         >
-          <span v-if="avatar">Changer l'avatar</span>
-          <span v-else>Ajouter un avatar</span>
+          <span v-if="avatar">{{ t('profile.avatar.changeButton') }}</span>
+          <span v-else>{{ t('profile.avatar.addButton') }}</span>
         </button>
 
         <button
@@ -68,13 +72,13 @@
           :disabled="isUploading"
           @click="handleDelete"
         >
-          Supprimer l'avatar
+          {{ t('profile.avatar.deleteButton') }}
         </button>
       </div>
     </div>
 
     <p :id="helpTextId" class="mt-3 text-sm text-secondary-400">
-      Formats acceptés : JPEG, PNG, GIF, WebP. Taille maximale : 2 Mo.
+      {{ t('profile.avatar.helpText') }}
     </p>
 
     <div
@@ -99,7 +103,10 @@
 
 <script setup lang="ts">
 import { ref, computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { profileApi } from '@/services/api/profileApi'
+
+const { t } = useI18n()
 
 interface Props {
   avatar: string | null
@@ -151,13 +158,13 @@ const handleFileSelect = async (event: Event) => {
 
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
   if (!allowedTypes.includes(file.type)) {
-    error.value = 'Type de fichier non autorisé. Formats acceptés : JPEG, PNG, GIF, WebP.'
+    error.value = t('profile.avatar.errors.invalidType')
     return
   }
 
   const maxSize = 2 * 1024 * 1024
   if (file.size > maxSize) {
-    error.value = 'Le fichier est trop volumineux. Taille maximale : 2 Mo.'
+    error.value = t('profile.avatar.errors.tooLarge')
     return
   }
 
@@ -167,13 +174,13 @@ const handleFileSelect = async (event: Event) => {
     const response = await profileApi.uploadAvatar(file)
     emit('update:avatar', response.avatar)
     emit('uploaded', response.avatar)
-    successMessage.value = 'Avatar mis à jour avec succès.'
+    successMessage.value = t('profile.avatar.success.uploaded')
 
     setTimeout(() => {
       successMessage.value = null
     }, 3000)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Erreur lors de l'upload de l'avatar."
+    error.value = err instanceof Error ? err.message : t('profile.avatar.errors.uploadFailed')
   } finally {
     isUploading.value = false
     if (fileInputRef.value) {
@@ -190,13 +197,13 @@ const handleDelete = async () => {
     await profileApi.deleteAvatar()
     emit('update:avatar', null)
     emit('deleted')
-    successMessage.value = 'Avatar supprimé avec succès.'
+    successMessage.value = t('profile.avatar.success.deleted')
 
     setTimeout(() => {
       successMessage.value = null
     }, 3000)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Erreur lors de la suppression de l'avatar."
+    error.value = err instanceof Error ? err.message : t('profile.avatar.errors.deleteFailed')
   } finally {
     isUploading.value = false
   }

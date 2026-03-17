@@ -93,6 +93,7 @@ services:
       - backend-var:/var/www/html/var
       - backend-uploads:/var/www/html/public/uploads
       - ./backend/.env:/var/www/html/.env:ro
+      - ./docs:/var/www/docs:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -177,6 +178,7 @@ services:
       - certbot-certs:/etc/letsencrypt:ro
       - certbot-var:/var/lib/letsencrypt:ro
       - ./docker/nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - /var/www/portfolio:/var/www/portfolio:ro
     ports:
       - "80:80"
       - "443:443"

@@ -27,7 +27,7 @@ final class PresenceController extends AbstractController
     }
 
     /**
-     * Notifie que l'utilisateur a rejoint la partie (page chargée).
+     * Notifie que l'utilisateur a rejoint la partie.
      */
     #[OA\Post(
         path: '/api/games/{gameId}/presence/join',

@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 /**
  * Extrait un message d'erreur lisible depuis une erreur de type unknown
  * @param error - L'erreur à parser (peut être n'importe quoi)
@@ -6,7 +8,7 @@
  */
 export function getErrorMessage(
   error: unknown,
-  defaultMessage = "Une erreur inattendue s'est produite"
+  defaultMessage = i18n.global.t('common.errors.unexpectedOccurred')
 ): string {
   if (typeof error === 'string') {
     return error

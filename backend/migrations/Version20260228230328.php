@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Auto-generated Migration: Please modify to your needs!
+ * Auto-generated Migration!
  */
 final class Version20260228230328 extends AbstractMigration
 {
@@ -20,7 +20,6 @@ final class Version20260228230328 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('ALTER TABLE audit_log CHANGE log_ip_address log_ip_address VARCHAR(64) DEFAULT NULL');
-        // Rename index only if it exists with old name
         $oldIndexCount = (int) $this->connection->executeQuery(
             "SELECT COUNT(*) FROM information_schema.STATISTICS WHERE table_schema = DATABASE() AND table_name = 'audit_log' AND index_name = 'fk_f6e1c0f5d7c01058'",
         )->fetchOne();
@@ -30,7 +29,6 @@ final class Version20260228230328 extends AbstractMigration
         $this->addSql('ALTER TABLE game_map CHANGE map_grid_type map_grid_type VARCHAR(255) NOT NULL');
         $this->addSql('ALTER TABLE game_message CHANGE message_type message_type VARCHAR(255) NOT NULL');
         $this->addSql('ALTER TABLE game_token CHANGE token_type token_type VARCHAR(255) NOT NULL, CHANGE token_size token_size DOUBLE PRECISION NOT NULL, CHANGE token_layer token_layer VARCHAR(255) NOT NULL');
-        // Drop indexes only if they exist
         $activeIndexCount = (int) $this->connection->executeQuery(
             "SELECT COUNT(*) FROM information_schema.STATISTICS WHERE table_schema = DATABASE() AND table_name = 'user' AND index_name = 'idx_user_active'",
         )->fetchOne();

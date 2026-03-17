@@ -13,7 +13,6 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)
             security: false
 
-        # Firewall de login DOIT être AVANT le firewall api
         api_login:
             pattern: ^/api/(login|register)
             stateless: true
@@ -25,12 +24,10 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        # Firewall pour logout
         api_logout:
             pattern: ^/api/logout
             stateless: true
 
-        # Firewall principal API avec custom authenticator
         api:
             pattern: ^/api
             stateless: true
@@ -46,4 +43,6 @@ security:
         - { path: ^/api/security, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/games$, methods: [GET], roles: PUBLIC_ACCESS }
+        - { path: ^/api/wiki/favorites, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/wiki, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

@@ -46,10 +46,8 @@ final class SeoController extends AbstractController
     {
         $urls = [];
 
-        // Hostname depuis les paramètres
         $hostname = $this->getParameter('app.hostname') ?? 'https://onlyroll.fr';
 
-        // ========== PAGES STATIQUES ==========
         $staticPages = [
             ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'daily'],
             ['loc' => '/auth/login', 'priority' => '0.5', 'changefreq' => 'monthly'],
@@ -61,12 +59,11 @@ final class SeoController extends AbstractController
             $urls[] = $page;
         }
 
-        // ========== PAGES DYNAMIQUES - PARTIES PUBLIQUES ==========
         try {
             $publicGames = $this->gameRepository->findBy(
                 ['isPublic' => true],
                 ['updatedAt' => 'DESC'],
-                100, // Limite pour éviter un sitemap trop grand
+                100,
             );
 
             foreach ($publicGames as $game) {

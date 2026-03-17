@@ -4,6 +4,7 @@ import type { Game, CreateGameDTO, UpdateGameDTO, GameFilters, PaginationMeta } 
 import { getErrorMessage } from '@/types/errors'
 import { gameApi } from '@/services/api/gameApi'
 import { useAuthStore } from './auth'
+import i18n from '@/i18n'
 import { GameStatus, PlayerStatus } from '@/types/game'
 import { logger } from '@/utils/logger'
 
@@ -75,7 +76,7 @@ export const useGameStore = defineStore('game', () => {
         totalPages: 0,
       }
 
-      error.value = getErrorMessage(e) || 'Erreur lors du chargement des parties'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.fetchPublicError')
       logger.error('Error fetching games:', e)
     } finally {
       isLoading.value = false
@@ -91,7 +92,7 @@ export const useGameStore = defineStore('game', () => {
     } catch (e: unknown) {
       myGames.value = []
 
-      error.value = getErrorMessage(e) || 'Erreur lors du chargement de vos parties'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.fetchMyError')
       logger.error('Error fetching my games:', e)
     } finally {
       isLoading.value = false
@@ -105,7 +106,7 @@ export const useGameStore = defineStore('game', () => {
     try {
       currentGame.value = await gameApi.getById(id)
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Partie introuvable'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.fetchByIdError')
       logger.error('Error fetching game:', e)
       throw e
     } finally {
@@ -123,7 +124,7 @@ export const useGameStore = defineStore('game', () => {
       currentGame.value = newGame
       return newGame
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Erreur lors de la création de la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.createError')
       logger.error('Error creating game:', e)
       throw e
     } finally {
@@ -154,7 +155,7 @@ export const useGameStore = defineStore('game', () => {
 
       return updatedGame
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Erreur lors de la mise à jour de la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.updateError')
       logger.error('Error updating game:', e)
       throw e
     } finally {
@@ -176,7 +177,7 @@ export const useGameStore = defineStore('game', () => {
         currentGame.value = null
       }
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Erreur lors de la suppression de la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.deleteError')
       logger.error('Error deleting game:', e)
       throw e
     } finally {
@@ -193,7 +194,7 @@ export const useGameStore = defineStore('game', () => {
       myGames.value.unshift(game)
       return game
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Impossible de rejoindre la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.joinError')
       logger.error('Error joining game:', e)
       throw e
     } finally {
@@ -212,7 +213,7 @@ export const useGameStore = defineStore('game', () => {
         currentGame.value = null
       }
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Impossible de quitter la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.leaveError')
       logger.error('Error leaving game:', e)
       throw e
     } finally {
@@ -238,7 +239,7 @@ export const useGameStore = defineStore('game', () => {
 
       return updatedGame
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Impossible de démarrer la partie'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.startError')
       logger.error('Error starting game:', e)
       throw e
     } finally {
@@ -263,7 +264,7 @@ export const useGameStore = defineStore('game', () => {
         totalPages: response.meta?.totalPages ?? 0,
       }
     } catch (e: unknown) {
-      error.value = getErrorMessage(e) || 'Erreur lors du chargement des parties'
+      error.value = getErrorMessage(e) || i18n.global.t('game.stores.game.appendError')
       logger.error('Error appending games:', e)
     } finally {
       isLoading.value = false

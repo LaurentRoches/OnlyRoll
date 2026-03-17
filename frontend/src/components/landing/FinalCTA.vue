@@ -17,14 +17,14 @@
         class="text-4xl md:text-5xl font-bold text-secondary-50 mb-6 text-shadow-stronger reveal-up"
         :class="{ revealed: isVisible }"
       >
-        Prêt à lancer les dés ?
+        {{ t('landing.cta.title') }}
       </h2>
       <p
         class="text-xl text-secondary-400 mb-10 reveal-up"
         :class="{ revealed: isVisible }"
         style="transition-delay: 150ms"
       >
-        Rejoignez la communauté et lancez votre première aventure — c'est gratuit.
+        {{ t('landing.cta.subtitle') }}
       </p>
 
       <div class="reveal-scale" :class="{ revealed: isVisible }" style="transition-delay: 300ms">
@@ -32,7 +32,7 @@
           to="/auth/register"
           class="inline-flex items-center gap-3 px-10 py-5 bg-primary-500 hover:bg-primary-600 text-white text-xl font-bold rounded-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-purple-lg cta-glow"
         >
-          Créer mon compte gratuitement
+          {{ t('landing.cta.button') }}
           <svg
             class="w-6 h-6"
             fill="none"
@@ -55,7 +55,7 @@
         :class="{ revealed: isVisible }"
         style="transition-delay: 450ms"
       >
-        Gratuit&nbsp;•&nbsp;Aucune carte bancaire&nbsp;•&nbsp;Prêt en 30 secondes
+        {{ t('landing.cta.footer') }}
       </p>
     </div>
   </section>
@@ -63,9 +63,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useScrollReveal } from '@/composables/useScrollReveal'
 
+const { t } = useI18n()
 const sectionRef = ref<HTMLElement>()
 const { isVisible } = useScrollReveal(sectionRef, { threshold: 0.3 })
 </script>

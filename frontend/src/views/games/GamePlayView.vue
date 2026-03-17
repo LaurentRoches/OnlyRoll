@@ -28,7 +28,9 @@ import UploadMapModal from '@/components/game/UploadMapModal.vue'
 import EditMapModal from '@/components/game/EditMapModal.vue'
 import CreateTokenModal from '@/components/game/CreateTokenModal.vue'
 import GameSettingsModal from '@/components/game/GameSettingsModal.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const gameId = computed(() => Number(route.params.id))
@@ -251,7 +253,7 @@ async function handleEditMap(map: GameMapType) {
     showEditModal.value = true
   } catch (error) {
     console.error('Erreur lors du chargement de la carte:', error)
-    alert('Impossible de charger les données de la carte')
+    alert(t('game.play.mapLoadError'))
   }
 }
 
@@ -299,12 +301,7 @@ function handleGoBack() {
 }
 
 async function handleLeaveGame() {
-  if (
-    !confirm(
-      'Êtes-vous sûr de vouloir quitter cette partie ?\n\nVous serez retiré en tant que membre et ne pourrez plus y accéder.'
-    )
-  )
-    return
+  if (!confirm(t('game.play.leaveConfirm'))) return
 
   try {
     await gameStore.leaveGame(gameId.value)
@@ -332,7 +329,7 @@ async function handleTokenCreated() {
       <div
         class="animate-spin w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
       ></div>
-      <p class="text-secondary-50 text-lg">Chargement de la partie...</p>
+      <p class="text-secondary-50 text-lg">{{ t('game.play.loading') }}</p>
     </div>
   </div>
 
@@ -341,6 +338,7 @@ async function handleTokenCreated() {
       :game="currentGame"
       :is-connected="isConnected"
       :connection-state="connectionState"
+      :is-game-master="isGameMaster"
       @go-back="handleGoBack"
       @open-settings="handleOpenSettings"
       @leave-game="handleLeaveGame"
@@ -399,9 +397,9 @@ async function handleTokenCreated() {
                   : 'text-secondary-300 hover:bg-secondary-700',
               ]"
             >
-              <span v-if="tab === 'chat'">💬 Chat</span>
-              <span v-else-if="tab === 'players'">👥 Joueurs</span>
-              <span v-else>🎲 Dés</span>
+              <span v-if="tab === 'chat'">💬 {{ t('game.play.tabs.chat') }}</span>
+              <span v-else-if="tab === 'players'">👥 {{ t('game.play.tabs.players') }}</span>
+              <span v-else>🎲 {{ t('game.play.tabs.dice') }}</span>
             </button>
           </div>
 
@@ -432,11 +430,7 @@ async function handleTokenCreated() {
           rightPanelOpen ? 'right-96' : 'right-0',
           rightPanelOpen ? 'rounded-l-lg' : 'rounded-l-lg',
         ]"
-        :title="
-          rightPanelOpen
-            ? 'Masquer le panel (chat, joueurs, dés)'
-            : 'Afficher le panel (chat, joueurs, dés)'
-        "
+        :title="rightPanelOpen ? t('game.play.panel.hide') : t('game.play.panel.show')"
       >
         <div class="flex items-center gap-2">
           <svg
@@ -450,7 +444,9 @@ async function handleTokenCreated() {
           >
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span v-if="!rightPanelOpen" class="text-xs text-secondary-400 font-medium"> Panel </span>
+          <span v-if="!rightPanelOpen" class="text-xs text-secondary-400 font-medium">
+            {{ t('game.play.panel.label') }}
+          </span>
         </div>
       </button>
     </div>

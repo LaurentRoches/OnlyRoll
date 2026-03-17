@@ -1,0 +1,5 @@
+{
+  "intelephense.diagnostics.enable": true,
+  "intelephense.diagnostics.duplicateSymbols": false,
+  "css.lint.unknownAtRules": "ignore"
+}

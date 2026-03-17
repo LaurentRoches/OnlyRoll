@@ -5,14 +5,14 @@
         class="text-3xl md:text-4xl font-bold text-secondary-50 mb-4 text-shadow-strong reveal-up"
         :class="{ revealed: isVisible }"
       >
-        Plongez dans l'aventure
+        {{ t('landing.gamePreview.title') }}
       </h2>
       <p
         class="text-lg text-secondary-400 mb-12 text-shadow-strong reveal-up"
         :class="{ revealed: isVisible }"
         style="transition-delay: 100ms"
       >
-        Une interface pensée pour le jeu, pas contre le jeu
+        {{ t('landing.gamePreview.subtitle') }}
       </p>
 
       <div
@@ -37,7 +37,7 @@
           >
             <img
               src="/images/InGame_Exemple.png"
-              alt="Aperçu de l'interface de jeu OnlyRoll"
+              :alt="t('landing.gamePreview.imageAlt')"
               class="w-full h-full object-cover block"
             />
           </div>
@@ -49,7 +49,9 @@
           style="transition-delay: 500ms"
         >
           <span aria-hidden="true">🎲</span>
-          <span class="text-secondary-200 text-sm font-medium">Dés en temps réel</span>
+          <span class="text-secondary-200 text-sm font-medium">{{
+            t('landing.gamePreview.realTimeDice')
+          }}</span>
         </div>
 
         <div
@@ -58,7 +60,9 @@
           style="transition-delay: 650ms"
         >
           <span aria-hidden="true">💬</span>
-          <span class="text-secondary-200 text-sm font-medium">Chat intégré</span>
+          <span class="text-secondary-200 text-sm font-medium">{{
+            t('landing.gamePreview.integratedChat')
+          }}</span>
         </div>
       </div>
     </div>
@@ -67,8 +71,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMouseInElement } from '@vueuse/core'
 import { useScrollReveal } from '@/composables/useScrollReveal'
+
+const { t } = useI18n()
 
 const sectionRef = ref<HTMLElement>()
 const { isVisible } = useScrollReveal(sectionRef, { threshold: 0.15 })

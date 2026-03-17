@@ -134,8 +134,6 @@ class Game
         return $code;
     }
 
-    // Méthodes métier
-
     public function canBeViewedBy(User $user): bool
     {
         if ($this->isPublic) {
@@ -210,8 +208,6 @@ class Game
     {
         return $this->getActivePlayersCount();
     }
-
-    // Getters & Setters
 
     public function getId(): ?int
     {

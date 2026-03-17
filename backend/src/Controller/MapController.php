@@ -44,7 +44,6 @@ final class MapController extends AbstractController
 
     /**
      * Parse multipart/form-data for PUT/PATCH requests.
-     * PHP only automatically parses multipart data for POST requests.
      */
     private function parseMultipartFormData(Request $request): ?JsonResponse
     {
@@ -671,7 +670,7 @@ final class MapController extends AbstractController
     }
 
     /**
-     * Mettre à jour les paramètres d'une carte (ex: grille).
+     * Mettre à jour les paramètres d'une carte.
      */
     #[OA\Patch(
         path: '/api/games/{gameId}/maps/{id}/settings',

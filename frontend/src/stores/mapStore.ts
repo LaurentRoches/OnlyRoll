@@ -9,6 +9,7 @@ import { mapApi, tokenApi } from '@/services/api'
 import type { GameMap, GameToken, CreateTokenDTO, MoveTokenDTO, UpdateTokenDTO } from '@/types/game'
 import { TokenType, LayerType } from '@/types/game'
 import { logger } from '@/utils/logger'
+import i18n from '@/i18n'
 import type { MercureTokenEventData, MercureMapEventData } from '@/types/websocket'
 
 export const useMapStore = defineStore('map', () => {
@@ -74,9 +75,10 @@ export const useMapStore = defineStore('map', () => {
       allMaps.value = await mapApi.listByGame(gameId)
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du chargement des cartes'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.loadMapsError')
       } else {
-        error.value = 'Erreur lors du chargement des cartes'
+        error.value = i18n.global.t('game.stores.map.loadMapsError')
       }
       logger.error('Erreur loadGameMaps:', e)
       throw e
@@ -111,9 +113,9 @@ export const useMapStore = defineStore('map', () => {
 
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors du chargement de la carte active'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.loadActiveError')
       } else {
-        error.value = 'Erreur lors du chargement de la carte active'
+        error.value = i18n.global.t('game.stores.map.loadActiveError')
       }
       logger.error('Erreur loadActiveMap:', e)
       throw e
@@ -141,9 +143,10 @@ export const useMapStore = defineStore('map', () => {
       tokens.value = []
 
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du chargement de la carte'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.loadMapError')
       } else {
-        error.value = 'Erreur lors du chargement de la carte'
+        error.value = i18n.global.t('game.stores.map.loadMapError')
       }
       logger.error('Erreur loadMap:', e)
       throw e
@@ -169,9 +172,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || "Erreur lors de l'activation de la carte"
+          (e as { message: string }).message || i18n.global.t('game.stores.map.activateError')
       } else {
-        error.value = "Erreur lors de l'activation de la carte"
+        error.value = i18n.global.t('game.stores.map.activateError')
       }
       logger.error('Erreur activateMap:', e)
       throw e
@@ -206,9 +209,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors de la suppression de la carte'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.deleteError')
       } else {
-        error.value = 'Erreur lors de la suppression de la carte'
+        error.value = i18n.global.t('game.stores.map.deleteError')
       }
       logger.error('Erreur deleteMap:', e)
       throw e
@@ -236,10 +239,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message ||
-          'Erreur lors de la mise à jour des paramètres de la carte'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.updateSettingsError')
       } else {
-        error.value = 'Erreur lors de la mise à jour des paramètres de la carte'
+        error.value = i18n.global.t('game.stores.map.updateSettingsError')
       }
       logger.error('Erreur updateMapSettings:', e)
       throw e
@@ -270,9 +272,10 @@ export const useMapStore = defineStore('map', () => {
       tokens.value = []
 
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du chargement des tokens'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.loadTokensError')
       } else {
-        error.value = 'Erreur lors du chargement des tokens'
+        error.value = i18n.global.t('game.stores.map.loadTokensError')
       }
       logger.error('Erreur loadMapTokens:', e)
     }
@@ -328,7 +331,7 @@ export const useMapStore = defineStore('map', () => {
     try {
       const dto = buildCreateTokenDTO(tokenData)
 
-      logger.log('📤 Envoi de la requête de création de token:', {
+      logger.log('Envoi de la requête de création de token:', {
         gameId: currentGameId.value,
         mapId,
         dto,
@@ -340,12 +343,13 @@ export const useMapStore = defineStore('map', () => {
       tokens.value.push(newToken)
       return newToken
     } catch (e: unknown) {
-      logger.error('❌ Erreur lors de la création du token:', e)
+      logger.error('Erreur lors de la création du token:', e)
 
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors de la création du token'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.createTokenError')
       } else {
-        error.value = 'Erreur lors de la création du token'
+        error.value = i18n.global.t('game.stores.map.createTokenError')
       }
       throw e
     } finally {
@@ -384,9 +388,10 @@ export const useMapStore = defineStore('map', () => {
       return updatedToken
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors du déplacement du token'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.moveTokenError')
       } else {
-        error.value = 'Erreur lors du déplacement du token'
+        error.value = i18n.global.t('game.stores.map.moveTokenError')
       }
       logger.error('Erreur moveToken:', e)
       throw e
@@ -414,9 +419,10 @@ export const useMapStore = defineStore('map', () => {
       return updatedToken
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors de la mise à jour du token'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.updateTokenError')
       } else {
-        error.value = 'Erreur lors de la mise à jour du token'
+        error.value = i18n.global.t('game.stores.map.updateTokenError')
       }
       logger.error('Erreur updateToken:', e)
       throw e
@@ -438,9 +444,10 @@ export const useMapStore = defineStore('map', () => {
       removeTokenFromList(tokenId)
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || 'Erreur lors de la suppression du token'
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.map.deleteTokenError')
       } else {
-        error.value = 'Erreur lors de la suppression du token'
+        error.value = i18n.global.t('game.stores.map.deleteTokenError')
       }
       logger.error('Erreur deleteToken:', e)
       throw e
@@ -470,9 +477,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors du changement de visibilité'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.visibilityError')
       } else {
-        error.value = 'Erreur lors du changement de visibilité'
+        error.value = i18n.global.t('game.stores.map.visibilityError')
       }
       logger.error('Erreur toggleTokenVisibility:', e)
       throw e
@@ -502,9 +509,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors du changement de verrouillage'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.lockError')
       } else {
-        error.value = 'Erreur lors du changement de verrouillage'
+        error.value = i18n.global.t('game.stores.map.lockError')
       }
       logger.error('Erreur toggleTokenLock:', e)
       throw e
@@ -534,9 +541,9 @@ export const useMapStore = defineStore('map', () => {
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
         error.value =
-          (e as { message: string }).message || 'Erreur lors de la gestion des permissions'
+          (e as { message: string }).message || i18n.global.t('game.stores.map.permissionsError')
       } else {
-        error.value = 'Erreur lors de la gestion des permissions'
+        error.value = i18n.global.t('game.stores.map.permissionsError')
       }
       logger.error('Erreur manageTokenPermissions:', e)
       throw e

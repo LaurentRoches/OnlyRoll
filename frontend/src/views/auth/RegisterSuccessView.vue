@@ -13,8 +13,10 @@
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-secondary-50 mb-2">Inscription réussie !</h2>
-      <p class="text-secondary-300 mb-4">Votre compte a été créé avec succès.</p>
+      <h2 class="text-xl font-semibold text-secondary-50 mb-2">
+        {{ t('auth.registerSuccess.title') }}
+      </h2>
+      <p class="text-secondary-300 mb-4">{{ t('auth.registerSuccess.subtitle') }}</p>
     </div>
 
     <div class="bg-info/10 border border-info/20 rounded-lg p-4">
@@ -27,13 +29,15 @@
           />
         </svg>
         <div class="text-sm">
-          <p class="text-info font-medium mb-1">Vérifiez votre email</p>
-          <p class="text-secondary-300">Un email de vérification a été envoyé à :</p>
+          <p class="text-info font-medium mb-1">
+            {{ t('auth.registerSuccess.verifyEmail.title') }}
+          </p>
+          <p class="text-secondary-300">{{ t('auth.registerSuccess.verifyEmail.message') }}</p>
           <p class="font-medium text-secondary-200 mt-1">
             {{ email }}
           </p>
           <p class="text-secondary-400 mt-2 text-xs">
-            Si vous ne le recevez pas dans quelques minutes, vérifiez vos spams.
+            {{ t('auth.registerSuccess.verifyEmail.spamNotice') }}
           </p>
         </div>
       </div>
@@ -44,7 +48,7 @@
         to="/auth/login"
         class="block w-full px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg text-center transition-colors duration-200"
       >
-        Se connecter
+        {{ t('auth.registerSuccess.login') }}
       </RouterLink>
 
       <button
@@ -53,9 +57,11 @@
         :disabled="isResending || cooldown > 0"
         class="block w-full px-4 py-3 bg-secondary-700 hover:bg-secondary-600 disabled:bg-secondary-600 disabled:cursor-not-allowed text-secondary-200 font-medium rounded-lg transition-colors duration-200"
       >
-        <span v-if="isResending">Envoi en cours...</span>
-        <span v-else-if="cooldown > 0">Renvoyer dans {{ cooldown }}s</span>
-        <span v-else>Renvoyer l'email de vérification</span>
+        <span v-if="isResending">{{ t('auth.registerSuccess.resendLoading') }}</span>
+        <span v-else-if="cooldown > 0">{{
+          t('auth.registerSuccess.resendCooldown', { cooldown })
+        }}</span>
+        <span v-else>{{ t('auth.registerSuccess.resend') }}</span>
       </button>
 
       <p v-if="resendError" class="text-sm text-error text-center">{{ resendError }}</p>
@@ -63,12 +69,12 @@
 
     <div class="text-center pt-4 border-t border-secondary-700">
       <p class="text-xs text-secondary-500">
-        Problème avec votre inscription ?
+        {{ t('auth.registerSuccess.supportText') }}
         <a
           href="mailto:support@onlyroll.com"
           class="text-primary-400 hover:text-primary-300 transition-colors"
         >
-          Contactez le support
+          {{ t('auth.registerSuccess.contactSupport') }}
         </a>
       </p>
     </div>
@@ -77,9 +83,11 @@
 
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { authApi } from '@/services/api/authApi'
 
+const { t } = useI18n()
 const route = useRoute()
 
 const email = ref((route.query.email as string) || '')
@@ -101,9 +109,9 @@ const resendEmail = async () => {
   } catch (error: unknown) {
     const err = error as { response?: { data?: { error?: string }; status?: number } }
     if (err.response?.status === 429) {
-      resendError.value = 'Veuillez attendre 2 minutes avant de renvoyer un email.'
+      resendError.value = t('auth.registerSuccess.rateLimitError')
     } else {
-      resendError.value = err.response?.data?.error ?? "Erreur lors du renvoi de l'email."
+      resendError.value = err.response?.data?.error ?? t('auth.registerSuccess.resendError')
     }
   } finally {
     isResending.value = false

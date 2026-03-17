@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 /**
  * Types pour la gestion des erreurs API
  */
@@ -54,7 +56,7 @@ export function isApiError(error: unknown): error is ApiError {
  */
 export function getErrorMessage(error: unknown): string {
   if (!isApiError(error)) {
-    return 'Une erreur inattendue est survenue'
+    return i18n.global.t('common.errors.unexpected')
   }
 
   if (error.response?.data?.error) {
@@ -77,5 +79,5 @@ export function getErrorMessage(error: unknown): string {
     return error.violations.map((v) => v.message).join(', ')
   }
 
-  return 'Une erreur est survenue'
+  return i18n.global.t('common.errors.generic')
 }

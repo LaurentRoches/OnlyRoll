@@ -1,14 +1,14 @@
 <template>
   <form @submit.prevent="handleSubmit" novalidate class="password-change-form space-y-6">
     <h3 id="password-form-heading" class="text-lg font-semibold text-secondary-50">
-      Changer le mot de passe
+      {{ t('profile.password.sectionTitle') }}
     </h3>
 
     <div class="form-group">
       <label :for="currentPasswordId" class="form-label">
-        Mot de passe actuel
+        {{ t('profile.password.currentPassword.label') }}
         <span class="text-red-500" aria-hidden="true">*</span>
-        <span class="sr-only">(obligatoire)</span>
+        <span class="sr-only">{{ t('profile.password.currentPassword.required') }}</span>
       </label>
       <div class="relative">
         <input
@@ -28,8 +28,8 @@
           class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-200 focus:outline-none focus:text-secondary-200"
           :aria-label="
             showCurrentPassword
-              ? 'Masquer le mot de passe actuel'
-              : 'Afficher le mot de passe actuel'
+              ? t('profile.password.currentPassword.toggleHide')
+              : t('profile.password.currentPassword.toggleShow')
           "
           @click="showCurrentPassword = !showCurrentPassword"
         >
@@ -85,9 +85,9 @@
     <div class="form-group">
       <div class="flex items-center justify-between mb-1">
         <label :for="newPasswordId" class="form-label !mb-0">
-          Nouveau mot de passe
+          {{ t('profile.password.newPassword.label') }}
           <span class="text-red-500" aria-hidden="true">*</span>
-          <span class="sr-only">(obligatoire)</span>
+          <span class="sr-only">{{ t('profile.password.newPassword.required') }}</span>
         </label>
         <button
           type="button"
@@ -131,7 +131,11 @@
               d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
             />
           </svg>
-          {{ isGenerating ? 'Génération...' : 'Générer' }}
+          {{
+            isGenerating
+              ? t('profile.password.newPassword.generating')
+              : t('profile.password.newPassword.generate')
+          }}
         </button>
       </div>
       <div class="relative">
@@ -156,7 +160,9 @@
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-200 focus:outline-none focus:text-secondary-200"
           :aria-label="
-            showNewPassword ? 'Masquer le nouveau mot de passe' : 'Afficher le nouveau mot de passe'
+            showNewPassword
+              ? t('profile.password.newPassword.toggleHide')
+              : t('profile.password.newPassword.toggleShow')
           "
           @click="showNewPassword = !showNewPassword"
         >
@@ -210,7 +216,7 @@
               :aria-valuenow="passwordStrength.score"
               aria-valuemin="0"
               aria-valuemax="4"
-              :aria-label="`Force du mot de passe: ${strengthLabel}`"
+              :aria-label="t('profile.password.strength.ariaLabel', { label: strengthLabel })"
             />
           </div>
           <span class="text-xs" :class="strengthTextClass">{{ strengthLabel }}</span>
@@ -253,7 +259,7 @@
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            Mot de passe conforme aux exigences
+            {{ t('profile.password.strength.valid') }}
           </li>
         </ul>
       </div>
@@ -271,9 +277,9 @@
 
     <div class="form-group">
       <label :for="confirmPasswordId" class="form-label">
-        Confirmer le nouveau mot de passe
+        {{ t('profile.password.confirmPassword.label') }}
         <span class="text-red-500" aria-hidden="true">*</span>
-        <span class="sr-only">(obligatoire)</span>
+        <span class="sr-only">{{ t('profile.password.confirmPassword.required') }}</span>
       </label>
       <div class="relative">
         <input
@@ -291,7 +297,11 @@
         <button
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-200 focus:outline-none focus:text-secondary-200"
-          :aria-label="showConfirmPassword ? 'Masquer la confirmation' : 'Afficher la confirmation'"
+          :aria-label="
+            showConfirmPassword
+              ? t('profile.password.confirmPassword.toggleHide')
+              : t('profile.password.confirmPassword.toggleShow')
+          "
           @click="showConfirmPassword = !showConfirmPassword"
         >
           <svg
@@ -372,9 +382,9 @@
             class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
             aria-hidden="true"
           ></span>
-          <span>Modification en cours...</span>
+          <span>{{ t('profile.password.submit.changing') }}</span>
         </span>
-        <span v-else>Changer le mot de passe</span>
+        <span v-else>{{ t('profile.password.submit.change') }}</span>
       </button>
     </div>
   </form>
@@ -382,8 +392,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { profileApi } from '@/services/api/profileApi'
 import { usePasswordGenerator } from '@/composables/usePasswordGenerator'
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   success: []
@@ -436,31 +449,31 @@ const validatePassword = (password: string): PasswordStrength => {
   if (password.length >= 12) {
     score++
   } else {
-    feedback.push('Au moins 12 caractères requis')
+    feedback.push(t('profile.password.strength.feedback.minLength'))
   }
 
   if (/[a-z]/.test(password)) {
     score++
   } else {
-    feedback.push('Au moins une minuscule requise')
+    feedback.push(t('profile.password.strength.feedback.lowercase'))
   }
 
   if (/[A-Z]/.test(password)) {
     score++
   } else {
-    feedback.push('Au moins une majuscule requise')
+    feedback.push(t('profile.password.strength.feedback.uppercase'))
   }
 
   if (/\d/.test(password)) {
     score++
   } else {
-    feedback.push('Au moins un chiffre requis')
+    feedback.push(t('profile.password.strength.feedback.digit'))
   }
 
   if (/[!@#$%&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
     score++
   } else {
-    feedback.push('Au moins un caractère spécial requis (!@#$%&*()_+-=[]{}|;:,.<>?)')
+    feedback.push(t('profile.password.strength.feedback.special'))
   }
 
   return {
@@ -493,10 +506,10 @@ const strengthTextClass = computed(() => {
 
 const strengthLabel = computed(() => {
   if (form.newPassword.length === 0) return ''
-  if (passwordStrength.score <= 1) return 'Faible'
-  if (passwordStrength.score <= 2) return 'Moyen'
-  if (passwordStrength.score <= 3) return 'Bon'
-  return 'Fort'
+  if (passwordStrength.score <= 1) return t('profile.password.strength.weak')
+  if (passwordStrength.score <= 2) return t('profile.password.strength.medium')
+  if (passwordStrength.score <= 3) return t('profile.password.strength.good')
+  return t('profile.password.strength.strong')
 })
 
 const isFormValid = computed(() => {
@@ -513,23 +526,23 @@ const validateField = (field: string) => {
   switch (field) {
     case 'currentPassword':
       if (!form.currentPassword) {
-        errors.currentPassword = 'Le mot de passe actuel est requis'
+        errors.currentPassword = t('profile.password.currentPassword.errors.required')
       }
       break
 
     case 'newPassword':
       if (!form.newPassword) {
-        errors.newPassword = 'Le nouveau mot de passe est requis'
+        errors.newPassword = t('profile.password.newPassword.errors.required')
       } else if (!passwordStrength.isValid) {
-        errors.newPassword = 'Le mot de passe ne respecte pas les exigences de sécurité'
+        errors.newPassword = t('profile.password.newPassword.errors.invalid')
       }
       break
 
     case 'confirmPassword':
       if (!form.confirmPassword) {
-        errors.confirmPassword = 'La confirmation du mot de passe est requise'
+        errors.confirmPassword = t('profile.password.confirmPassword.errors.required')
       } else if (form.confirmPassword !== form.newPassword) {
-        errors.confirmPassword = 'Les mots de passe ne correspondent pas'
+        errors.confirmPassword = t('profile.password.confirmPassword.errors.mismatch')
       }
       break
   }
@@ -581,7 +594,7 @@ const handleSubmit = async () => {
       confirmPassword: form.confirmPassword,
     })
 
-    successMessage.value = 'Votre mot de passe a été modifié avec succès.'
+    successMessage.value = t('profile.password.success')
 
     form.currentPassword = ''
     form.newPassword = ''
@@ -605,10 +618,10 @@ const handleSubmit = async () => {
       } else if (response?.data?.error) {
         globalError.value = response.data.error
       } else {
-        globalError.value = 'Une erreur est survenue lors de la modification du mot de passe.'
+        globalError.value = t('profile.password.errors.generic')
       }
     } else {
-      globalError.value = err instanceof Error ? err.message : 'Une erreur est survenue.'
+      globalError.value = err instanceof Error ? err.message : t('profile.password.errors.fallback')
     }
   } finally {
     isSubmitting.value = false

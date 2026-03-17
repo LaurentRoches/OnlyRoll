@@ -4,6 +4,9 @@ import { useChatStore } from '@/stores/chatStore'
 import DiceResultDisplay from '@/components/game/DiceResultDisplay.vue'
 import { getErrorMessage } from '@/utils/errorHelpers'
 import type { DiceResult } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   gameId: number
@@ -40,43 +43,43 @@ const quickDice = [
   { label: 'd4', value: '1d4', color: 'bg-accent-purple', emoji: '🔺' },
 ]
 
-const commonRolls = [
-  { label: 'Initiative', formula: '1d20', icon: '⚡' },
-  { label: 'Initiative (avantage)', formula: '2d20kh1', icon: '⚡' },
-  { label: 'Attaque', formula: '1d20+5', icon: '⚔️' },
-  { label: 'Attaque (désavantage)', formula: '2d20kl1', icon: '⚔️' },
-  { label: 'Dégâts (épée)', formula: '1d8+3', icon: '🗡️' },
-  { label: 'Dégâts (arc)', formula: '1d6+2', icon: '🏹' },
-  { label: 'Jet de sauvegarde', formula: '1d20+2', icon: '🛡️' },
-  { label: 'Soin (potion)', formula: '2d4+2', icon: '💊' },
-]
+const commonRolls = computed(() => [
+  { label: t('game.dice.presets.initiative'), formula: '1d20', icon: '⚡' },
+  { label: t('game.dice.presets.initiativeAdvantage'), formula: '2d20kh1', icon: '⚡' },
+  { label: t('game.dice.presets.attack'), formula: '1d20+5', icon: '⚔️' },
+  { label: t('game.dice.presets.attackDisadvantage'), formula: '2d20kl1', icon: '⚔️' },
+  { label: t('game.dice.presets.damageSword'), formula: '1d8+3', icon: '🗡️' },
+  { label: t('game.dice.presets.damageBow'), formula: '1d6+2', icon: '🏹' },
+  { label: t('game.dice.presets.savingThrow'), formula: '1d20+2', icon: '🛡️' },
+  { label: t('game.dice.presets.healingPotion'), formula: '2d4+2', icon: '💊' },
+])
 
-const advantageModes = [
+const advantageModes = computed(() => [
   {
     key: 'normal' as const,
-    label: 'Normal',
+    label: t('game.dice.advantageModes.normal'),
     color: 'bg-secondary-700 hover:bg-secondary-600',
     activeColor: 'bg-secondary-500 ring-2 ring-white',
   },
   {
     key: 'advantage' as const,
-    label: 'Avantage',
+    label: t('game.dice.advantageModes.advantage'),
     color: 'bg-green-700 hover:bg-green-600',
     activeColor: 'bg-green-500 ring-2 ring-white',
   },
   {
     key: 'disadvantage' as const,
-    label: 'Désavantage',
+    label: t('game.dice.advantageModes.disadvantage'),
     color: 'bg-red-700 hover:bg-red-600',
     activeColor: 'bg-red-500 ring-2 ring-white',
   },
   {
     key: 'super' as const,
-    label: 'Super-avantage',
+    label: t('game.dice.advantageModes.super'),
     color: 'bg-yellow-700 hover:bg-yellow-600',
     activeColor: 'bg-yellow-500 ring-2 ring-white',
   },
-]
+])
 
 const fullFormula = computed(() => {
   if (!formula.value) return ''
@@ -131,7 +134,7 @@ async function rollDice() {
     formula.value = ''
     modifier.value = 0
   } catch (error) {
-    showRollError(getErrorMessage(error, 'Erreur lors du lancer de dés.'))
+    showRollError(getErrorMessage(error, t('game.dice.rollError')))
   }
 }
 
@@ -161,13 +164,15 @@ function addToFormula(text: string) {
     <div class="mb-6">
       <h3 class="font-bold text-secondary-50 text-lg mb-2 flex items-center gap-2">
         <span>🎲</span>
-        Lanceur de dés
+        {{ t('game.dice.title') }}
       </h3>
-      <p class="text-sm text-secondary-400">Formule personnalisée ou raccourcis rapides</p>
+      <p class="text-sm text-secondary-400">{{ t('game.dice.subtitle') }}</p>
     </div>
 
     <div class="mb-4">
-      <label class="block text-sm font-medium text-secondary-300 mb-3"> Dés rapides </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-3">
+        {{ t('game.dice.quickDice') }}
+      </label>
       <div class="grid grid-cols-3 gap-2">
         <button
           v-for="dice in quickDice"
@@ -186,7 +191,9 @@ function addToFormula(text: string) {
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-2"> Mode </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-2">
+        {{ t('game.dice.mode') }}
+      </label>
       <div class="grid grid-cols-2 gap-2">
         <button
           v-for="mode in advantageModes"
@@ -210,20 +217,20 @@ function addToFormula(text: string) {
 
     <div class="mb-4">
       <label class="block text-sm font-medium text-secondary-300 mb-2">
-        Formule personnalisée
+        {{ t('game.dice.customFormula') }}
       </label>
       <div class="flex gap-2">
         <input
           v-model="formula"
           type="text"
-          placeholder="2d6, 1d20, 3d8..."
+          :placeholder="t('game.dice.formulaPlaceholder')"
           class="form-input flex-1 font-mono"
         />
         <button
           v-if="formula"
           @click="clearFormula"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors"
-          aria-label="Effacer la formule"
+          :aria-label="t('game.dice.clearFormula')"
         >
           ✕
         </button>
@@ -234,35 +241,35 @@ function addToFormula(text: string) {
           v-for="num in [1, 2, 3, 4]"
           :key="num"
           @click="addToFormula(num.toString())"
-          :aria-label="`Ajouter ${num}`"
+          :aria-label="t('game.dice.addNumber', { num })"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           {{ num }}
         </button>
         <button
           @click="addToFormula('d')"
-          aria-label="Ajouter d (dé)"
+          :aria-label="t('game.dice.addDie')"
           class="px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-bold"
         >
           d
         </button>
         <button
           @click="addToFormula('+')"
-          aria-label="Ajouter +"
+          :aria-label="t('game.dice.addPlus')"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           +
         </button>
         <button
           @click="addToFormula('-')"
-          aria-label="Ajouter -"
+          :aria-label="t('game.dice.addMinus')"
           class="px-3 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 transition-colors font-mono"
         >
           −
         </button>
         <button
           @click="formula = formula.slice(0, -1)"
-          aria-label="Effacer le dernier caractère"
+          :aria-label="t('game.dice.backspace')"
           class="px-3 py-2 bg-error/80 text-white rounded-lg hover:bg-error transition-colors"
         >
           ⌫
@@ -271,11 +278,13 @@ function addToFormula(text: string) {
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-2"> Modificateur </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-2">
+        {{ t('game.dice.modifier') }}
+      </label>
       <div class="flex items-center gap-2">
         <button
           @click="modifier--"
-          aria-label="Diminuer le modificateur"
+          :aria-label="t('game.dice.decreaseModifier')"
           class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
         >
           −
@@ -288,14 +297,14 @@ function addToFormula(text: string) {
         />
         <button
           @click="modifier++"
-          aria-label="Augmenter le modificateur"
+          :aria-label="t('game.dice.increaseModifier')"
           class="px-4 py-2 bg-secondary-700 text-secondary-300 rounded-lg hover:bg-secondary-600 font-bold transition-colors"
         >
           +
         </button>
         <div class="flex-1 text-right">
           <span class="text-secondary-50 font-mono text-lg font-bold">
-            {{ fullFormula || 'Aucune formule' }}
+            {{ fullFormula || t('game.dice.noFormula') }}
           </span>
         </div>
       </div>
@@ -308,7 +317,7 @@ function addToFormula(text: string) {
           type="checkbox"
           class="w-4 h-4 rounded bg-secondary-700 border-secondary-600 text-primary-500 focus:ring-primary-500"
         />
-        <span class="text-sm text-secondary-300"> Lancer en tant que personnage (IC) </span>
+        <span class="text-sm text-secondary-300"> {{ t('game.dice.rollInCharacter') }} </span>
       </label>
     </div>
 
@@ -323,7 +332,7 @@ function addToFormula(text: string) {
         <button
           @click="rollError = null"
           class="ml-auto flex-shrink-0 text-red-400 hover:text-red-200 transition-colors"
-          aria-label="Fermer"
+          :aria-label="t('game.dice.closeError')"
         >
           ✕
         </button>
@@ -336,11 +345,17 @@ function addToFormula(text: string) {
       class="btn-primary w-full py-4 text-lg font-bold shadow-purple mb-6 flex items-center justify-center gap-2"
     >
       <span class="text-2xl">🎲</span>
-      <span>Lancer {{ fullFormula || 'les dés' }}</span>
+      <span>{{
+        fullFormula
+          ? t('game.dice.rollButton', { formula: fullFormula })
+          : t('game.dice.rollButtonDefault')
+      }}</span>
     </button>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-3"> Lancers courants </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-3">
+        {{ t('game.dice.commonRolls') }}
+      </label>
       <div class="space-y-2">
         <button
           v-for="roll in commonRolls"

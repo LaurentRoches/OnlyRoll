@@ -92,8 +92,6 @@ class GameMessage
         $this->createdAt = new DateTimeImmutable();
     }
 
-    // Méthodes métier
-
     public function isDiceRoll(): bool
     {
         return $this->type?->isDiceRoll() ?? false;
@@ -164,8 +162,6 @@ class GameMessage
             default => $this->content,
         };
     }
-
-    // Getters & Setters
 
     public function getId(): ?int
     {

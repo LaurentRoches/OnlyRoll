@@ -49,7 +49,7 @@ jobs:
 
       - name: Wait for services to be healthy
         run: |
-          echo "⏳ Waiting for services to be healthy..."
+          echo "Waiting for services to be healthy..."
           timeout 120 bash -c 'until docker compose ps | grep -q "healthy"; do sleep 2; done' || (docker compose logs && exit 1)
 
       - name: Check API health
@@ -502,7 +502,6 @@ jobs:
             kill $(cat server.pid) || true
           fi
       
-      # Génération du rapport d'accessibilité
       - name: Generate accessibility summary
         if: always()
         working-directory: ./frontend
@@ -544,7 +543,6 @@ jobs:
           
           cat accessibility-report.md
       
-      # Upload des résultats
       - name: Upload Lighthouse results
         uses: actions/upload-artifact@v4
         if: always()
