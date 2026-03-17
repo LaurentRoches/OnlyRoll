@@ -44,6 +44,9 @@ export default defineConfig({
     /* Base URL : utilise PLAYWRIGHT_BASE_URL si défini (Docker CI), sinon localhost dev/preview. */
     baseURL,
 
+    /* Force la locale française pour que navigator.language renvoie 'fr-FR' (i18n) */
+    locale: 'fr-FR',
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
