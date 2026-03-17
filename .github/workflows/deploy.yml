@@ -391,16 +391,16 @@ jobs:
 
             echo "Loading reference data (alignments, damage types, etc.)..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm \
-              php bin/console doctrine:fixtures:load --group=reference --append --no-interaction
+              php bin/console app:seed:references --no-interaction
+
+            echo "Loading wiki categories..."
+            docker compose -f $COMPOSE_FILE exec -T php-fpm \
+              php bin/console app:seed:wiki-categories --no-interaction
 
             if [ "$RUN_IMPORTS" = "true" ]; then
               echo "Importing SRD data (spells, monsters, races, classes...) - may take several minutes..."
               docker compose -f $COMPOSE_FILE exec -T php-fpm \
                 php -d memory_limit=2G bin/console app:import:all
-
-              echo "Loading wiki categories..."
-              docker compose -f $COMPOSE_FILE exec -T php-fpm \
-                php bin/console doctrine:fixtures:load --group=wiki --append --no-interaction
 
               echo "SRD data import complete."
             else

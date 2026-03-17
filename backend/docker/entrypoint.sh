@@ -139,6 +139,11 @@ php bin/console app:seed:references --no-interaction || {
     echo "Reference seeding failed, continuing..."
 }
 
+echo "Checking wiki categories..."
+php bin/console app:seed:wiki-categories --no-interaction || {
+    echo "Wiki categories seeding failed, continuing..."
+}
+
 SPELL_COUNT=$(php bin/console dbal:run-sql "SELECT COUNT(*) AS c FROM srd_spell" --no-interaction 2>/dev/null | grep -o '[0-9]*' | tail -1)
 SPELL_COUNT=${SPELL_COUNT:-0}
 
