@@ -139,7 +139,8 @@ php bin/console app:seed:references --no-interaction || {
     echo "Reference seeding failed, continuing..."
 }
 
-SPELL_COUNT=$(php bin/console dbal:run-sql "SELECT COUNT(*) AS c FROM srd_spell" --no-interaction 2>/dev/null | grep -oP '\d+' | tail -1 || echo "0")
+SPELL_COUNT=$(php bin/console dbal:run-sql "SELECT COUNT(*) AS c FROM srd_spell" --no-interaction 2>/dev/null | grep -o '[0-9]*' | tail -1)
+SPELL_COUNT=${SPELL_COUNT:-0}
 
 if [ "$SPELL_COUNT" = "0" ]; then
     echo "SRD tables are empty, importing data..."

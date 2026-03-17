@@ -138,7 +138,7 @@ class SeedReferencesCommand extends Command
         ));
 
         $seeded += $this->seedTable($io, 'item_category', 'item_category_slug', array_map(
-            fn($r) => ['item_category_slug' => $r[0], 'item_category_label' => $r[1], 'item_category_abbreviation' => $r[2]],
+            fn($r) => ['item_category_slug' => $r[0], 'item_category_label' => $r[1], 'category_abbreviation' => $r[2]],
             [
                 ['weapon','Weapon','W'],['armor','Armor','A'],['adventuring-gear','Adventuring Gear','G'],
                 ['tool','Tool','T'],['mount-vehicle','Mount & Vehicle','V'],['trade-good','Trade Good','TG'],
