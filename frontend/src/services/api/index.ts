@@ -9,6 +9,7 @@ import { tokenApi } from './tokenApi'
 import { securityApi } from './securityApi'
 import { adminApi } from './adminApi'
 import { profileApi } from './profileApi'
+import { wikiApi } from './wikiApi'
 
 export { apiClient } from './apiClient'
 export type { ApiError } from './apiClient'
@@ -21,6 +22,7 @@ export { chatApi } from './chatApi'
 export { securityApi } from './securityApi'
 export { adminApi } from './adminApi'
 export { profileApi } from './profileApi'
+export { wikiApi } from './wikiApi'
 
 export type { CreateMapDTO, UpdateMapDTO } from './mapApi'
 
@@ -62,4 +64,5 @@ export const api = {
   security: securityApi,
   admin: adminApi,
   profile: profileApi,
+  wiki: wikiApi,
 }

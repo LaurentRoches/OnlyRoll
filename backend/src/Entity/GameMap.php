@@ -134,8 +134,6 @@ class GameMap
         $this->updatedAt = new DateTimeImmutable();
     }
 
-    // Méthodes métier
-
     public function getTotalCells(): int
     {
         return $this->width * $this->height;
@@ -166,8 +164,6 @@ class GameMap
     {
         return $this->tokens->count();
     }
-
-    // Getters & Setters
 
     public function getId(): ?int
     {

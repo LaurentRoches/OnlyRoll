@@ -4,6 +4,9 @@ import { userApi } from '@/services/api/userApi'
 import { gameApi } from '@/services/api/gameApi'
 import type { UserSearchResult, GamePlayer } from '@/types/game'
 import { PlayerStatus } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   gameId: number
@@ -80,7 +83,7 @@ async function confirmInvite() {
     emit('success')
     emit('close')
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "Erreur lors de l'invitation"
+    error.value = e instanceof Error ? e.message : t('game.invite.error')
   } finally {
     isInviting.value = false
   }
@@ -97,7 +100,7 @@ async function confirmInvite() {
         class="bg-secondary-800 rounded-xl border border-secondary-700 shadow-2xl w-full max-w-md mx-4"
       >
         <div class="flex items-center justify-between p-4 border-b border-secondary-700">
-          <h2 class="font-semibold text-secondary-50 text-lg">Inviter un joueur</h2>
+          <h2 class="font-semibold text-secondary-50 text-lg">{{ t('game.invite.title') }}</h2>
           <button
             @click="emit('close')"
             class="text-secondary-400 hover:text-secondary-200 transition-colors p-1"
@@ -117,13 +120,13 @@ async function confirmInvite() {
         <div class="p-4 space-y-4">
           <div class="relative">
             <label class="block text-sm font-medium text-secondary-300 mb-1">
-              Rechercher par pseudo
+              {{ t('game.invite.search.label') }}
             </label>
             <div class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Entrez un pseudo..."
+                :placeholder="t('game.invite.search.placeholder')"
                 class="w-full bg-secondary-700 border border-secondary-600 text-secondary-50 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-secondary-500"
                 autocomplete="off"
               />
@@ -156,7 +159,7 @@ async function confirmInvite() {
                 </div>
                 <span class="text-secondary-50 text-sm">{{ user.pseudo }}</span>
                 <span v-if="isAlreadyMember(user.id)" class="ml-auto text-xs text-secondary-400">
-                  Déjà membre
+                  {{ t('game.invite.alreadyMember') }}
                 </span>
               </div>
             </div>
@@ -196,15 +199,15 @@ async function confirmInvite() {
             @click="emit('close')"
             class="flex-1 px-4 py-2 bg-secondary-700 text-secondary-200 rounded-lg hover:bg-secondary-600 transition-colors text-sm"
           >
-            Annuler
+            {{ t('game.invite.cancel') }}
           </button>
           <button
             @click="confirmInvite"
             :disabled="!selectedUser || isInviting"
             class="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
           >
-            <span v-if="isInviting">Envoi...</span>
-            <span v-else>Inviter</span>
+            <span v-if="isInviting">{{ t('game.invite.submit.sending') }}</span>
+            <span v-else>{{ t('game.invite.submit.send') }}</span>
           </button>
         </div>
       </div>

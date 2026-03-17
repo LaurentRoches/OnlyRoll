@@ -8,6 +8,7 @@ export interface User {
   createdAt: string
   updatedAt: string
   avatar?: string | null
+  language?: string
 }
 
 export interface LoginCredentials {
@@ -56,6 +57,7 @@ export interface MeResponse {
   updatedAt: string
   lastLogin?: string
   avatar?: string | null
+  language?: string
 }
 
 export interface DebugLoginResponse {

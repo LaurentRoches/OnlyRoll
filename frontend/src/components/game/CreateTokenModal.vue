@@ -3,6 +3,9 @@ import { ref, computed, watch } from 'vue'
 import { useMapStore } from '@/stores/mapStore'
 import { TokenType } from '@/types/game'
 import { ArrowUpTrayIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   show: boolean
@@ -32,20 +35,35 @@ const selectedFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const uploadError = ref<string | null>(null)
 
-const tokenTypes = [
-  { value: TokenType.CHARACTER, label: 'Personnage', icon: '🧙', color: '#6366f1' },
-  { value: TokenType.MONSTER, label: 'Monstre', icon: '👹', color: '#ef4444' },
-  { value: TokenType.NPC, label: 'PNJ', icon: '🧑', color: '#10b981' },
-  { value: TokenType.OBJECT, label: 'Objet', icon: '📦', color: '#f59e0b' },
-]
+const tokenTypes = computed(() => [
+  {
+    value: TokenType.CHARACTER,
+    label: t('game.createToken.type.character'),
+    icon: '🧙',
+    color: '#6366f1',
+  },
+  {
+    value: TokenType.MONSTER,
+    label: t('game.createToken.type.monster'),
+    icon: '👹',
+    color: '#ef4444',
+  },
+  { value: TokenType.NPC, label: t('game.createToken.type.npc'), icon: '🧑', color: '#10b981' },
+  {
+    value: TokenType.OBJECT,
+    label: t('game.createToken.type.object'),
+    icon: '📦',
+    color: '#f59e0b',
+  },
+])
 
-const tokenSizes = [
-  { value: 0.5, label: 'Petit (0.5)' },
-  { value: 1, label: 'Moyen (1)' },
-  { value: 2, label: 'Grand (2)' },
-  { value: 3, label: 'Énorme (3)' },
-  { value: 4, label: 'Gigantesque (4)' },
-]
+const tokenSizes = computed(() => [
+  { value: 0.5, label: t('game.createToken.size.small') },
+  { value: 1, label: t('game.createToken.size.medium') },
+  { value: 2, label: t('game.createToken.size.large') },
+  { value: 3, label: t('game.createToken.size.huge') },
+  { value: 4, label: t('game.createToken.size.gargantuan') },
+])
 
 const isFormValid = computed(() => {
   return form.value.name.trim().length > 0
@@ -58,13 +76,13 @@ function handleFileSelect(event: Event) {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    uploadError.value = 'Veuillez sélectionner une image (JPEG, PNG, WebP, GIF)'
+    uploadError.value = t('game.createToken.errors.invalidType')
     return
   }
 
   const maxSize = 5 * 1024 * 1024
   if (file.size > maxSize) {
-    uploadError.value = "L'image est trop volumineuse (max 5 Mo)"
+    uploadError.value = t('game.createToken.errors.tooLarge')
     return
   }
 
@@ -120,7 +138,7 @@ async function handleSubmit() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur lors de la création du token')
+        throw new Error(errorData.error || t('game.createToken.errors.createFailed'))
       }
 
       const createdToken = await response.json()
@@ -153,7 +171,7 @@ async function handleSubmit() {
     if (e && typeof e === 'object' && 'message' in e) {
       error.value = (e as { message: string }).message
     } else {
-      error.value = 'Erreur lors de la création du token'
+      error.value = t('game.createToken.errors.createFailed')
     }
     console.error('Erreur création token:', e)
   } finally {
@@ -188,9 +206,9 @@ function handleClose() {
       >
         <div class="flex items-center justify-between p-6 border-b border-secondary-700">
           <div>
-            <h2 class="text-2xl font-bold text-white">Créer un Token</h2>
+            <h2 class="text-2xl font-bold text-white">{{ t('game.createToken.title') }}</h2>
             <p class="text-sm text-secondary-400 mt-1">
-              Position: ({{ position?.x }}, {{ position?.y }})
+              {{ t('game.createToken.position', { x: position?.x, y: position?.y }) }}
             </p>
           </div>
           <button
@@ -230,7 +248,7 @@ function handleClose() {
 
           <div>
             <label for="token-name" class="block text-sm font-medium text-secondary-200 mb-2">
-              Nom du token *
+              {{ t('game.createToken.name.label') }}
             </label>
             <input
               id="token-name"
@@ -239,14 +257,14 @@ function handleClose() {
               required
               :disabled="isSubmitting"
               class="w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-lg text-white placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50"
-              placeholder="Ex: Gobelin, Coffre, etc."
+              :placeholder="t('game.createToken.name.placeholder')"
               maxlength="50"
             />
           </div>
 
           <div>
             <label class="block text-sm font-medium text-secondary-200 mb-3">
-              Type de token *
+              {{ t('game.createToken.type.label') }}
             </label>
             <div class="grid grid-cols-2 gap-3">
               <button
@@ -276,7 +294,7 @@ function handleClose() {
 
           <div>
             <label for="token-size" class="block text-sm font-medium text-secondary-200 mb-2">
-              Taille
+              {{ t('game.createToken.size.label') }}
             </label>
             <select
               id="token-size"
@@ -292,7 +310,7 @@ function handleClose() {
 
           <div>
             <label class="block text-sm font-medium text-secondary-200 mb-2">
-              Image du token (optionnel)
+              {{ t('game.createToken.image.label') }}
             </label>
 
             <div
@@ -310,23 +328,23 @@ function handleClose() {
               <label for="token-file-input" class="cursor-pointer">
                 <ArrowUpTrayIcon class="w-10 h-10 mx-auto text-secondary-400 mb-2" />
                 <p class="text-secondary-300 font-medium mb-1">
-                  Cliquez pour sélectionner une image
+                  {{ t('game.createToken.image.selectPrompt') }}
                 </p>
-                <p class="text-secondary-500 text-xs">JPEG, PNG, WebP ou GIF (max 5 Mo)</p>
+                <p class="text-secondary-500 text-xs">{{ t('game.createToken.image.formats') }}</p>
               </label>
             </div>
 
             <div v-else class="relative">
               <img
                 :src="imagePreview"
-                alt="Aperçu"
+                :alt="t('game.createToken.image.selectPrompt')"
                 class="w-32 h-32 object-cover bg-secondary-900 rounded-lg mx-auto"
               />
               <button
                 type="button"
                 @click="removeFile"
                 class="absolute top-0 right-0 bg-red-600 hover:bg-red-700 text-white p-1 rounded-full transition-colors"
-                title="Supprimer l'image"
+                :title="t('game.createToken.image.deleteTitle')"
                 :disabled="isSubmitting"
               >
                 <XMarkIcon class="w-4 h-4" />
@@ -340,7 +358,7 @@ function handleClose() {
               {{ uploadError }}
             </p>
             <p v-else class="text-xs text-secondary-500 mt-2">
-              Si aucune image n'est fournie, les initiales du nom seront utilisées
+              {{ t('game.createToken.image.noImageHint') }}
             </p>
           </div>
 
@@ -351,15 +369,15 @@ function handleClose() {
               :disabled="isSubmitting"
               class="flex-1 px-4 py-3 bg-secondary-700 text-white rounded-lg hover:bg-secondary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Annuler
+              {{ t('game.createToken.cancel') }}
             </button>
             <button
               type="submit"
               :disabled="!isFormValid || isSubmitting"
               class="flex-1 px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              <span v-if="isSubmitting">Création...</span>
-              <span v-else>Créer le Token</span>
+              <span v-if="isSubmitting">{{ t('game.createToken.submit.creating') }}</span>
+              <span v-else>{{ t('game.createToken.submit.create') }}</span>
             </button>
           </div>
         </form>

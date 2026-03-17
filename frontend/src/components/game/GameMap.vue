@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMapStore } from '@/stores/mapStore'
 import { useAuthStore } from '@/stores/auth'
 import type { GameMap, GameToken, GamePlayer } from '@/types/game'
@@ -17,6 +18,7 @@ const props = defineProps<{
   gameId: number
 }>()
 
+const { t } = useI18n()
 const mapStore = useMapStore()
 const authStore = useAuthStore()
 
@@ -162,7 +164,7 @@ async function toggleTokenLock(tokenId: number) {
 }
 
 async function deleteToken(tokenId: number) {
-  if (!confirm('Supprimer ce token ?')) return
+  if (!confirm(t('game.map.tokenActions.deleteConfirm'))) return
 
   try {
     await mapStore.deleteToken(tokenId)
@@ -505,42 +507,42 @@ defineExpose({
               v-if="isGameMaster"
               @click="openEditModal(selectedTokenId)"
               class="btn-secondary text-sm"
-              title="Modifier le token"
+              :title="t('game.map.tokenActions.editTitle')"
             >
-              ✏️ Modifier
+              ✏️ {{ t('game.map.tokenActions.edit') }}
             </button>
             <button
               @click="toggleTokenVisibility(selectedTokenId)"
               class="btn-secondary text-sm"
-              title="Toggle visibilité"
+              :title="t('game.map.tokenActions.visibilityTitle')"
             >
               <span v-if="tokens.find((t) => t.id === selectedTokenId)?.isVisible">👁️</span>
               <span v-else>🚫</span>
-              Visibilité
+              {{ t('game.map.tokenActions.visibility') }}
             </button>
             <button
               @click="toggleTokenLock(selectedTokenId)"
               class="btn-secondary text-sm"
-              title="Verrouiller/Déverrouiller"
+              :title="t('game.map.tokenActions.lockTitle')"
             >
               <span v-if="tokens.find((t) => t.id === selectedTokenId)?.isLocked">🔓</span>
               <span v-else>🔒</span>
-              Verrouiller
+              {{ t('game.map.tokenActions.lock') }}
             </button>
             <button
               v-if="isGameMaster"
               @click="openPermissionsModal(selectedTokenId)"
               class="btn-secondary text-sm"
-              title="Gérer les permissions"
+              :title="t('game.map.tokenActions.permissionsTitle')"
             >
-              🎭 Permissions
+              🎭 {{ t('game.map.tokenActions.permissions') }}
             </button>
             <button
               @click="deleteToken(selectedTokenId)"
               class="px-3 py-2 bg-error text-white rounded-lg hover:bg-red-600 text-sm"
-              title="Supprimer"
+              :title="t('game.map.tokenActions.deleteTitle')"
             >
-              🗑️ Supprimer
+              🗑️ {{ t('game.map.tokenActions.delete') }}
             </button>
           </div>
         </div>
@@ -559,19 +561,20 @@ defineExpose({
             @click.stop
           >
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">Permissions de contrôle</h3>
+              <h3 class="text-lg font-semibold text-white">
+                {{ t('game.map.permissions.title') }}
+              </h3>
               <button
                 @click="closePermissionsModal"
                 class="text-gray-400 hover:text-white"
-                title="Fermer"
+                :title="t('game.map.permissions.close')"
               >
                 ✕
               </button>
             </div>
 
             <p class="text-sm text-gray-400 mb-4">
-              Sélectionnez les joueurs qui peuvent contrôler ce token avec les flèches
-              directionnelles
+              {{ t('game.map.permissions.description') }}
             </p>
 
             <div v-if="gamePlayers && gamePlayers.length > 0" class="space-y-2">
@@ -599,10 +602,14 @@ defineExpose({
               </div>
             </div>
 
-            <div v-else class="text-center py-8 text-gray-500">Aucun joueur disponible</div>
+            <div v-else class="text-center py-8 text-gray-500">
+              {{ t('game.map.permissions.noPlayers') }}
+            </div>
 
             <div class="mt-6 flex justify-end">
-              <button @click="closePermissionsModal" class="btn-primary">Fermer</button>
+              <button @click="closePermissionsModal" class="btn-primary">
+                {{ t('game.map.permissions.closeButton') }}
+              </button>
             </div>
           </div>
         </div>

@@ -69,39 +69,42 @@ const router = createRouter({
       path: '/games',
       name: 'games',
       component: () => import('@/views/games/GameListView.vue'),
-      meta: { title: 'Parties' },
+      meta: { title: 'Games' },
     },
     {
       path: '/games/:id/play',
       name: 'game-play',
       component: () => import('@/views/games/GamePlayView.vue'),
-      meta: { requiresAuth: true, title: 'Partie en cours' },
+      meta: { requiresAuth: true, title: 'Game in progress' },
       props: true,
     },
 
     // ========== WIKI D&D (PUBLIC) ==========
-    // Décommentez quand vous créerez cette fonctionnalité
-    // {
-    //   path: '/wiki',
-    //   children: [
-    //     {
-    //       path: '',
-    //       name: 'wiki.home',
-    //       component: () => import('@/views/wiki/WikiHomeView.vue')
-    //     },
-    //     {
-    //       path: 'spells',
-    //       name: 'wiki.spells',
-    //       component: () => import('@/views/wiki/SpellsView.vue')
-    //     },
-    //     {
-    //       path: 'spells/:id',
-    //       name: 'wiki.spell-detail',
-    //       component: () => import('@/views/wiki/SpellDetailView.vue'),
-    //       props: true
-    //     }
-    //   ]
-    // },
+    {
+      path: '/wiki',
+      children: [
+        {
+          path: '',
+          name: 'wiki.home',
+          component: () => import('@/views/wiki/WikiHomeView.vue'),
+          meta: { title: 'D&D 5e Wiki' },
+        },
+        {
+          path: ':category',
+          name: 'wiki.category',
+          component: () => import('@/views/wiki/WikiCategoryView.vue'),
+          meta: { title: 'D&D 5e Wiki' },
+          props: true,
+        },
+        {
+          path: ':category/:id',
+          name: 'wiki.detail',
+          component: () => import('@/views/wiki/WikiDetailView.vue'),
+          meta: { title: 'D&D 5e Wiki' },
+          props: true,
+        },
+      ],
+    },
 
     // ========== ADMINISTRATION (PROTEGE - ADMIN UNIQUEMENT) ==========
     {
@@ -113,19 +116,19 @@ const router = createRouter({
           path: '',
           name: 'admin',
           component: () => import('@/views/admin/AdminDashboardView.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, title: 'Tableau de bord' },
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'Dashboard' },
         },
         {
           path: 'users',
           name: 'admin-users',
           component: () => import('@/views/admin/AdminUsersView.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, title: 'Gestion des utilisateurs' },
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'User Management' },
         },
         {
           path: 'audit-logs',
           name: 'admin-audit-logs',
           component: () => import('@/views/admin/AdminAuditLogsView.vue'),
-          meta: { requiresAuth: true, requiresAdmin: true, title: "Logs d'audit" },
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'Audit Logs' },
         },
       ],
     },
@@ -135,7 +138,7 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/profile/ProfileView.vue'),
-      meta: { requiresAuth: true, title: 'Mon profil' },
+      meta: { requiresAuth: true, title: 'My Profile' },
     },
 
     // ========== PAGE 404 ==========

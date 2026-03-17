@@ -3,6 +3,9 @@ import { ref, watch } from 'vue'
 import { gameApi } from '@/services/api/gameApi'
 import { useGameStore } from '@/stores/game'
 import type { Game } from '@/types/game'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   show: boolean
@@ -33,12 +36,12 @@ watch(
 
 async function handleSubmit() {
   if (!name.value.trim()) {
-    error.value = 'Le nom de la partie est requis'
+    error.value = t('game.settings.errors.nameRequired')
     return
   }
 
   if (maxPlayers.value < 1 || maxPlayers.value > 20) {
-    error.value = 'Le nombre de joueurs doit être entre 1 et 20'
+    error.value = t('game.settings.errors.maxPlayersRange')
     return
   }
 
@@ -56,7 +59,7 @@ async function handleSubmit() {
     emit('updated')
     emit('close')
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Erreur lors de la sauvegarde'
+    error.value = e instanceof Error ? e.message : t('game.settings.errors.saveFailed')
   } finally {
     isSaving.value = false
   }
@@ -88,7 +91,7 @@ async function handleSubmit() {
                   d="M12 1v6m0 6v6m-9-9h6m6 0h6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"
                 ></path>
               </svg>
-              Paramètres de la partie
+              {{ t('game.settings.title') }}
             </h2>
             <button
               @click="emit('close')"
@@ -109,30 +112,32 @@ async function handleSubmit() {
           <form @submit.prevent="handleSubmit" class="p-4 space-y-4">
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-1">
-                Nom de la partie <span class="text-error">*</span>
+                {{ t('game.settings.name.label') }} <span class="text-error">*</span>
               </label>
               <input
                 v-model="name"
                 type="text"
-                placeholder="Ex : La Forêt Oubliée"
+                :placeholder="t('game.settings.name.placeholder')"
                 maxlength="250"
                 class="w-full bg-secondary-700 border border-secondary-600 text-secondary-50 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-secondary-500"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-1"> Description </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-1">
+                {{ t('game.settings.description.label') }}
+              </label>
               <textarea
                 v-model="description"
                 rows="3"
-                placeholder="Décrivez votre partie..."
+                :placeholder="t('game.settings.description.placeholder')"
                 class="w-full bg-secondary-700 border border-secondary-600 text-secondary-50 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-secondary-500 resize-none"
               ></textarea>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-secondary-300 mb-1">
-                Nombre maximum de joueurs
+                {{ t('game.settings.maxPlayers.label') }}
               </label>
               <div class="flex items-center gap-3">
                 <input
@@ -142,7 +147,9 @@ async function handleSubmit() {
                   max="20"
                   class="w-24 bg-secondary-700 border border-secondary-600 text-secondary-50 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-center"
                 />
-                <span class="text-secondary-400 text-sm">joueurs (1 à 20)</span>
+                <span class="text-secondary-400 text-sm">{{
+                  t('game.settings.maxPlayers.hint')
+                }}</span>
               </div>
             </div>
 
@@ -160,15 +167,15 @@ async function handleSubmit() {
               @click="emit('close')"
               class="flex-1 px-4 py-2 bg-secondary-700 text-secondary-200 rounded-lg hover:bg-secondary-600 transition-colors text-sm"
             >
-              Annuler
+              {{ t('game.settings.cancel') }}
             </button>
             <button
               @click="handleSubmit"
               :disabled="isSaving"
               class="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
             >
-              <span v-if="isSaving">Sauvegarde...</span>
-              <span v-else>Enregistrer</span>
+              <span v-if="isSaving">{{ t('game.settings.submit.saving') }}</span>
+              <span v-else>{{ t('game.settings.submit.save') }}</span>
             </button>
           </div>
         </div>

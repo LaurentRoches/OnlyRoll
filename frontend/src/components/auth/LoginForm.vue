@@ -1,11 +1,10 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <div class="text-center mb-6">
-      <h2 class="text-xl font-semibold text-secondary-50 mb-1">Connexion</h2>
-      <p class="text-sm text-secondary-400">Accédez à votre table virtuelle</p>
+      <h2 class="text-xl font-semibold text-secondary-50 mb-1">{{ t('auth.login.title') }}</h2>
+      <p class="text-sm text-secondary-400">{{ t('auth.login.subtitle') }}</p>
     </div>
 
-    <!-- Compte supprimé -->
     <div
       v-if="parsedError?.code === 'account_deleted'"
       class="bg-warning/10 border border-warning/20 rounded-lg p-4"
@@ -24,10 +23,10 @@
           />
         </svg>
         <div class="text-sm space-y-1">
-          <p class="text-warning font-medium">Compte supprimé</p>
-          <p class="text-secondary-300">Ce compte a été supprimé et n'est plus accessible.</p>
+          <p class="text-warning font-medium">{{ t('auth.login.accountDeleted.title') }}</p>
+          <p class="text-secondary-300">{{ t('auth.login.accountDeleted.message') }}</p>
           <p class="text-secondary-400">
-            Pour toute demande de restauration, contactez&nbsp;:
+            {{ t('auth.login.accountDeleted.contactAdmin') }}
             <a
               :href="`mailto:${parsedError.adminEmail}`"
               class="text-primary-400 hover:text-primary-300 transition-colors underline"
@@ -39,7 +38,6 @@
       </div>
     </div>
 
-    <!-- Compte non vérifié -->
     <div
       v-else-if="parsedError?.code === 'account_not_verified'"
       class="bg-info/10 border border-info/20 rounded-lg p-4"
@@ -58,21 +56,20 @@
           />
         </svg>
         <div class="text-sm space-y-1">
-          <p class="text-info font-medium">Email non vérifié</p>
+          <p class="text-info font-medium">{{ t('auth.login.accountNotVerified.title') }}</p>
           <p class="text-secondary-300">
-            Veuillez vérifier votre adresse email avant de vous connecter.
+            {{ t('auth.login.accountNotVerified.message') }}
           </p>
           <RouterLink
             :to="{ name: 'register-success', query: { email: parsedError.email } }"
             class="text-primary-400 hover:text-primary-300 transition-colors underline"
           >
-            Renvoyer l'email de vérification
+            {{ t('auth.login.accountNotVerified.resendLink') }}
           </RouterLink>
         </div>
       </div>
     </div>
 
-    <!-- Affichage des erreurs génériques -->
     <div
       v-else-if="error || validationErrors.length > 0"
       class="bg-error/10 border border-error/20 rounded-lg p-4"
@@ -102,7 +99,9 @@
     </div>
 
     <div class="space-y-1">
-      <label for="email" class="block text-sm font-medium text-secondary-200"> Email </label>
+      <label for="email" class="block text-sm font-medium text-secondary-200">
+        {{ t('auth.login.emailLabel') }}
+      </label>
       <input
         id="email"
         name="email"
@@ -112,13 +111,13 @@
         required
         :disabled="isLoading"
         class="block w-full px-4 py-3 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        placeholder="votre.email@exemple.com"
+        :placeholder="t('auth.login.emailPlaceholder')"
       />
     </div>
 
     <div class="space-y-1">
       <label for="password" class="block text-sm font-medium text-secondary-200">
-        Mot de passe
+        {{ t('auth.login.passwordLabel') }}
       </label>
       <div class="relative">
         <input
@@ -130,13 +129,13 @@
           required
           :disabled="isLoading"
           class="block w-full px-4 py-3 pr-12 bg-secondary-700 border border-secondary-600 rounded-lg text-secondary-50 placeholder-secondary-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          placeholder="••••••••"
+          :placeholder="t('auth.login.passwordPlaceholder')"
         />
         <button
           type="button"
           @click="togglePasswordVisibility"
           :disabled="isLoading"
-          :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+          :aria-label="showPassword ? t('auth.login.hidePassword') : t('auth.login.showPassword')"
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <svg
@@ -189,7 +188,7 @@
           class="h-4 w-4 bg-secondary-700 border-secondary-600 rounded text-primary-500 focus:ring-primary-500 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <label for="remember-me" class="ml-2 text-sm text-secondary-300">
-          Se souvenir de moi
+          {{ t('auth.login.rememberMe') }}
         </label>
       </div>
 
@@ -197,7 +196,7 @@
         to="/auth/forgot-password"
         class="text-sm text-primary-400 hover:text-primary-300 transition-colors"
       >
-        Mot de passe oublié ?
+        {{ t('auth.login.forgotPassword') }}
       </RouterLink>
     </div>
 
@@ -227,13 +226,14 @@
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         ></path>
       </svg>
-      {{ isLoading ? 'Connexion...' : 'Se connecter' }}
+      {{ isLoading ? t('auth.login.submitLoading') : t('auth.login.submit') }}
     </button>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import {
   useFormValidation,
@@ -243,6 +243,7 @@ import {
 import type { LoginCredentials } from '@/types/auth'
 import { logger } from '@/utils/logger'
 
+const { t } = useI18n()
 const { login, isLoading, error, clearError } = useAuth()
 const { validationErrors, validateFields, clearErrors } = useFormValidation()
 const { showPassword, togglePasswordVisibility } = usePasswordVisibility()
@@ -281,18 +282,18 @@ const validateForm = (): boolean => {
       field: 'email',
       value: form.value.email,
       rules: [
-        { validator: validators.required, message: "L'email est requis" },
-        { validator: validators.isEmail, message: "L'email n'est pas valide" },
+        { validator: validators.required, message: t('auth.login.validation.emailRequired') },
+        { validator: validators.isEmail, message: t('auth.login.validation.emailInvalid') },
       ],
     },
     {
       field: 'password',
       value: form.value.password,
       rules: [
-        { validator: validators.required, message: 'Le mot de passe est requis' },
+        { validator: validators.required, message: t('auth.login.validation.passwordRequired') },
         {
           validator: validators.minLength(3),
-          message: 'Le mot de passe doit faire au moins 3 caractères',
+          message: t('auth.login.validation.passwordMinLength'),
         },
       ],
     },

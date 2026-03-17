@@ -123,8 +123,6 @@ class GameToken
         $this->updatedAt = new DateTimeImmutable();
     }
 
-    // Méthodes métier
-
     public function move(int $x, int $y): static
     {
         if (!$this->isLocked) {
@@ -210,8 +208,6 @@ class GameToken
             && $cellY >= $this->y
             && $cellY < $this->y + $sizeInCells;
     }
-
-    // Getters & Setters
 
     public function getId(): ?int
     {

@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Contrôleur pour les opérations liées aux utilisateurs (recherche, invitations).
+ * Contrôleur pour les opérations liées aux utilisateurs.
  */
 #[IsGranted('ROLE_USER')]
 final class UserController extends AbstractController

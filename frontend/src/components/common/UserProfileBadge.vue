@@ -8,7 +8,7 @@
         <img
           v-if="avatarUrl"
           :src="avatarUrl"
-          :alt="`Avatar de ${user?.pseudo}`"
+          :alt="t('common.userProfile.avatarAlt', { pseudo: user?.pseudo })"
           class="w-full h-full object-cover"
         />
         <span
@@ -65,7 +65,7 @@
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            Mon profil
+            {{ t('common.userProfile.myProfile') }}
           </RouterLink>
 
           <RouterLink
@@ -87,7 +87,7 @@
                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            Paramètres
+            {{ t('common.userProfile.settings') }}
           </RouterLink>
 
           <div class="border-t border-secondary-700 my-1"></div>
@@ -105,7 +105,11 @@
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
               />
             </svg>
-            {{ isLoggingOut ? 'Déconnexion...' : 'Se déconnecter' }}
+            {{
+              isLoggingOut
+                ? t('common.userProfile.loggingOut')
+                : t('common.userProfile.logoutButton')
+            }}
           </button>
         </div>
       </div>
@@ -117,8 +121,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 
+const { t } = useI18n()
 const { user, isAuthenticated, logout } = useAuth()
 
 const isMenuOpen = ref(false)

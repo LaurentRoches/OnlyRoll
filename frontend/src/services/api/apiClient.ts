@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import i18n from '@/i18n'
 
 export interface ApiError {
   message: string
@@ -35,7 +36,8 @@ apiClient.interceptors.response.use(
     }
 
     const apiError: ApiError = {
-      message: error.response?.data?.message || error.message || 'Une erreur est survenue',
+      message:
+        error.response?.data?.message || error.message || i18n.global.t('common.errors.generic'),
       statusCode: error.response?.status,
       error: error.response?.data?.error,
       errors: error.response?.data?.errors,

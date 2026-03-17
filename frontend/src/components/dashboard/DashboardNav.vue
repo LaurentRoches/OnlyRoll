@@ -30,7 +30,7 @@
                 : 'text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700',
             ]"
           >
-            Parties
+            {{ t('common.nav.games') }}
           </RouterLink>
           <RouterLink
             v-if="isAdmin"
@@ -83,7 +83,9 @@
                 class="absolute right-0 top-12 w-80 sm:w-96 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50"
               >
                 <div class="p-4 border-b border-secondary-700 flex items-center justify-between">
-                  <h3 class="font-semibold text-secondary-50">Invitations en attente</h3>
+                  <h3 class="font-semibold text-secondary-50">
+                    {{ t('common.nav.invitations.title') }}
+                  </h3>
                   <button
                     @click="showNotifications = false"
                     class="text-secondary-400 hover:text-secondary-200 transition-colors"
@@ -112,7 +114,7 @@
                     <div
                       class="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"
                     ></div>
-                    Chargement...
+                    {{ t('common.nav.invitations.loading') }}
                   </div>
 
                   <div
@@ -120,7 +122,7 @@
                     class="p-6 text-center text-secondary-400"
                   >
                     <div class="text-3xl mb-2">🔔</div>
-                    <p class="text-sm">Aucune invitation en attente</p>
+                    <p class="text-sm">{{ t('common.nav.invitations.empty') }}</p>
                   </div>
 
                   <div v-else class="divide-y divide-secondary-700">
@@ -134,7 +136,11 @@
                           {{ invitation.game.name }}
                         </p>
                         <p class="text-xs text-secondary-400 mt-0.5">
-                          MJ : {{ invitation.gameMaster.pseudo }}
+                          {{
+                            t('common.nav.invitations.gameMaster', {
+                              pseudo: invitation.gameMaster.pseudo,
+                            })
+                          }}
                         </p>
                       </div>
                       <div class="flex gap-2">
@@ -143,19 +149,52 @@
                           :disabled="processingId === invitation.id"
                           class="flex-1 px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
                         >
-                          Rejoindre
+                          {{ t('common.nav.invitations.accept') }}
                         </button>
                         <button
                           @click="handleDecline(invitation)"
                           :disabled="processingId === invitation.id"
                           class="flex-1 px-3 py-1.5 bg-secondary-600 text-secondary-200 text-sm rounded-lg hover:bg-secondary-500 transition-colors disabled:opacity-50"
                         >
-                          Refuser
+                          {{ t('common.nav.invitations.decline') }}
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </Transition>
+          </div>
+
+          <div class="relative hidden md:block" ref="langRef">
+            <button
+              @click="toggleLangDropdown"
+              class="p-2 rounded-lg hover:bg-secondary-700 transition-colors"
+              :title="t('common.nav.language.switchLanguage')"
+            >
+              <img
+                :src="currentFlag"
+                :alt="t('common.nav.language.current')"
+                class="w-5 h-5 rounded-sm object-cover"
+              />
+            </button>
+
+            <Transition name="fade-down">
+              <div
+                v-if="showLangDropdown"
+                class="absolute right-0 top-12 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50 py-1 min-w-max"
+              >
+                <button
+                  @click="switchLanguage(otherLocale)"
+                  class="flex items-center gap-2 px-4 py-2 text-sm text-secondary-200 hover:bg-secondary-700 transition-colors w-full"
+                >
+                  <img
+                    :src="otherFlag"
+                    :alt="otherLocale.toUpperCase()"
+                    class="w-5 h-5 rounded-sm object-cover"
+                  />
+                  <span>{{ t(`common.nav.language.${otherLocale}`) }}</span>
+                </button>
               </div>
             </Transition>
           </div>
@@ -166,14 +205,14 @@
               @click="handleLogout"
               class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
             >
-              Déconnexion
+              {{ t('common.nav.logout') }}
             </button>
           </div>
 
           <button
             class="md:hidden p-2 rounded-lg text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700 transition-colors"
             :aria-expanded="isMobileMenuOpen"
-            aria-label="Menu de navigation"
+            :aria-label="t('common.nav.navigationMenu')"
             @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
             <svg
@@ -233,7 +272,7 @@
               : 'text-secondary-300 hover:text-secondary-50 hover:bg-secondary-700',
           ]"
         >
-          Parties
+          {{ t('common.nav.games') }}
         </RouterLink>
         <RouterLink
           v-if="isAdmin"
@@ -248,13 +287,38 @@
           Admin
         </RouterLink>
       </div>
+      <div class="border-t border-secondary-700 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-secondary-400">{{ t('common.nav.language.label') }}</span>
+          <div class="flex gap-2">
+            <button
+              v-for="lang in ['fr', 'en'] as const"
+              :key="lang"
+              @click="switchLanguageMobile(lang)"
+              class="p-1.5 rounded-lg transition-colors"
+              :class="[
+                locale === lang
+                  ? 'bg-primary-500/20 ring-2 ring-primary-500'
+                  : 'hover:bg-secondary-700',
+              ]"
+            >
+              <img
+                :src="`/images/flag/${lang}.png`"
+                :alt="t(`common.nav.language.${lang}`)"
+                class="w-6 h-6 rounded-sm object-cover"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="border-t border-secondary-700 px-4 py-3 flex items-center justify-between">
         <UserProfileBadge />
         <button
           @click="handleLogout"
           class="px-4 py-2 text-sm text-secondary-300 hover:text-secondary-50 transition-colors"
         >
-          Déconnexion
+          {{ t('common.nav.logout') }}
         </button>
       </div>
     </div>
@@ -264,12 +328,16 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notificationStore'
+import { profileApi } from '@/services/api/profileApi'
+import { logger } from '@/utils/logger'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 import type { GameInvitation } from '@/types/game'
 
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { logout } = useAuth()
@@ -279,20 +347,29 @@ const notificationStore = useNotificationStore()
 const isAdmin = computed(() => authStore.isAdmin)
 const isMobileMenuOpen = ref(false)
 const showNotifications = ref(false)
+const showLangDropdown = ref(false)
 const processingId = ref<number | null>(null)
 const bellRef = ref<HTMLElement | null>(null)
+const langRef = ref<HTMLElement | null>(null)
+
+const currentFlag = computed(() => `/images/flag/${locale.value}.png`)
+const otherLocale = computed(() => (locale.value === 'fr' ? 'en' : 'fr'))
+const otherFlag = computed(() => `/images/flag/${otherLocale.value}.png`)
 
 watch(
   () => route.path,
   () => {
     isMobileMenuOpen.value = false
     showNotifications.value = false
+    showLangDropdown.value = false
   }
 )
 
 onMounted(async () => {
-  await notificationStore.fetchInvitations()
-  await notificationStore.connectToNotifications()
+  if (authStore.isAuthenticated) {
+    await notificationStore.fetchInvitations()
+    await notificationStore.connectToNotifications()
+  }
 
   document.addEventListener('click', handleClickOutside)
 })
@@ -306,10 +383,41 @@ function handleClickOutside(event: MouseEvent) {
   if (bellRef.value && !bellRef.value.contains(event.target as Node)) {
     showNotifications.value = false
   }
+  if (langRef.value && !langRef.value.contains(event.target as Node)) {
+    showLangDropdown.value = false
+  }
 }
 
 function toggleNotifications() {
   showNotifications.value = !showNotifications.value
+  showLangDropdown.value = false
+}
+
+function toggleLangDropdown() {
+  showLangDropdown.value = !showLangDropdown.value
+  showNotifications.value = false
+}
+
+function switchLanguageMobile(lang: 'fr' | 'en') {
+  switchLanguage(lang)
+  isMobileMenuOpen.value = false
+}
+
+async function switchLanguage(lang: 'fr' | 'en') {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  showLangDropdown.value = false
+
+  if (authStore.isAuthenticated) {
+    try {
+      await profileApi.update({ language: lang })
+      if (authStore.user) {
+        authStore.user.language = lang
+      }
+    } catch (err) {
+      logger.error('Failed to persist language preference:', err)
+    }
+  }
 }
 
 async function handleAccept(invitation: GameInvitation) {
@@ -319,7 +427,7 @@ async function handleAccept(invitation: GameInvitation) {
     showNotifications.value = false
     router.push(`/games/${invitation.game.id}/play`)
   } catch {
-    alert("Erreur lors de l'acceptation de l'invitation")
+    alert(t('common.nav.invitations.acceptError'))
   } finally {
     processingId.value = null
   }
@@ -330,7 +438,7 @@ async function handleDecline(invitation: GameInvitation) {
   try {
     await notificationStore.declineInvitation(invitation.game.id)
   } catch {
-    alert("Erreur lors du refus de l'invitation")
+    alert(t('common.nav.invitations.declineError'))
   } finally {
     processingId.value = null
   }

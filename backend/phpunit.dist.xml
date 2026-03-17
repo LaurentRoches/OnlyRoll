@@ -59,6 +59,17 @@
             <file>src/Service/MercurePublisher.php</file>
             <file>src/Service/MercureTokenService.php</file>
             <file>src/Repository/AuditLogRepository.php</file>
+            <!-- Wiki feature - pas de tests pour l'instant -->
+            <directory suffix=".php">src/Entity/Wiki</directory>
+            <directory suffix=".php">src/Entity/Srd</directory>
+            <directory suffix=".php">src/Entity/Reference</directory>
+            <directory suffix=".php">src/Repository/Wiki</directory>
+            <directory suffix=".php">src/Repository/Srd</directory>
+            <directory suffix=".php">src/Service/Wiki</directory>
+            <directory suffix=".php">src/Service/Import</directory>
+            <directory suffix=".php">src/Command/Import</directory>
+            <file>src/Controller/WikiController.php</file>
+            <file>src/Enum/SrdTable.php</file>
         </exclude>
     </source>
 
