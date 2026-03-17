@@ -28,7 +28,11 @@ onMounted(() => {
 
 function handleSearch() {
   if (searchQuery.value.trim().length < MIN_SEARCH_LENGTH) return
-  router.push({ name: 'wiki.category', params: { category: 'spells' }, query: { search: searchQuery.value } })
+  router.push({
+    name: 'wiki.category',
+    params: { category: 'spells' },
+    query: { search: searchQuery.value },
+  })
 }
 
 function goToFavorites() {
@@ -39,13 +43,19 @@ function goToFavorites() {
 <template>
   <div class="min-h-screen bg-secondary-900">
     <DashboardNav />
-    <div class="bg-gradient-to-r from-primary-900 via-primary-800 to-primary-900 border-b border-secondary-700 px-4 py-8 sm:py-12">
+    <div
+      class="bg-gradient-to-r from-primary-900 via-primary-800 to-primary-900 border-b border-secondary-700 px-4 py-8 sm:py-12"
+    >
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-3xl sm:text-4xl font-bold text-primary-400 mb-2">{{ t('wiki.home.title') }}</h1>
+        <h1 class="text-3xl sm:text-4xl font-bold text-primary-400 mb-2">
+          {{ t('wiki.home.title') }}
+        </h1>
         <p class="text-secondary-400 mb-6">{{ t('wiki.home.subtitle') }}</p>
 
         <div class="relative max-w-xl mx-auto">
-          <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
+          <MagnifyingGlassIcon
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400"
+          />
           <input
             v-model="searchQuery"
             type="text"
@@ -87,12 +97,11 @@ function goToFavorites() {
         />
       </div>
 
-      <div v-if="!navigationStore.categories.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div
-          v-for="i in 7"
-          :key="i"
-          class="h-28 bg-secondary-800 rounded-lg animate-pulse"
-        />
+      <div
+        v-if="!navigationStore.categories.length"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      >
+        <div v-for="i in 7" :key="i" class="h-28 bg-secondary-800 rounded-lg animate-pulse" />
       </div>
     </div>
   </div>

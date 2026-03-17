@@ -2,7 +2,7 @@ export default {
   errors: {
     sessionExpired: 'Session expirée, déconnexion automatique',
     generic: 'Une erreur est survenue',
-    unexpected: "Une erreur inattendue est survenue",
+    unexpected: 'Une erreur inattendue est survenue',
     unexpectedOccurred: "Une erreur inattendue s'est produite",
   },
 

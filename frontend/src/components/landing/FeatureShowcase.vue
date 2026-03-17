@@ -37,7 +37,9 @@
                 class="w-20 h-20 object-contain"
               />
             </div>
-            <h3 class="text-xl font-bold text-secondary-50 mb-3">{{ t('landing.features.wiki.title') }}</h3>
+            <h3 class="text-xl font-bold text-secondary-50 mb-3">
+              {{ t('landing.features.wiki.title') }}
+            </h3>
             <p class="text-secondary-400 leading-relaxed">
               {{ t('landing.features.wiki.description') }}
             </p>
@@ -58,7 +60,9 @@
                   class="w-16 h-16 object-contain"
                 />
               </div>
-              <h3 class="text-base font-semibold text-secondary-50 mb-1">{{ t('landing.features.characterSheet.title') }}</h3>
+              <h3 class="text-base font-semibold text-secondary-50 mb-1">
+                {{ t('landing.features.characterSheet.title') }}
+              </h3>
               <p class="text-secondary-400 text-sm leading-relaxed">
                 {{ t('landing.features.characterSheet.description') }}
               </p>
@@ -78,7 +82,9 @@
                   class="w-16 h-16 object-contain"
                 />
               </div>
-              <h3 class="text-base font-semibold text-secondary-50 mb-1">{{ t('landing.features.chat.title') }}</h3>
+              <h3 class="text-base font-semibold text-secondary-50 mb-1">
+                {{ t('landing.features.chat.title') }}
+              </h3>
               <p class="text-secondary-400 text-sm leading-relaxed">
                 {{ t('landing.features.chat.description') }}
               </p>
@@ -102,7 +108,9 @@
                   class="w-16 h-16 object-contain"
                 />
               </div>
-              <h3 class="text-base font-semibold text-secondary-50 mb-1">{{ t('landing.features.diceRoller.title') }}</h3>
+              <h3 class="text-base font-semibold text-secondary-50 mb-1">
+                {{ t('landing.features.diceRoller.title') }}
+              </h3>
               <p class="text-secondary-400 text-sm leading-relaxed">
                 {{ t('landing.features.diceRoller.description') }}
               </p>
@@ -123,7 +131,9 @@
                   class="w-16 h-16 object-contain"
                 />
               </div>
-              <h3 class="text-base font-semibold text-secondary-50 mb-1">{{ t('landing.features.multiplayer.title') }}</h3>
+              <h3 class="text-base font-semibold text-secondary-50 mb-1">
+                {{ t('landing.features.multiplayer.title') }}
+              </h3>
               <p class="text-secondary-400 text-sm leading-relaxed">
                 {{ t('landing.features.multiplayer.description') }}
               </p>
@@ -150,7 +160,9 @@
                 class="w-20 h-20 object-contain"
               />
             </div>
-            <h3 class="text-xl font-bold text-secondary-50 mb-3">{{ t('landing.features.virtualTable.title') }}</h3>
+            <h3 class="text-xl font-bold text-secondary-50 mb-3">
+              {{ t('landing.features.virtualTable.title') }}
+            </h3>
             <p class="text-secondary-400 leading-relaxed">
               {{ t('landing.features.virtualTable.description') }}
             </p>

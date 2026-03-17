@@ -4,7 +4,9 @@ import type { PaginatedWikiResponse, FeatListItem, FeatDetail, WikiFilters } fro
 
 export const featApi = {
   async getFeats(filters: WikiFilters = {}): Promise<PaginatedWikiResponse<FeatListItem>> {
-    return get<PaginatedWikiResponse<FeatListItem>>(`/wiki/feats${buildWikiQuery(filters as Record<string, string | number | undefined>)}`)
+    return get<PaginatedWikiResponse<FeatListItem>>(
+      `/wiki/feats${buildWikiQuery(filters as Record<string, string | number | undefined>)}`
+    )
   },
 
   async getFeat(id: number): Promise<FeatDetail> {

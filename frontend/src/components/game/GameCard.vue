@@ -97,10 +97,7 @@ function handleJoin(event: Event) {
 
 async function handleDelete(event: Event) {
   event.stopPropagation()
-  if (
-    !confirm(t('game.card.deleteConfirm', { name: props.game.name }))
-  )
-    return
+  if (!confirm(t('game.card.deleteConfirm', { name: props.game.name }))) return
   isDeleting.value = true
   try {
     await gameApi.delete(props.game.id)
@@ -184,7 +181,9 @@ async function handleDelete(event: Event) {
       </h3>
 
       <p class="text-secondary-400 text-sm mb-1">{{ t('game.card.gameMaster') }}</p>
-      <p class="text-secondary-300 text-sm mb-4">{{ t('game.card.campaignLevel', { level: campaignLevel }) }}</p>
+      <p class="text-secondary-300 text-sm mb-4">
+        {{ t('game.card.campaignLevel', { level: campaignLevel }) }}
+      </p>
 
       <div class="flex items-center justify-between">
         <div class="flex items-center text-sm gap-2">

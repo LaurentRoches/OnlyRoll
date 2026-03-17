@@ -5,7 +5,11 @@
         <div
           class="w-24 h-24 rounded-full overflow-hidden bg-secondary-700 flex items-center justify-center"
           role="img"
-          :aria-label="avatar ? t('profile.avatar.altWithAvatar', { pseudo }) : t('profile.avatar.altWithoutAvatar')"
+          :aria-label="
+            avatar
+              ? t('profile.avatar.altWithAvatar', { pseudo })
+              : t('profile.avatar.altWithoutAvatar')
+          "
         >
           <img
             v-if="avatar"

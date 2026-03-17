@@ -49,7 +49,9 @@
           style="transition-delay: 500ms"
         >
           <span aria-hidden="true">🎲</span>
-          <span class="text-secondary-200 text-sm font-medium">{{ t('landing.gamePreview.realTimeDice') }}</span>
+          <span class="text-secondary-200 text-sm font-medium">{{
+            t('landing.gamePreview.realTimeDice')
+          }}</span>
         </div>
 
         <div
@@ -58,7 +60,9 @@
           style="transition-delay: 650ms"
         >
           <span aria-hidden="true">💬</span>
-          <span class="text-secondary-200 text-sm font-medium">{{ t('landing.gamePreview.integratedChat') }}</span>
+          <span class="text-secondary-200 text-sm font-medium">{{
+            t('landing.gamePreview.integratedChat')
+          }}</span>
         </div>
       </div>
     </div>

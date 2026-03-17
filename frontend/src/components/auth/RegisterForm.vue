@@ -128,7 +128,11 @@
               d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
             />
           </svg>
-          {{ isGenerating ? t('auth.register.generatingPassword') : t('auth.register.generatePassword') }}
+          {{
+            isGenerating
+              ? t('auth.register.generatingPassword')
+              : t('auth.register.generatePassword')
+          }}
         </button>
       </div>
       <div class="relative">
@@ -148,7 +152,9 @@
           type="button"
           @click="togglePasswordVisibility"
           :disabled="isLoading"
-          :aria-label="showPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')"
+          :aria-label="
+            showPassword ? t('auth.register.hidePassword') : t('auth.register.showPassword')
+          "
           class="absolute inset-y-0 right-0 pr-3 flex items-center text-secondary-400 hover:text-secondary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <svg
@@ -577,7 +583,10 @@ const validateForm = (): boolean => {
       field: 'confirmPassword',
       value: form.value.confirmPassword,
       rules: [
-        { validator: validators.required, message: t('auth.register.validation.confirmPasswordRequired') },
+        {
+          validator: validators.required,
+          message: t('auth.register.validation.confirmPasswordRequired'),
+        },
         {
           validator: validators.matches(form.value.password),
           message: t('auth.register.validation.passwordsMismatch'),

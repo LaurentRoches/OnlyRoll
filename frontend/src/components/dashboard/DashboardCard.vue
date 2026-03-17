@@ -11,7 +11,9 @@
       {{ t('common.dashboardCard.comingSoon') }}
     </div>
 
-    <div class="flex items-center justify-center w-16 h-16 mb-4 group-hover:scale-110 transition-transform duration-200">
+    <div
+      class="flex items-center justify-center w-16 h-16 mb-4 group-hover:scale-110 transition-transform duration-200"
+    >
       <img :src="icon" :alt="title" class="w-16 h-16 object-contain" />
     </div>
 

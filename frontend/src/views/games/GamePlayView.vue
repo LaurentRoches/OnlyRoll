@@ -301,10 +301,7 @@ function handleGoBack() {
 }
 
 async function handleLeaveGame() {
-  if (
-    !confirm(t('game.play.leaveConfirm'))
-  )
-    return
+  if (!confirm(t('game.play.leaveConfirm'))) return
 
   try {
     await gameStore.leaveGame(gameId.value)
@@ -433,11 +430,7 @@ async function handleTokenCreated() {
           rightPanelOpen ? 'right-96' : 'right-0',
           rightPanelOpen ? 'rounded-l-lg' : 'rounded-l-lg',
         ]"
-        :title="
-          rightPanelOpen
-            ? t('game.play.panel.hide')
-            : t('game.play.panel.show')
-        "
+        :title="rightPanelOpen ? t('game.play.panel.hide') : t('game.play.panel.show')"
       >
         <div class="flex items-center gap-2">
           <svg
@@ -451,7 +444,9 @@ async function handleTokenCreated() {
           >
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
-          <span v-if="!rightPanelOpen" class="text-xs text-secondary-400 font-medium"> {{ t('game.play.panel.label') }} </span>
+          <span v-if="!rightPanelOpen" class="text-xs text-secondary-400 font-medium">
+            {{ t('game.play.panel.label') }}
+          </span>
         </div>
       </button>
     </div>

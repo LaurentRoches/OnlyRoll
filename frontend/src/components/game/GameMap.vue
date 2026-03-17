@@ -561,7 +561,9 @@ defineExpose({
             @click.stop
           >
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">{{ t('game.map.permissions.title') }}</h3>
+              <h3 class="text-lg font-semibold text-white">
+                {{ t('game.map.permissions.title') }}
+              </h3>
               <button
                 @click="closePermissionsModal"
                 class="text-gray-400 hover:text-white"
@@ -600,10 +602,14 @@ defineExpose({
               </div>
             </div>
 
-            <div v-else class="text-center py-8 text-gray-500">{{ t('game.map.permissions.noPlayers') }}</div>
+            <div v-else class="text-center py-8 text-gray-500">
+              {{ t('game.map.permissions.noPlayers') }}
+            </div>
 
             <div class="mt-6 flex justify-end">
-              <button @click="closePermissionsModal" class="btn-primary">{{ t('game.map.permissions.closeButton') }}</button>
+              <button @click="closePermissionsModal" class="btn-primary">
+                {{ t('game.map.permissions.closeButton') }}
+              </button>
             </div>
           </div>
         </div>

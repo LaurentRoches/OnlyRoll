@@ -118,7 +118,8 @@ export const useChatStore = defineStore('chat', () => {
       messages.value = []
 
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
       } else {
         error.value = i18n.global.t('game.stores.chat.loadError')
       }
@@ -155,7 +156,8 @@ export const useChatStore = defineStore('chat', () => {
       }
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'message' in e) {
-        error.value = (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
+        error.value =
+          (e as { message: string }).message || i18n.global.t('game.stores.chat.loadError')
       } else {
         error.value = i18n.global.t('game.stores.chat.loadError')
       }

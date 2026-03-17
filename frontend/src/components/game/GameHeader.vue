@@ -61,14 +61,7 @@ const maxPlayers = computed(() => {
   return props.game?.maxPlayers || 0
 })
 
-const gmSections = [
-  'settings',
-  'maps',
-  'tokens',
-  'players',
-  'chat',
-  'gameControl',
-] as const
+const gmSections = ['settings', 'maps', 'tokens', 'players', 'chat', 'gameControl'] as const
 
 const playerSections = ['chat', 'dice', 'map', 'leave'] as const
 </script>

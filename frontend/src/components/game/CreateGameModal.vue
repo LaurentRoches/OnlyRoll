@@ -103,7 +103,9 @@ async function handleSubmit() {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.create.description.label') }} </label>
+          <label class="block text-sm font-medium text-secondary-300 mb-2">
+            {{ t('game.create.description.label') }}
+          </label>
           <textarea
             v-model="formData.description"
             rows="3"
@@ -154,7 +156,11 @@ async function handleSubmit() {
                 />
                 <LockClosedIcon v-else class="w-5 h-5 text-accent-amber" aria-hidden="true" />
                 <span class="text-secondary-50 font-medium">
-                  {{ formData.isPublic ? t('game.create.visibility.public') : t('game.create.visibility.private') }}
+                  {{
+                    formData.isPublic
+                      ? t('game.create.visibility.public')
+                      : t('game.create.visibility.private')
+                  }}
                 </span>
               </div>
               <p class="text-secondary-400 text-sm mt-1">

@@ -47,7 +47,9 @@ const emit = defineEmits<{
         v-if="isGameMaster"
         class="mt-8 p-4 bg-secondary-800/50 rounded-lg border border-secondary-700 text-left"
       >
-        <h4 class="text-sm font-semibold text-primary-400 mb-2">{{ t('game.emptyMap.tips.title') }}</h4>
+        <h4 class="text-sm font-semibold text-primary-400 mb-2">
+          {{ t('game.emptyMap.tips.title') }}
+        </h4>
         <ul class="text-sm text-secondary-400 space-y-1">
           <li>{{ t('game.emptyMap.tips.formats') }}</li>
           <li>{{ t('game.emptyMap.tips.maxSize') }}</li>

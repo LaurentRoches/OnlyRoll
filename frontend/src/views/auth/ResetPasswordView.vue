@@ -29,7 +29,9 @@
           />
         </svg>
       </div>
-      <h2 class="text-xl font-semibold text-secondary-50">{{ t('auth.resetPassword.success.title') }}</h2>
+      <h2 class="text-xl font-semibold text-secondary-50">
+        {{ t('auth.resetPassword.success.title') }}
+      </h2>
       <p class="text-secondary-300">
         {{ t('auth.resetPassword.success.message') }}
       </p>
@@ -43,16 +45,18 @@
 
     <form v-else @submit.prevent="submit" class="space-y-5">
       <div class="text-center">
-        <h2 class="text-xl font-semibold text-secondary-50 mb-1">{{ t('auth.resetPassword.title') }}</h2>
+        <h2 class="text-xl font-semibold text-secondary-50 mb-1">
+          {{ t('auth.resetPassword.title') }}
+        </h2>
         <p class="text-secondary-400 text-sm">
           {{ t('auth.resetPassword.subtitle') }}
         </p>
       </div>
 
       <div>
-        <label for="password" class="block text-sm font-medium text-secondary-300 mb-1"
-          >{{ t('auth.resetPassword.passwordLabel') }}</label
-        >
+        <label for="password" class="block text-sm font-medium text-secondary-300 mb-1">{{
+          t('auth.resetPassword.passwordLabel')
+        }}</label>
         <input
           id="password"
           v-model="password"
@@ -66,9 +70,9 @@
       </div>
 
       <div>
-        <label for="confirm" class="block text-sm font-medium text-secondary-300 mb-1"
-          >{{ t('auth.resetPassword.confirmLabel') }}</label
-        >
+        <label for="confirm" class="block text-sm font-medium text-secondary-300 mb-1">{{
+          t('auth.resetPassword.confirmLabel')
+        }}</label>
         <input
           id="confirm"
           v-model="confirm"

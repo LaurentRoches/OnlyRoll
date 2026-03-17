@@ -124,7 +124,9 @@ async function handleSubmit() {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-1"> {{ t('game.settings.description.label') }} </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-1">
+                {{ t('game.settings.description.label') }}
+              </label>
               <textarea
                 v-model="description"
                 rows="3"
@@ -145,7 +147,9 @@ async function handleSubmit() {
                   max="20"
                   class="w-24 bg-secondary-700 border border-secondary-600 text-secondary-50 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-center"
                 />
-                <span class="text-secondary-400 text-sm">{{ t('game.settings.maxPlayers.hint') }}</span>
+                <span class="text-secondary-400 text-sm">{{
+                  t('game.settings.maxPlayers.hint')
+                }}</span>
               </div>
             </div>
 

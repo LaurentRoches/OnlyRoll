@@ -15,7 +15,7 @@ defineEmits<{
 }>()
 
 function optionLabel(opt: { value: string; label?: string; labelKey?: string }): string {
-  return opt.labelKey ? t(opt.labelKey) : opt.label ?? opt.value
+  return opt.labelKey ? t(opt.labelKey) : (opt.label ?? opt.value)
 }
 </script>
 
@@ -29,15 +29,8 @@ function optionLabel(opt: { value: string; label?: string; labelKey?: string }):
     >
       <option value="">{{ placeholder }}</option>
       <template v-for="opt in options" :key="typeof opt === 'object' ? opt.value : opt">
-        <option
-          v-if="typeof opt === 'object'"
-          :value="opt.value"
-        >{{ optionLabel(opt) }}</option>
-        <option
-          v-else
-          :value="opt"
-          class="capitalize"
-        >{{ opt }}</option>
+        <option v-if="typeof opt === 'object'" :value="opt.value">{{ optionLabel(opt) }}</option>
+        <option v-else :value="opt" class="capitalize">{{ opt }}</option>
       </template>
     </select>
   </div>

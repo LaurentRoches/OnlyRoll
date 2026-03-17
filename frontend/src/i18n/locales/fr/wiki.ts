@@ -299,7 +299,7 @@ export default {
     itemCategory: {
       weapon: 'Arme',
       armor: 'Armure',
-      'adventuring-gear': 'Équipement d\'aventurier',
+      'adventuring-gear': "Équipement d'aventurier",
       tool: 'Outil',
       'mount-vehicle': 'Monture et véhicule',
       'trade-good': 'Marchandise',

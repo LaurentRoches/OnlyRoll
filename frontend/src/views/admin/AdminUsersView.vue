@@ -2,7 +2,9 @@
   <div class="admin-users">
     <header class="mb-6">
       <h2 class="text-2xl font-bold text-secondary-50">{{ t('admin.users.title') }}</h2>
-      <p class="text-secondary-400 mt-1">{{ t('admin.users.totalUsers', { count: meta.total }) }}</p>
+      <p class="text-secondary-400 mt-1">
+        {{ t('admin.users.totalUsers', { count: meta.total }) }}
+      </p>
     </header>
 
     <div class="bg-secondary-800 rounded-lg p-4 border border-secondary-700 mb-6">
@@ -26,7 +28,9 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-status" class="sr-only">{{ t('admin.users.filters.statusLabel') }}</label>
+          <label for="filter-status" class="sr-only">{{
+            t('admin.users.filters.statusLabel')
+          }}</label>
           <select
             id="filter-status"
             v-model="filters.status"
@@ -134,7 +138,9 @@
               v-if="row.deletedAt"
               type="button"
               class="px-2 py-1 text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
-              :aria-label="t('admin.users.actions.restoreAriaLabel', { pseudo: row.pseudo as string })"
+              :aria-label="
+                t('admin.users.actions.restoreAriaLabel', { pseudo: row.pseudo as string })
+              "
               @click="restoreUser(row.id as number)"
             >
               {{ t('admin.users.actions.restore') }}
@@ -143,7 +149,9 @@
               v-else
               type="button"
               class="px-2 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-              :aria-label="t('admin.users.actions.deleteAriaLabel', { pseudo: row.pseudo as string })"
+              :aria-label="
+                t('admin.users.actions.deleteAriaLabel', { pseudo: row.pseudo as string })
+              "
               @click="confirmDelete(row)"
             >
               {{ t('admin.users.actions.delete') }}
@@ -166,7 +174,11 @@
 
     <AccessibleModal
       :is-open="showDeleteModal"
-      :title="userToDelete?.pseudo ? t('admin.users.deleteModal.title', { pseudo: userToDelete.pseudo }) : t('admin.users.deleteModal.titleFallback')"
+      :title="
+        userToDelete?.pseudo
+          ? t('admin.users.deleteModal.title', { pseudo: userToDelete.pseudo })
+          : t('admin.users.deleteModal.titleFallback')
+      "
       @close="showDeleteModal = false"
     >
       <p class="text-secondary-300">

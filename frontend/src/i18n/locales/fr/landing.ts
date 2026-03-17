@@ -65,7 +65,8 @@ export default {
     },
     hero: {
       subtitle: 'One site to Roll them all',
-      description: 'Votre prochaine aventure commence ici.\nLancez les dés, explorez les donjons,\nle tout depuis votre navigateur.',
+      description:
+        'Votre prochaine aventure commence ici.\nLancez les dés, explorez les donjons,\nle tout depuis votre navigateur.',
       myDashboard: 'Mon Dashboard',
       viewGames: 'Voir les parties',
       register: 'Inscription',

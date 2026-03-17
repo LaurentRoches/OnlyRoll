@@ -4,15 +4,18 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
-const props = withDefaults(defineProps<{
-  level: number
-  damageFormula: string | null
-  upcastDicePerLevel: number | null
-  upcastDiceFaces: number | null
-  damageType?: string | null
-}>(), {
-  damageType: null,
-})
+const props = withDefaults(
+  defineProps<{
+    level: number
+    damageFormula: string | null
+    upcastDicePerLevel: number | null
+    upcastDiceFaces: number | null
+    damageType?: string | null
+  }>(),
+  {
+    damageType: null,
+  }
+)
 
 const selectedLevel = ref(props.level)
 
@@ -25,9 +28,10 @@ const baseDice = computed(() => {
 
 const totalDice = computed(() => {
   if (!baseDice.value) return null
-  const extra = props.upcastDicePerLevel && props.upcastDiceFaces
-    ? Math.max(0, selectedLevel.value - props.level) * props.upcastDicePerLevel
-    : 0
+  const extra =
+    props.upcastDicePerLevel && props.upcastDiceFaces
+      ? Math.max(0, selectedLevel.value - props.level) * props.upcastDicePerLevel
+      : 0
   return {
     count: baseDice.value.count + extra,
     faces: baseDice.value.faces,
@@ -40,7 +44,7 @@ const results = computed(() => {
   return {
     min: count,
     max: count * faces,
-    avg: Math.floor(count * (faces + 1) / 2),
+    avg: Math.floor((count * (faces + 1)) / 2),
     formula: `${count}d${faces}`,
   }
 })
@@ -57,15 +61,19 @@ const availableLevels = computed(() => {
 <template>
   <div v-if="results" class="bg-secondary-800 border border-secondary-700 rounded-lg p-4">
     <div class="flex items-center gap-3 mb-4 flex-wrap">
-      <span class="text-sm text-secondary-400 whitespace-nowrap">{{ t('wiki.damageCalculator.spellLevel') }}</span>
+      <span class="text-sm text-secondary-400 whitespace-nowrap">{{
+        t('wiki.damageCalculator.spellLevel')
+      }}</span>
       <div class="flex gap-1.5 flex-wrap">
         <button
           v-for="lvl in availableLevels"
           :key="lvl"
           class="w-8 h-8 text-sm rounded-full transition-colors flex items-center justify-center font-medium"
-          :class="selectedLevel === lvl
-            ? 'bg-primary-600 text-white'
-            : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600'"
+          :class="
+            selectedLevel === lvl
+              ? 'bg-primary-600 text-white'
+              : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600'
+          "
           @click="selectedLevel = lvl"
         >
           {{ lvl }}
@@ -75,11 +83,14 @@ const availableLevels = computed(() => {
 
     <p class="text-center text-primary-400 font-bold mb-2">
       {{ results.formula }}
-      <span v-if="damageType" class="capitalize"> {{ t('wiki.damageCalculator.damageOf', { type: damageType }) }}</span>
+      <span v-if="damageType" class="capitalize">
+        {{ t('wiki.damageCalculator.damageOf', { type: damageType }) }}</span
+      >
     </p>
 
     <p class="text-center text-sm text-secondary-400">
-      {{ t('wiki.damageCalculator.min') }} {{ results.min }} | {{ t('wiki.damageCalculator.avg') }} {{ results.avg }} | {{ t('wiki.damageCalculator.max') }} {{ results.max }}
+      {{ t('wiki.damageCalculator.min') }} {{ results.min }} | {{ t('wiki.damageCalculator.avg') }}
+      {{ results.avg }} | {{ t('wiki.damageCalculator.max') }} {{ results.max }}
     </p>
   </div>
 </template>

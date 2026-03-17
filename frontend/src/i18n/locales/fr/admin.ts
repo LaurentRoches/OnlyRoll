@@ -105,7 +105,8 @@ export default {
     deleteModal: {
       title: 'Supprimer {pseudo} ?',
       titleFallback: "Supprimer l'utilisateur ?",
-      message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est réversible (soft delete).',
+      message:
+        'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est réversible (soft delete).',
       cancel: 'Annuler',
       confirm: 'Supprimer',
     },

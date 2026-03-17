@@ -17,7 +17,11 @@ const { isFavorited, toggle } = useWikiFavoriteToggle(props.srdTable, props.srdI
 <template>
   <button
     class="p-2 rounded-lg transition-colors"
-    :class="isFavorited ? 'text-yellow-400 hover:text-yellow-300 bg-yellow-900/20' : 'text-secondary-400 hover:text-yellow-400 hover:bg-secondary-700'"
+    :class="
+      isFavorited
+        ? 'text-yellow-400 hover:text-yellow-300 bg-yellow-900/20'
+        : 'text-secondary-400 hover:text-yellow-400 hover:bg-secondary-700'
+    "
     :title="isFavorited ? t('wiki.favorite.remove') : t('wiki.favorite.add')"
     @click.prevent.stop="toggle"
   >

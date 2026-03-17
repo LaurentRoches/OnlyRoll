@@ -36,8 +36,18 @@ const imagePreview = ref<string | null>(null)
 const uploadError = ref<string | null>(null)
 
 const tokenTypes = computed(() => [
-  { value: TokenType.CHARACTER, label: t('game.editToken.type.character'), icon: '🧙', color: '#6366f1' },
-  { value: TokenType.MONSTER, label: t('game.editToken.type.monster'), icon: '👹', color: '#ef4444' },
+  {
+    value: TokenType.CHARACTER,
+    label: t('game.editToken.type.character'),
+    icon: '🧙',
+    color: '#6366f1',
+  },
+  {
+    value: TokenType.MONSTER,
+    label: t('game.editToken.type.monster'),
+    icon: '👹',
+    color: '#ef4444',
+  },
   { value: TokenType.NPC, label: t('game.editToken.type.npc'), icon: '🧑', color: '#10b981' },
   { value: TokenType.OBJECT, label: t('game.editToken.type.object'), icon: '📦', color: '#f59e0b' },
 ])

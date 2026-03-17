@@ -415,7 +415,11 @@ function getAvatarColor(userId: number): string {
               : 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600',
           ]"
         >
-          {{ isInCharacter ? '🎭 ' + t('game.chat.inCharacter') : '🗣️ ' + t('game.chat.outOfCharacter') }}
+          {{
+            isInCharacter
+              ? '🎭 ' + t('game.chat.inCharacter')
+              : '🗣️ ' + t('game.chat.outOfCharacter')
+          }}
         </button>
 
         <div class="relative group ml-auto">
@@ -528,9 +532,7 @@ function getAvatarColor(userId: number): string {
     >
       <div class="space-y-6">
         <div>
-          <h3
-            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
-          >
+          <h3 class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3">
             {{ t('game.chat.help.commands.title') }}
           </h3>
           <div class="space-y-3">
@@ -555,9 +557,7 @@ function getAvatarColor(userId: number): string {
         </div>
 
         <div>
-          <h3
-            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
-          >
+          <h3 class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3">
             {{ t('game.chat.help.dice.title') }}
           </h3>
           <div class="bg-secondary-700/50 rounded-lg p-3 space-y-2">
@@ -574,9 +574,7 @@ function getAvatarColor(userId: number): string {
         </div>
 
         <div>
-          <h3
-            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
-          >
+          <h3 class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3">
             {{ t('game.chat.help.advantage.title') }}
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -604,9 +602,7 @@ function getAvatarColor(userId: number): string {
         </div>
 
         <div>
-          <h3
-            class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3"
-          >
+          <h3 class="text-sm font-semibold text-secondary-50 uppercase tracking-wider mb-3">
             {{ t('game.chat.help.modes.title') }}
           </h3>
           <div class="space-y-2">

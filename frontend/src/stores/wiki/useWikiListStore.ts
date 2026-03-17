@@ -20,7 +20,15 @@ import type {
   WikiFilters,
 } from '@/types/wiki'
 
-type AnyWikiItem = SpellListItem | RaceListItem | ClassListItem | ItemListItem | MonsterListItem | BackgroundListItem | FeatListItem | FavoriteItem
+type AnyWikiItem =
+  | SpellListItem
+  | RaceListItem
+  | ClassListItem
+  | ItemListItem
+  | MonsterListItem
+  | BackgroundListItem
+  | FeatListItem
+  | FavoriteItem
 
 export const useWikiListStore = defineStore('wikiList', () => {
   const currentCategory = ref<WikiCategorySlug | 'favorites' | null>(null)
@@ -33,7 +41,10 @@ export const useWikiListStore = defineStore('wikiList', () => {
 
   const hasMore = computed(() => pagination.value.page < pagination.value.totalPages)
 
-  async function fetchItems(category: WikiCategorySlug | 'favorites', newFilters: Record<string, unknown> = {}): Promise<void> {
+  async function fetchItems(
+    category: WikiCategorySlug | 'favorites',
+    newFilters: Record<string, unknown> = {}
+  ): Promise<void> {
     currentCategory.value = category
     filters.value = { ...newFilters, page: 1, limit: DEFAULT_PAGINATION_LIMIT }
     items.value = []
@@ -43,7 +54,12 @@ export const useWikiListStore = defineStore('wikiList', () => {
     try {
       const result = await _fetch(category, filters.value)
       items.value = result.data
-      pagination.value = { total: result.total, page: result.page, limit: result.limit, totalPages: result.totalPages }
+      pagination.value = {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      }
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : i18n.global.t('wiki.errors.loadingError')
     } finally {
@@ -70,18 +86,26 @@ export const useWikiListStore = defineStore('wikiList', () => {
   async function _fetch(category: WikiCategorySlug | 'favorites', params: Record<string, unknown>) {
     const f = params as Record<string, string | number | undefined>
     switch (category) {
-      case 'spells':     return wikiApi.getSpells(f as SpellFilters)
-      case 'races':      return wikiApi.getRaces(f as RaceFilters)
-      case 'classes':    return wikiApi.getClasses(f)
-      case 'items':      return wikiApi.getItems(f as ItemFilters)
-      case 'monsters':   return wikiApi.getMonsters(f as MonsterFilters)
-      case 'backgrounds':return wikiApi.getBackgrounds(f)
-      case 'feats':      return wikiApi.getFeats(f)
+      case 'spells':
+        return wikiApi.getSpells(f as SpellFilters)
+      case 'races':
+        return wikiApi.getRaces(f as RaceFilters)
+      case 'classes':
+        return wikiApi.getClasses(f)
+      case 'items':
+        return wikiApi.getItems(f as ItemFilters)
+      case 'monsters':
+        return wikiApi.getMonsters(f as MonsterFilters)
+      case 'backgrounds':
+        return wikiApi.getBackgrounds(f)
+      case 'feats':
+        return wikiApi.getFeats(f)
       case 'favorites': {
         const data = await wikiApi.getFavoriteItems()
         return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 }
       }
-      default:           throw new Error(`Unknown category: ${category}`)
+      default:
+        throw new Error(`Unknown category: ${category}`)
     }
   }
 
@@ -95,11 +119,14 @@ export const useWikiListStore = defineStore('wikiList', () => {
     error.value = null
   }
 
-  watch(() => i18n.global.locale.value, () => {
-    if (currentCategory.value) {
-      fetchItems(currentCategory.value, { ...filters.value })
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      if (currentCategory.value) {
+        fetchItems(currentCategory.value, { ...filters.value })
+      }
     }
-  })
+  )
 
   return {
     currentCategory,

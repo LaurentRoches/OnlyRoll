@@ -6,12 +6,15 @@ import SpellDamageCalculator from '@/components/wiki/SpellDamageCalculator.vue'
 import type { SpellDetail } from '@/types/wiki'
 import { DAMAGE_TYPE_IMAGES, SCHOOL_IMAGES } from '@/constants/wiki'
 
-const props = withDefaults(defineProps<{
-  spell: SpellDetail
-  mode?: 'page' | 'inline'
-}>(), {
-  mode: 'page',
-})
+const props = withDefaults(
+  defineProps<{
+    spell: SpellDetail
+    mode?: 'page' | 'inline'
+  }>(),
+  {
+    mode: 'page',
+  }
+)
 
 const emit = defineEmits<{
   'select-spell': [id: number]
@@ -29,11 +32,11 @@ const bannerUrl = computed<string | null>(() => {
 })
 
 const materialText = computed(() => {
-  return props.spell.components?.find(c => c.material)?.material ?? null
+  return props.spell.components?.find((c) => c.material)?.material ?? null
 })
 
 function schoolLabel(slug: string | null | undefined, fallback: string | null | undefined): string {
-  return slug ? t('wiki.reference.spellSchool.' + slug) : fallback ?? ''
+  return slug ? t('wiki.reference.spellSchool.' + slug) : (fallback ?? '')
 }
 
 const subtitle = computed(() => {
@@ -48,7 +51,11 @@ const subtitle = computed(() => {
     : t('wiki.spellDetail.spellSubtitleLevelNoSchool', { level: props.spell.level })
 })
 
-function similarSubtitle(s: { school?: string | null; schoolSlug?: string | null; level: number }): string {
+function similarSubtitle(s: {
+  school?: string | null
+  schoolSlug?: string | null
+  level: number
+}): string {
   const school = schoolLabel(s.schoolSlug, s.school)
   if (s.level === 0) {
     return school
@@ -79,7 +86,9 @@ function handleSimilarClick(id: number) {
         :style="{ minHeight: '25vh' }"
       >
         <img :src="bannerUrl" :alt="spell.name" class="w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-secondary-900/40 to-secondary-900" />
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-transparent via-secondary-900/40 to-secondary-900"
+        />
 
         <!-- Titre overlaid en haut à gauche -->
         <div class="absolute top-4 left-4 sm:left-6 z-10">
@@ -103,7 +112,9 @@ function handleSimilarClick(id: number) {
         <div class="bg-secondary-800/80 backdrop-blur-sm rounded-xl p-4 grid grid-cols-2 gap-4">
           <div class="text-center">
             <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.level') }}</p>
-            <p class="font-bold text-primary-400">{{ spell.level === 0 ? t('wiki.spellDetail.cantrip') : spell.level }}</p>
+            <p class="font-bold text-primary-400">
+              {{ spell.level === 0 ? t('wiki.spellDetail.cantrip') : spell.level }}
+            </p>
           </div>
           <div class="text-center">
             <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.damage') }}</p>
@@ -111,7 +122,9 @@ function handleSimilarClick(id: number) {
           </div>
           <div class="text-center">
             <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.range') }}</p>
-            <p class="font-bold text-primary-400">{{ spell.rangeDistance ? spell.rangeDistance + ' ft' : spell.rangeType ?? '—' }}</p>
+            <p class="font-bold text-primary-400">
+              {{ spell.rangeDistance ? spell.rangeDistance + ' ft' : (spell.rangeType ?? '—') }}
+            </p>
           </div>
           <div class="text-center">
             <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.duration') }}</p>
@@ -135,7 +148,9 @@ function handleSimilarClick(id: number) {
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-secondary-800/80 rounded-xl p-3 text-center">
           <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.level') }}</p>
-          <p class="font-bold text-primary-400">{{ spell.level === 0 ? t('wiki.spellDetail.cantrip') : spell.level }}</p>
+          <p class="font-bold text-primary-400">
+            {{ spell.level === 0 ? t('wiki.spellDetail.cantrip') : spell.level }}
+          </p>
         </div>
         <div class="bg-secondary-800/80 rounded-xl p-3 text-center">
           <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.damage') }}</p>
@@ -143,7 +158,9 @@ function handleSimilarClick(id: number) {
         </div>
         <div class="bg-secondary-800/80 rounded-xl p-3 text-center">
           <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.range') }}</p>
-          <p class="font-bold text-primary-400">{{ spell.rangeDistance ? spell.rangeDistance + ' ft' : spell.rangeType ?? '—' }}</p>
+          <p class="font-bold text-primary-400">
+            {{ spell.rangeDistance ? spell.rangeDistance + ' ft' : (spell.rangeType ?? '—') }}
+          </p>
         </div>
         <div class="bg-secondary-800/80 rounded-xl p-3 text-center">
           <p class="text-xs text-secondary-400 mb-1">{{ t('wiki.spellDetail.duration') }}</p>
@@ -154,22 +171,34 @@ function handleSimilarClick(id: number) {
 
     <!-- Composants -->
     <div v-if="spell.components?.length">
-      <h3 class="text-xl font-bold text-secondary-100 mb-4">{{ t('wiki.spellDetail.components') }}</h3>
+      <h3 class="text-xl font-bold text-secondary-100 mb-4">
+        {{ t('wiki.spellDetail.components') }}
+      </h3>
       <div class="bg-secondary-800 border border-secondary-700 rounded-xl p-5">
         <div class="flex items-start gap-6 justify-center">
-          <div v-for="comp in spell.components" :key="comp.type" class="flex flex-col items-center gap-2">
+          <div
+            v-for="comp in spell.components"
+            :key="comp.type"
+            class="flex flex-col items-center gap-2"
+          >
             <div
               class="w-14 h-14 rounded-full bg-secondary-800 border-2 flex items-center justify-center text-secondary-100 font-bold text-lg"
               :class="{
                 'border-emerald-500': comp.type === 'V',
                 'border-blue-500': comp.type === 'S',
-                'border-amber-500': comp.type === 'M'
+                'border-amber-500': comp.type === 'M',
               }"
             >
               {{ comp.type }}
             </div>
             <span class="text-xs text-secondary-400">
-              {{ comp.type === 'V' ? t('wiki.spellDetail.verbal') : comp.type === 'S' ? t('wiki.spellDetail.somatic') : t('wiki.spellDetail.material') }}
+              {{
+                comp.type === 'V'
+                  ? t('wiki.spellDetail.verbal')
+                  : comp.type === 'S'
+                    ? t('wiki.spellDetail.somatic')
+                    : t('wiki.spellDetail.material')
+              }}
             </span>
           </div>
         </div>
@@ -181,15 +210,21 @@ function handleSimilarClick(id: number) {
 
     <!-- Description -->
     <div v-if="spell.description">
-      <h3 class="text-xl font-bold text-secondary-100 mb-4">{{ t('wiki.spellDetail.description') }}</h3>
-      <div class="bg-secondary-800 rounded-lg p-4 border-l-4 border-primary-500 text-secondary-200 text-sm leading-relaxed whitespace-pre-line">
+      <h3 class="text-xl font-bold text-secondary-100 mb-4">
+        {{ t('wiki.spellDetail.description') }}
+      </h3>
+      <div
+        class="bg-secondary-800 rounded-lg p-4 border-l-4 border-primary-500 text-secondary-200 text-sm leading-relaxed whitespace-pre-line"
+      >
         {{ spell.description }}
       </div>
     </div>
 
     <!-- Calculateur de dégâts -->
     <div v-if="spell.damageFormula">
-      <h3 class="text-xl font-bold text-secondary-100 mb-4">{{ t('wiki.spellDetail.damageCalculator') }}</h3>
+      <h3 class="text-xl font-bold text-secondary-100 mb-4">
+        {{ t('wiki.spellDetail.damageCalculator') }}
+      </h3>
       <SpellDamageCalculator
         :level="spell.level"
         :damage-formula="spell.damageFormula"
@@ -215,12 +250,14 @@ function handleSimilarClick(id: number) {
 
     <!-- Sources -->
     <div v-if="spell.sources?.length" class="text-xs text-secondary-500">
-      {{ t('wiki.spellDetail.sources') }} {{ spell.sources.map(s => s.code).join(', ') }}
+      {{ t('wiki.spellDetail.sources') }} {{ spell.sources.map((s) => s.code).join(', ') }}
     </div>
 
     <!-- Sorts similaires -->
     <div v-if="spell.similarSpells?.length">
-      <h3 class="text-xl font-bold text-secondary-100 mb-4">{{ t('wiki.spellDetail.similarSpells') }}</h3>
+      <h3 class="text-xl font-bold text-secondary-100 mb-4">
+        {{ t('wiki.spellDetail.similarSpells') }}
+      </h3>
       <div class="space-y-2">
         <div
           v-for="s in spell.similarSpells"
@@ -233,6 +270,5 @@ function handleSimilarClick(id: number) {
         </div>
       </div>
     </div>
-
   </div>
 </template>

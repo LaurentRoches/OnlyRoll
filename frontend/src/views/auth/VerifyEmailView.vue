@@ -22,7 +22,9 @@
         </div>
       </div>
       <div>
-        <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.verifyEmail.success.title') }}</h2>
+        <h2 class="text-xl font-semibold text-secondary-50 mb-2">
+          {{ t('auth.verifyEmail.success.title') }}
+        </h2>
         <p class="text-secondary-300">
           {{ t('auth.verifyEmail.success.message') }}
         </p>
@@ -48,7 +50,9 @@
         </div>
       </div>
       <div>
-        <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.verifyEmail.error.title') }}</h2>
+        <h2 class="text-xl font-semibold text-secondary-50 mb-2">
+          {{ t('auth.verifyEmail.error.title') }}
+        </h2>
         <p class="text-secondary-300">{{ errorMessage }}</p>
       </div>
       <RouterLink
@@ -85,8 +89,7 @@ onMounted(async () => {
     status.value = 'success'
   } catch (error: unknown) {
     const err = error as { response?: { data?: { error?: string } } }
-    errorMessage.value =
-      err.response?.data?.error ?? t('auth.verifyEmail.error.defaultMessage')
+    errorMessage.value = err.response?.data?.error ?? t('auth.verifyEmail.error.defaultMessage')
     status.value = 'error'
   }
 })

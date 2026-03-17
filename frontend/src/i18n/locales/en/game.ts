@@ -67,7 +67,8 @@ export default {
       show: 'Show panel (chat, players, dice)',
       label: 'Panel',
     },
-    leaveConfirm: 'Are you sure you want to leave this game?\n\nYou will be removed as a member and will no longer be able to access it.',
+    leaveConfirm:
+      'Are you sure you want to leave this game?\n\nYou will be removed as a member and will no longer be able to access it.',
     mapLoadError: 'Unable to load map data',
   },
 
@@ -86,7 +87,8 @@ export default {
     joinButton: 'Join',
     fullButton: 'Full',
     deleteTitle: 'Delete game',
-    deleteConfirm: 'Are you sure you want to delete "{name}"?\n\nThis action is permanent: all players, messages, and associated maps will be erased.',
+    deleteConfirm:
+      'Are you sure you want to delete "{name}"?\n\nThis action is permanent: all players, messages, and associated maps will be erased.',
     deleteError: 'Unable to delete this game',
     viewLabel: 'View game {name}',
     joinHint: 'Click "Join" to access this game',
@@ -132,7 +134,7 @@ export default {
         players: {
           title: '\ud83d\udc65 Player Management',
           description:
-            'From the Players panel, you can invite new players by username, view their connection status and kick a player if necessary. Invitations will appear in the player\'s notifications.',
+            "From the Players panel, you can invite new players by username, view their connection status and kick a player if necessary. Invitations will appear in the player's notifications.",
         },
         chat: {
           title: '\ud83d\udcac Chat & System Messages',
@@ -193,7 +195,8 @@ export default {
         whisper: {
           name: '/whisper (/w)',
           syntax: '/w username message',
-          description: 'Send a private message to a specific player. Only you and the recipient can see it.',
+          description:
+            'Send a private message to a specific player. Only you and the recipient can see it.',
         },
         whisperRoll: {
           name: '/w username /r',
@@ -203,7 +206,8 @@ export default {
         emote: {
           name: '/me',
           syntax: '/me action',
-          description: 'Perform a narrative action. E.g.: "/me draws their sword" displays your username followed by the action.',
+          description:
+            'Perform a narrative action. E.g.: "/me draws their sword" displays your username followed by the action.',
         },
       },
       dice: {
@@ -222,9 +226,10 @@ export default {
       modes: {
         title: 'Chat Modes',
         inCharacter: 'In Character (IC)',
-        inCharacterDesc: 'Your messages appear as your character\'s words. Ideal for roleplay.',
+        inCharacterDesc: "Your messages appear as your character's words. Ideal for roleplay.",
         outOfCharacter: 'Out of Character (OOC)',
-        outOfCharacterDesc: 'Your messages appear as yourself, the player. For out-of-game discussions.',
+        outOfCharacterDesc:
+          'Your messages appear as yourself, the player. For out-of-game discussions.',
       },
       close: 'Close',
     },
@@ -235,7 +240,8 @@ export default {
       title: 'Suggestions (\u2191\u2193 to navigate, Tab/Enter to select)',
     },
     errors: {
-      invalidWhisperFormat: 'Invalid format. Use: /w <username> <message> or /w <username> /r <formula>',
+      invalidWhisperFormat:
+        'Invalid format. Use: /w <username> <message> or /w <username> /r <formula>',
       emptyMessage: 'Message cannot be empty.',
       playerNotFound: 'Player "{pseudo}" not found in this game.',
       emptyDiceFormula: 'Dice formula cannot be empty.',
@@ -594,7 +600,8 @@ export default {
   emptyMap: {
     title: 'No active map',
     gmMessage: 'This game does not have a map yet. Upload a map to start playing and place tokens.',
-    playerMessage: 'The Game Master has not yet created a map for this session. Please wait while they prepare the playing field.',
+    playerMessage:
+      'The Game Master has not yet created a map for this session. Please wait while they prepare the playing field.',
     createButton: 'Create a map',
     tips: {
       title: 'Tip',

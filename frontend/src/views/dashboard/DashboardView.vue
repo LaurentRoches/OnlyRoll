@@ -4,7 +4,9 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-secondary-50 mb-4">{{ t('dashboard.welcome', { pseudo: user?.pseudo }) }}</h1>
+        <h1 class="text-4xl font-bold text-secondary-50 mb-4">
+          {{ t('dashboard.welcome', { pseudo: user?.pseudo }) }}
+        </h1>
         <p class="text-lg text-secondary-400">{{ t('dashboard.subtitle') }}</p>
       </div>
 
@@ -60,19 +62,35 @@
 
       <div class="mt-16 bg-secondary-800/50 rounded-xl p-8 border border-secondary-700">
         <div class="text-center">
-          <h2 class="text-xl font-semibold text-secondary-50 mb-4">{{ t('dashboard.devNotice.title') }}</h2>
+          <h2 class="text-xl font-semibold text-secondary-50 mb-4">
+            {{ t('dashboard.devNotice.title') }}
+          </h2>
           <p class="text-secondary-400 mb-6">
             {{ t('dashboard.devNotice.message') }}<br />
             {{ t('dashboard.devNotice.upcoming') }}
           </p>
 
           <div class="bg-secondary-800 rounded-lg p-4 max-w-md mx-auto">
-            <h3 class="text-sm font-medium text-secondary-300 mb-2">{{ t('dashboard.session.title') }}</h3>
+            <h3 class="text-sm font-medium text-secondary-300 mb-2">
+              {{ t('dashboard.session.title') }}
+            </h3>
             <div class="text-left space-y-1 text-xs text-secondary-400">
-              <p><span class="text-secondary-300">{{ t('dashboard.session.id') }}</span> {{ user?.id }}</p>
-              <p><span class="text-secondary-300">{{ t('dashboard.session.email') }}</span> {{ user?.email }}</p>
-              <p><span class="text-secondary-300">{{ t('dashboard.session.pseudo') }}</span> {{ user?.pseudo }}</p>
-              <p><span class="text-secondary-300">{{ t('dashboard.session.roles') }}</span> {{ user?.roles.join(', ') }}</p>
+              <p>
+                <span class="text-secondary-300">{{ t('dashboard.session.id') }}</span>
+                {{ user?.id }}
+              </p>
+              <p>
+                <span class="text-secondary-300">{{ t('dashboard.session.email') }}</span>
+                {{ user?.email }}
+              </p>
+              <p>
+                <span class="text-secondary-300">{{ t('dashboard.session.pseudo') }}</span>
+                {{ user?.pseudo }}
+              </p>
+              <p>
+                <span class="text-secondary-300">{{ t('dashboard.session.roles') }}</span>
+                {{ user?.roles.join(', ') }}
+              </p>
               <p>
                 <span class="text-secondary-300">{{ t('dashboard.session.verified') }}</span>
                 {{ user?.isVerified ? t('dashboard.session.yes') : t('dashboard.session.no') }}

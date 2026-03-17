@@ -8,4 +8,4 @@ export const WIKI_CATEGORY_SLUGS = [
   'monsters',
 ] as const
 
-export type WikiCategorySlug = typeof WIKI_CATEGORY_SLUGS[number]
+export type WikiCategorySlug = (typeof WIKI_CATEGORY_SLUGS)[number]

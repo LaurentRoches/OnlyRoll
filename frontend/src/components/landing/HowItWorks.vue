@@ -30,7 +30,9 @@
           >
             1
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step1.title') }}</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">
+            {{ t('landing.howItWorks.step1.title') }}
+          </h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
             {{ t('landing.howItWorks.step1.description') }}
           </p>
@@ -52,7 +54,9 @@
           >
             2
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step2.title') }}</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">
+            {{ t('landing.howItWorks.step2.title') }}
+          </h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
             {{ t('landing.howItWorks.step2.description') }}
           </p>
@@ -74,7 +78,9 @@
           >
             3
           </div>
-          <h3 class="text-lg font-semibold text-secondary-50 mb-2">{{ t('landing.howItWorks.step3.title') }}</h3>
+          <h3 class="text-lg font-semibold text-secondary-50 mb-2">
+            {{ t('landing.howItWorks.step3.title') }}
+          </h3>
           <p class="text-secondary-400 text-sm leading-relaxed">
             {{ t('landing.howItWorks.step3.description') }}
           </p>

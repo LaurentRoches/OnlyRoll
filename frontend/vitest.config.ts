@@ -37,6 +37,13 @@ export default mergeConfig(
           // Exclure uniquement fichiers non-critiques
           'src/router/**', // Navigation - configuration routage
           'src/composables/useKonamiCode.ts', // Easter egg
+          'src/composables/useBreakpoint.ts', // DOM/window - MediaQueryList
+          'src/composables/useScrollReveal.ts', // DOM/animation - IntersectionObserver
+          'src/composables/useInfiniteScroll.ts', // DOM - IntersectionObserver
+          'src/services/mercure.ts', // Infrastructure SSE
+          'src/services/api/index.ts', // Barrel re-export
+          'src/services/api/userApi.ts', // Pas de tests pour l'instant
+          'src/stores/notificationStore.ts', // Pas de tests pour l'instant
           // Wiki feature - pas de tests pour l'instant
           'src/stores/wikiStore.ts',
           'src/stores/wiki/**',

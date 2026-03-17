@@ -21,7 +21,7 @@ export default {
 
   avatar: {
     sectionTitle: 'Profile picture',
-    altWithAvatar: '{pseudo}\'s avatar',
+    altWithAvatar: "{pseudo}'s avatar",
     altWithoutAvatar: 'No avatar set',
     uploadInProgress: 'Upload in progress',
     changeButton: 'Change avatar',

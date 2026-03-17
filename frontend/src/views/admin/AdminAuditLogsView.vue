@@ -13,7 +13,9 @@
         :aria-label="t('admin.auditLogs.searchAriaLabel')"
       >
         <div class="flex flex-col">
-          <label for="filter-action" class="text-xs text-secondary-400 mb-1">{{ t('admin.auditLogs.filters.actionLabel') }}</label>
+          <label for="filter-action" class="text-xs text-secondary-400 mb-1">{{
+            t('admin.auditLogs.filters.actionLabel')
+          }}</label>
           <select
             id="filter-action"
             v-model="filters.action"
@@ -28,7 +30,9 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-severity" class="text-xs text-secondary-400 mb-1">{{ t('admin.auditLogs.filters.severityLabel') }}</label>
+          <label for="filter-severity" class="text-xs text-secondary-400 mb-1">{{
+            t('admin.auditLogs.filters.severityLabel')
+          }}</label>
           <select
             id="filter-severity"
             v-model="filters.severity"
@@ -43,7 +47,9 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-date-from" class="text-xs text-secondary-400 mb-1">{{ t('admin.auditLogs.filters.dateFrom') }}</label>
+          <label for="filter-date-from" class="text-xs text-secondary-400 mb-1">{{
+            t('admin.auditLogs.filters.dateFrom')
+          }}</label>
           <input
             id="filter-date-from"
             v-model="filters.dateFrom"
@@ -54,7 +60,9 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="filter-date-to" class="text-xs text-secondary-400 mb-1">{{ t('admin.auditLogs.filters.dateTo') }}</label>
+          <label for="filter-date-to" class="text-xs text-secondary-400 mb-1">{{
+            t('admin.auditLogs.filters.dateTo')
+          }}</label>
           <input
             id="filter-date-to"
             v-model="filters.dateTo"
@@ -187,11 +195,15 @@
           </div>
           <div>
             <dt class="text-secondary-400">{{ t('admin.auditLogs.detailModal.user') }}</dt>
-            <dd class="text-secondary-200">{{ selectedLog.performer?.pseudo || t('admin.auditLogs.systemUser') }}</dd>
+            <dd class="text-secondary-200">
+              {{ selectedLog.performer?.pseudo || t('admin.auditLogs.systemUser') }}
+            </dd>
           </div>
           <div>
             <dt class="text-secondary-400">{{ t('admin.auditLogs.detailModal.target') }}</dt>
-            <dd class="text-secondary-200">{{ selectedLog.targetUser?.pseudo || t('admin.auditLogs.noTarget') }}</dd>
+            <dd class="text-secondary-200">
+              {{ selectedLog.targetUser?.pseudo || t('admin.auditLogs.noTarget') }}
+            </dd>
           </div>
           <div>
             <dt class="text-secondary-400">{{ t('admin.auditLogs.detailModal.date') }}</dt>
@@ -199,19 +211,25 @@
           </div>
           <div>
             <dt class="text-secondary-400">{{ t('admin.auditLogs.detailModal.ipAddress') }}</dt>
-            <dd class="text-secondary-200 font-mono">{{ selectedLog.ipAddress || t('admin.auditLogs.noIp') }}</dd>
+            <dd class="text-secondary-200 font-mono">
+              {{ selectedLog.ipAddress || t('admin.auditLogs.noIp') }}
+            </dd>
           </div>
         </dl>
 
         <div v-if="selectedLog.details && Object.keys(selectedLog.details).length > 0">
-          <h4 class="text-secondary-400 text-sm mb-2">{{ t('admin.auditLogs.detailModal.details') }}</h4>
+          <h4 class="text-secondary-400 text-sm mb-2">
+            {{ t('admin.auditLogs.detailModal.details') }}
+          </h4>
           <pre class="bg-secondary-900 rounded p-3 text-xs text-secondary-300 overflow-x-auto">{{
             JSON.stringify(selectedLog.details, null, 2)
           }}</pre>
         </div>
 
         <div v-if="selectedLog.userAgent">
-          <h4 class="text-secondary-400 text-sm mb-2">{{ t('admin.auditLogs.detailModal.userAgent') }}</h4>
+          <h4 class="text-secondary-400 text-sm mb-2">
+            {{ t('admin.auditLogs.detailModal.userAgent') }}
+          </h4>
           <p class="text-secondary-300 text-xs break-all">{{ selectedLog.userAgent }}</p>
         </div>
       </div>

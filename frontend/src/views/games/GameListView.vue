@@ -279,9 +279,7 @@ const displayedGames = computed(() => {
     }
     if (filters.value.gameMaster) {
       const gmFilter = filters.value.gameMaster.toLowerCase()
-      result = result.filter((game) =>
-        game.gameMaster.pseudo.toLowerCase().includes(gmFilter)
-      )
+      result = result.filter((game) => game.gameMaster.pseudo.toLowerCase().includes(gmFilter))
     }
     if (filters.value.status) {
       result = result.filter((game) => game.status === filters.value.status)
@@ -427,10 +425,14 @@ watch(displayedGames, () => {
           <div
             class="bg-secondary-800 rounded-lg border border-secondary-700 p-4 space-y-4 sticky top-6"
           >
-            <h3 class="text-lg font-semibold text-secondary-50 mb-4">{{ t('game.list.filters.title') }}</h3>
+            <h3 class="text-lg font-semibold text-secondary-50 mb-4">
+              {{ t('game.list.filters.title') }}
+            </h3>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.search') }} </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2">
+                {{ t('game.list.filters.search') }}
+              </label>
               <div class="relative">
                 <input
                   v-model="filters.search"
@@ -445,7 +447,9 @@ watch(displayedGames, () => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.gameTitle') }} </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2">
+                {{ t('game.list.filters.gameTitle') }}
+              </label>
               <input
                 v-model="filters.title"
                 type="text"
@@ -454,7 +458,11 @@ watch(displayedGames, () => {
               />
             </div>
 
-            <div v-if="activeTab === 'public' || activeTab === 'player-games' || activeTab === 'my-all'">
+            <div
+              v-if="
+                activeTab === 'public' || activeTab === 'player-games' || activeTab === 'my-all'
+              "
+            >
               <label class="block text-sm font-medium text-secondary-300 mb-2">
                 {{ t('game.list.filters.gameMaster') }}
               </label>
@@ -467,7 +475,9 @@ watch(displayedGames, () => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.list.filters.status') }} </label>
+              <label class="block text-sm font-medium text-secondary-300 mb-2">
+                {{ t('game.list.filters.status') }}
+              </label>
               <select
                 v-model="filters.status"
                 class="w-full px-3 py-2 bg-secondary-700 border border-secondary-600 rounded-md text-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -493,7 +503,11 @@ watch(displayedGames, () => {
           <div v-if="displayedGames.length > 0" class="mb-4">
             <p class="text-secondary-400 text-sm">
               <span class="text-secondary-50 font-medium">{{ displayedGames.length }}</span>
-              {{ displayedGames.length > 1 ? t('game.list.count.plural') : t('game.list.count.singular') }}
+              {{
+                displayedGames.length > 1
+                  ? t('game.list.count.plural')
+                  : t('game.list.count.singular')
+              }}
               <template v-if="activeTab === 'public' && gameStore.pagination.total > 0">
                 {{ t('game.list.count.outOf') }}
                 <span class="text-secondary-50 font-medium">{{ gameStore.pagination.total }}</span>
@@ -526,7 +540,13 @@ watch(displayedGames, () => {
           <div v-else-if="!gameStore.isLoading" class="text-center py-20">
             <InboxIcon class="w-24 h-24 mx-auto text-secondary-600 mb-4" />
             <h3 class="text-xl font-semibold text-secondary-300 mb-2">
-              {{ activeTab === 'public' ? t('game.list.empty.publicTitle') : activeTab === 'my-all' ? t('game.list.empty.myAllTitle') : t('game.list.empty.defaultTitle') }}
+              {{
+                activeTab === 'public'
+                  ? t('game.list.empty.publicTitle')
+                  : activeTab === 'my-all'
+                    ? t('game.list.empty.myAllTitle')
+                    : t('game.list.empty.defaultTitle')
+              }}
             </h3>
             <p class="text-secondary-400 mb-6">
               {{

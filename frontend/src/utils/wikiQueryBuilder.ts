@@ -5,7 +5,9 @@ import i18n from '@/i18n'
  * Builds a URL query string for wiki API calls,
  * automatically injecting the current i18n locale.
  */
-export function buildWikiQuery(filters: Record<string, string | number | undefined | null> = {}): string {
+export function buildWikiQuery(
+  filters: Record<string, string | number | undefined | null> = {}
+): string {
   return buildQuery({
     ...filters,
     locale: i18n.global.locale.value,

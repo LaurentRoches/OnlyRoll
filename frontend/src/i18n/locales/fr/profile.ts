@@ -29,7 +29,8 @@ export default {
     deleteButton: "Supprimer l'avatar",
     helpText: 'Formats accept\u00e9s : JPEG, PNG, GIF, WebP. Taille maximale : 2 Mo.',
     errors: {
-      invalidType: 'Type de fichier non autoris\u00e9. Formats accept\u00e9s : JPEG, PNG, GIF, WebP.',
+      invalidType:
+        'Type de fichier non autoris\u00e9. Formats accept\u00e9s : JPEG, PNG, GIF, WebP.',
       tooLarge: 'Le fichier est trop volumineux. Taille maximale : 2 Mo.',
       uploadFailed: "Erreur lors de l'upload de l'avatar.",
       deleteFailed: "Erreur lors de la suppression de l'avatar.",

@@ -50,7 +50,8 @@ export const usePasswordGenerator = () => {
 
       return generatedPassword.value
     } catch (err) {
-      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
+      error.value =
+        err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
       return null
     } finally {
       isGenerating.value = false
@@ -81,7 +82,8 @@ export const usePasswordGenerator = () => {
 
       return generatedPasswords.value
     } catch (err) {
-      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
+      error.value =
+        err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.generationError')
       return []
     } finally {
       isGenerating.value = false
@@ -105,7 +107,8 @@ export const usePasswordGenerator = () => {
       strengthResult.value = result
       return result
     } catch (err) {
-      error.value = err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.evaluationError')
+      error.value =
+        err instanceof Error ? err.message : i18n.global.t('auth.passwordGenerator.evaluationError')
       return null
     } finally {
       isEvaluating.value = false

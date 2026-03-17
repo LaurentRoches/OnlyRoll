@@ -197,7 +197,11 @@ async function handleKick(player: GamePlayer) {
                 'absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-secondary-800',
                 isPlayerOnline(player) ? 'bg-success' : 'bg-secondary-500',
               ]"
-              :title="isPlayerOnline(player) ? t('game.players.status.online') : t('game.players.status.offline')"
+              :title="
+                isPlayerOnline(player)
+                  ? t('game.players.status.online')
+                  : t('game.players.status.offline')
+              "
             ></div>
           </div>
 
@@ -226,7 +230,11 @@ async function handleKick(player: GamePlayer) {
 
             <div class="flex items-center gap-2 text-xs text-secondary-400">
               <span :class="isPlayerOnline(player) ? 'text-success' : 'text-secondary-400'">
-                {{ isPlayerOnline(player) ? t('game.players.status.online') : t('game.players.status.offline') }}
+                {{
+                  isPlayerOnline(player)
+                    ? t('game.players.status.online')
+                    : t('game.players.status.offline')
+                }}
               </span>
               <span>•</span>
               <span>{{ formatJoinedAt(player.joinedAt) }}</span>
@@ -288,7 +296,9 @@ async function handleKick(player: GamePlayer) {
         v-else
         class="w-full text-center py-2 text-secondary-400 text-xs bg-secondary-700/50 rounded-lg"
       >
-        {{ t('game.players.invite.atCapacity', { current: activeAndPendingCount, max: maxPlayers }) }}
+        {{
+          t('game.players.invite.atCapacity', { current: activeAndPendingCount, max: maxPlayers })
+        }}
       </div>
     </div>
 

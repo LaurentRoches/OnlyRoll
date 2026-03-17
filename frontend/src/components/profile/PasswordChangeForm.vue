@@ -131,7 +131,11 @@
               d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
             />
           </svg>
-          {{ isGenerating ? t('profile.password.newPassword.generating') : t('profile.password.newPassword.generate') }}
+          {{
+            isGenerating
+              ? t('profile.password.newPassword.generating')
+              : t('profile.password.newPassword.generate')
+          }}
         </button>
       </div>
       <div class="relative">
@@ -156,7 +160,9 @@
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-200 focus:outline-none focus:text-secondary-200"
           :aria-label="
-            showNewPassword ? t('profile.password.newPassword.toggleHide') : t('profile.password.newPassword.toggleShow')
+            showNewPassword
+              ? t('profile.password.newPassword.toggleHide')
+              : t('profile.password.newPassword.toggleShow')
           "
           @click="showNewPassword = !showNewPassword"
         >
@@ -291,7 +297,11 @@
         <button
           type="button"
           class="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-200 focus:outline-none focus:text-secondary-200"
-          :aria-label="showConfirmPassword ? t('profile.password.confirmPassword.toggleHide') : t('profile.password.confirmPassword.toggleShow')"
+          :aria-label="
+            showConfirmPassword
+              ? t('profile.password.confirmPassword.toggleHide')
+              : t('profile.password.confirmPassword.toggleShow')
+          "
           @click="showConfirmPassword = !showConfirmPassword"
         >
           <svg

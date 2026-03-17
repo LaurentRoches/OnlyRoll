@@ -11,10 +11,14 @@
 
       <h1 class="text-8xl md:text-9xl font-bold text-primary-400 mb-4 tracking-tighter">404</h1>
 
-      <h2 class="text-2xl md:text-4xl font-bold text-secondary-50 mb-6">{{ t('common.notFound.heading') }}</h2>
+      <h2 class="text-2xl md:text-4xl font-bold text-secondary-50 mb-6">
+        {{ t('common.notFound.heading') }}
+      </h2>
 
-      <p class="text-lg md:text-xl text-secondary-300 mb-8 leading-relaxed" v-html="t('common.notFound.description', { roll: '1' })">
-      </p>
+      <p
+        class="text-lg md:text-xl text-secondary-300 mb-8 leading-relaxed"
+        v-html="t('common.notFound.description', { roll: '1' })"
+      ></p>
 
       <div class="bg-secondary-800/50 rounded-xl p-6 mb-8 border border-secondary-700">
         <div class="flex items-start space-x-3">

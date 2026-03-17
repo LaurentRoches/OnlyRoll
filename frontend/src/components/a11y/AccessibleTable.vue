@@ -229,9 +229,10 @@ const handleSort = (columnKey: string) => {
   }
 
   const column = props.columns.find((c) => c.key === columnKey)
-  const directionText = sortDirection.value === 'ASC'
-    ? t('common.accessibleTable.ascending')
-    : t('common.accessibleTable.descending')
+  const directionText =
+    sortDirection.value === 'ASC'
+      ? t('common.accessibleTable.ascending')
+      : t('common.accessibleTable.descending')
   announcement.value = t('common.accessibleTable.sortAnnouncement', {
     column: column?.label || columnKey,
     direction: directionText,

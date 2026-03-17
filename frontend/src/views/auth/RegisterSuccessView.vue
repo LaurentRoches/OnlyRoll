@@ -13,7 +13,9 @@
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.registerSuccess.title') }}</h2>
+      <h2 class="text-xl font-semibold text-secondary-50 mb-2">
+        {{ t('auth.registerSuccess.title') }}
+      </h2>
       <p class="text-secondary-300 mb-4">{{ t('auth.registerSuccess.subtitle') }}</p>
     </div>
 
@@ -27,7 +29,9 @@
           />
         </svg>
         <div class="text-sm">
-          <p class="text-info font-medium mb-1">{{ t('auth.registerSuccess.verifyEmail.title') }}</p>
+          <p class="text-info font-medium mb-1">
+            {{ t('auth.registerSuccess.verifyEmail.title') }}
+          </p>
           <p class="text-secondary-300">{{ t('auth.registerSuccess.verifyEmail.message') }}</p>
           <p class="font-medium text-secondary-200 mt-1">
             {{ email }}
@@ -54,7 +58,9 @@
         class="block w-full px-4 py-3 bg-secondary-700 hover:bg-secondary-600 disabled:bg-secondary-600 disabled:cursor-not-allowed text-secondary-200 font-medium rounded-lg transition-colors duration-200"
       >
         <span v-if="isResending">{{ t('auth.registerSuccess.resendLoading') }}</span>
-        <span v-else-if="cooldown > 0">{{ t('auth.registerSuccess.resendCooldown', { cooldown }) }}</span>
+        <span v-else-if="cooldown > 0">{{
+          t('auth.registerSuccess.resendCooldown', { cooldown })
+        }}</span>
         <span v-else>{{ t('auth.registerSuccess.resend') }}</span>
       </button>
 

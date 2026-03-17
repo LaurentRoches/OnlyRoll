@@ -20,7 +20,16 @@ import MonsterDetail from '@/components/wiki/detail/MonsterDetail.vue'
 import BackgroundDetail from '@/components/wiki/detail/BackgroundDetail.vue'
 import FeatDetail from '@/components/wiki/detail/FeatDetail.vue'
 import { FunnelIcon, ArrowLeftIcon, InboxIcon } from '@heroicons/vue/24/outline'
-import type { SpellListItem, SpellDetail as SpellDetailType, RaceDetail as RaceDetailType, ClassDetail as ClassDetailType, ItemDetail as ItemDetailType, MonsterDetail as MonsterDetailType, BackgroundDetail as BackgroundDetailType, FeatDetail as FeatDetailType } from '@/types/wiki'
+import type {
+  SpellListItem,
+  SpellDetail as SpellDetailType,
+  RaceDetail as RaceDetailType,
+  ClassDetail as ClassDetailType,
+  ItemDetail as ItemDetailType,
+  MonsterDetail as MonsterDetailType,
+  BackgroundDetail as BackgroundDetailType,
+  FeatDetail as FeatDetailType,
+} from '@/types/wiki'
 import type { WikiCategorySlug } from '@/constants/wiki'
 
 const props = defineProps<{
@@ -43,7 +52,7 @@ type CategoryParam = WikiCategorySlug | 'favorites'
 
 const { filters } = useWikiFilters(
   () => props.category,
-  (cat, f) => wikiStore.fetchItems(cat as CategoryParam, f),
+  (cat, f) => wikiStore.fetchItems(cat as CategoryParam, f)
 )
 
 onMounted(() => {
@@ -62,9 +71,12 @@ watch(selectedItemId, (id) => {
   }
 })
 
-watch(() => props.category, () => {
-  selectedItemId.value = null
-})
+watch(
+  () => props.category,
+  () => {
+    selectedItemId.value = null
+  }
+)
 
 function goBack() {
   router.push({ name: 'wiki.home' })
@@ -82,29 +94,52 @@ function handleSelectSimilar(id: number) {
   selectedItemId.value = id
 }
 
-const spell = computed(() => props.category === 'spells' ? (wikiDetailStore.currentItem as SpellDetailType | null) : null)
-const race = computed(() => props.category === 'races' ? (wikiDetailStore.currentItem as RaceDetailType | null) : null)
-const cls = computed(() => props.category === 'classes' ? (wikiDetailStore.currentItem as ClassDetailType | null) : null)
-const itm = computed(() => props.category === 'items' ? (wikiDetailStore.currentItem as ItemDetailType | null) : null)
-const monster = computed(() => props.category === 'monsters' ? (wikiDetailStore.currentItem as MonsterDetailType | null) : null)
-const background = computed(() => props.category === 'backgrounds' ? (wikiDetailStore.currentItem as BackgroundDetailType | null) : null)
-const feat = computed(() => props.category === 'feats' ? (wikiDetailStore.currentItem as FeatDetailType | null) : null)
+const spell = computed(() =>
+  props.category === 'spells' ? (wikiDetailStore.currentItem as SpellDetailType | null) : null
+)
+const race = computed(() =>
+  props.category === 'races' ? (wikiDetailStore.currentItem as RaceDetailType | null) : null
+)
+const cls = computed(() =>
+  props.category === 'classes' ? (wikiDetailStore.currentItem as ClassDetailType | null) : null
+)
+const itm = computed(() =>
+  props.category === 'items' ? (wikiDetailStore.currentItem as ItemDetailType | null) : null
+)
+const monster = computed(() =>
+  props.category === 'monsters' ? (wikiDetailStore.currentItem as MonsterDetailType | null) : null
+)
+const background = computed(() =>
+  props.category === 'backgrounds'
+    ? (wikiDetailStore.currentItem as BackgroundDetailType | null)
+    : null
+)
+const feat = computed(() =>
+  props.category === 'feats' ? (wikiDetailStore.currentItem as FeatDetailType | null) : null
+)
 
 const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, unknown> | null)
 </script>
 
 <template>
   <div
-    :class="isMobile
-      ? 'min-h-screen bg-secondary-900'
-      : 'h-screen flex flex-col bg-secondary-900 overflow-hidden'"
+    :class="
+      isMobile
+        ? 'min-h-screen bg-secondary-900'
+        : 'h-screen flex flex-col bg-secondary-900 overflow-hidden'
+    "
   >
     <DashboardNav />
 
-    <div class="bg-secondary-800 border-b border-secondary-700 px-4 py-3 flex-shrink-0 sticky top-0 z-20">
+    <div
+      class="bg-secondary-800 border-b border-secondary-700 px-4 py-3 flex-shrink-0 sticky top-0 z-20"
+    >
       <div class="max-w-full flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <button class="text-secondary-400 hover:text-secondary-200 transition-colors" @click="goBack">
+          <button
+            class="text-secondary-400 hover:text-secondary-200 transition-colors"
+            @click="goBack"
+          >
             <ArrowLeftIcon class="w-5 h-5" />
           </button>
           <h1 class="text-xl font-semibold text-secondary-100">
@@ -133,18 +168,25 @@ const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, 
     </div>
 
     <div :class="isMobile ? 'px-4 py-4' : 'flex flex-1 overflow-hidden'">
-
       <aside
         v-if="isDesktop && category !== 'favorites'"
         class="flex-[1] min-w-0 overflow-y-auto border-r border-secondary-700 p-4"
       >
-        <h2 class="text-xs font-semibold text-secondary-400 uppercase tracking-wider mb-3">{{ t('wiki.categoryView.filtersHeading') }}</h2>
+        <h2 class="text-xs font-semibold text-secondary-400 uppercase tracking-wider mb-3">
+          {{ t('wiki.categoryView.filtersHeading') }}
+        </h2>
         <WikiFilters v-model="filters" :category="category" />
       </aside>
 
       <div
         ref="listContainer"
-        :class="isMobile ? '' : isDesktop ? 'flex-[3] min-w-0 overflow-y-auto p-4' : 'flex-1 min-w-0 overflow-y-auto p-4'"
+        :class="
+          isMobile
+            ? ''
+            : isDesktop
+              ? 'flex-[3] min-w-0 overflow-y-auto p-4'
+              : 'flex-1 min-w-0 overflow-y-auto p-4'
+        "
       >
         <div
           v-if="wikiStore.isLoading && !wikiStore.items.length"
@@ -163,10 +205,7 @@ const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, 
         </div>
 
         <template v-else>
-          <div
-            class="grid grid-cols-1 gap-3"
-            :class="isMobile ? 'sm:grid-cols-2' : ''"
-          >
+          <div class="grid grid-cols-1 gap-3" :class="isMobile ? 'sm:grid-cols-2' : ''">
             <template v-for="item in wikiStore.items" :key="(item as { id: number }).id">
               <WikiSpellCard
                 v-if="isSpell(item)"
@@ -177,9 +216,23 @@ const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, 
               />
               <WikiItemCard
                 v-else
-                :item="item as { id: number; name: string; source: string; isFavorited?: boolean; [key: string]: unknown }"
-                :category="category !== 'favorites' ? category : ((item as { srdTable?: string }).srdTable ?? 'spell') + 's'"
-                :srd-table="category === 'favorites' ? (item as { srdTable?: string }).srdTable : undefined"
+                :item="
+                  item as {
+                    id: number
+                    name: string
+                    source: string
+                    isFavorited?: boolean
+                    [key: string]: unknown
+                  }
+                "
+                :category="
+                  category !== 'favorites'
+                    ? category
+                    : ((item as { srdTable?: string }).srdTable ?? 'spell') + 's'
+                "
+                :srd-table="
+                  category === 'favorites' ? (item as { srdTable?: string }).srdTable : undefined
+                "
                 :mode="isMobile ? 'navigate' : 'select'"
                 :is-selected="(item as { id: number }).id === selectedItemId"
                 @select="selectItem"
@@ -219,13 +272,14 @@ const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, 
           {{ wikiDetailStore.error }}
         </div>
 
-        <Transition
-          v-else-if="detailItem"
-          name="fade"
-          mode="out-in"
-        >
+        <Transition v-else-if="detailItem" name="fade" mode="out-in">
           <div :key="selectedItemId" class="space-y-6">
-            <SpellDetail v-if="spell" :spell="spell" mode="inline" @select-spell="handleSelectSimilar" />
+            <SpellDetail
+              v-if="spell"
+              :spell="spell"
+              mode="inline"
+              @select-spell="handleSelectSimilar"
+            />
             <RaceDetail v-else-if="race" :race="race" mode="inline" />
             <ClassDetail v-else-if="cls" :cls="cls" mode="inline" />
             <ItemDetail v-else-if="itm" :item="itm" mode="inline" />
@@ -234,12 +288,14 @@ const detailItem = computed(() => wikiDetailStore.currentItem as Record<string, 
             <FeatDetail v-else-if="feat" :feat="feat" mode="inline" />
 
             <div class="text-xs text-secondary-500 border-t border-secondary-700 pt-4">
-              {{ t('wiki.categoryView.source') }} {{ detailItem?.source ?? '—' }}<span v-if="detailItem?.page"> · {{ t('wiki.categoryView.page') }} {{ detailItem.page }}</span>
+              {{ t('wiki.categoryView.source') }} {{ detailItem?.source ?? '—'
+              }}<span v-if="detailItem?.page">
+                · {{ t('wiki.categoryView.page') }} {{ detailItem.page }}</span
+              >
             </div>
           </div>
         </Transition>
       </div>
-
     </div>
   </div>
 </template>

@@ -83,7 +83,9 @@
                 class="absolute right-0 top-12 w-80 sm:w-96 bg-secondary-800 border border-secondary-700 rounded-xl shadow-2xl z-50"
               >
                 <div class="p-4 border-b border-secondary-700 flex items-center justify-between">
-                  <h3 class="font-semibold text-secondary-50">{{ t('common.nav.invitations.title') }}</h3>
+                  <h3 class="font-semibold text-secondary-50">
+                    {{ t('common.nav.invitations.title') }}
+                  </h3>
                   <button
                     @click="showNotifications = false"
                     class="text-secondary-400 hover:text-secondary-200 transition-colors"
@@ -134,7 +136,11 @@
                           {{ invitation.game.name }}
                         </p>
                         <p class="text-xs text-secondary-400 mt-0.5">
-                          {{ t('common.nav.invitations.gameMaster', { pseudo: invitation.gameMaster.pseudo }) }}
+                          {{
+                            t('common.nav.invitations.gameMaster', {
+                              pseudo: invitation.gameMaster.pseudo,
+                            })
+                          }}
                         </p>
                       </div>
                       <div class="flex gap-2">
@@ -286,14 +292,17 @@
           <span class="text-sm text-secondary-400">{{ t('common.nav.language.label') }}</span>
           <div class="flex gap-2">
             <button
-              v-for="lang in (['fr', 'en'] as const)"
+              v-for="lang in ['fr', 'en'] as const"
               :key="lang"
-              @click="switchLanguage(lang); isMobileMenuOpen = false"
+              @click="
+                switchLanguage(lang)
+                isMobileMenuOpen = false
+              "
               class="p-1.5 rounded-lg transition-colors"
               :class="[
                 locale === lang
                   ? 'bg-primary-500/20 ring-2 ring-primary-500'
-                  : 'hover:bg-secondary-700'
+                  : 'hover:bg-secondary-700',
               ]"
             >
               <img

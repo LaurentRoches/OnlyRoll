@@ -86,7 +86,8 @@ async function handleJoin() {
               {{ game.name }}
             </h3>
             <p class="text-secondary-400 text-sm">
-              {{ t('game.join.gameMaster') }} <span class="text-primary-400">{{ game.gameMaster.pseudo }}</span>
+              {{ t('game.join.gameMaster') }}
+              <span class="text-primary-400">{{ game.gameMaster.pseudo }}</span>
             </p>
           </div>
           <div
@@ -110,9 +111,13 @@ async function handleJoin() {
         <div class="flex items-center justify-between pt-3 border-t border-secondary-600">
           <div class="flex items-center gap-2 text-secondary-400 text-sm">
             <UsersIcon class="w-4 h-4" aria-hidden="true" />
-            <span>{{ t('game.join.players', { current: game.currentPlayersCount, max: game.maxPlayers }) }}</span>
+            <span>{{
+              t('game.join.players', { current: game.currentPlayersCount, max: game.maxPlayers })
+            }}</span>
           </div>
-          <span v-if="isFull" class="text-accent-rose text-sm font-medium"> {{ t('game.join.full') }} </span>
+          <span v-if="isFull" class="text-accent-rose text-sm font-medium">
+            {{ t('game.join.full') }}
+          </span>
         </div>
       </div>
 

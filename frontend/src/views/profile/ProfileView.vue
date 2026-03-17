@@ -143,7 +143,9 @@
             </div>
 
             <div class="form-group">
-              <label :for="timezoneId" class="form-label"> {{ t('profile.info.timezone.label') }} </label>
+              <label :for="timezoneId" class="form-label">
+                {{ t('profile.info.timezone.label') }}
+              </label>
               <select :id="timezoneId" v-model="editForm.timezone" class="form-input">
                 <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
                 <option value="Europe/London">Europe/London (UTC+0/+1)</option>
@@ -155,7 +157,9 @@
             </div>
 
             <div class="form-group">
-              <label :for="languageId" class="form-label"> {{ t('profile.info.language.label') }} </label>
+              <label :for="languageId" class="form-label">
+                {{ t('profile.info.language.label') }}
+              </label>
               <select :id="languageId" v-model="editForm.language" class="form-input">
                 <option value="fr">{{ t('profile.info.language.options.fr') }}</option>
                 <option value="en">{{ t('profile.info.language.options.en') }}</option>
@@ -222,7 +226,11 @@
             <div>
               <dt class="text-secondary-400">{{ t('profile.account.lastLogin') }}</dt>
               <dd class="text-secondary-200">
-                {{ profile.lastLogin ? formatDate(profile.lastLogin) : t('profile.account.lastLoginNever') }}
+                {{
+                  profile.lastLogin
+                    ? formatDate(profile.lastLogin)
+                    : t('profile.account.lastLoginNever')
+                }}
               </dd>
             </div>
             <div>

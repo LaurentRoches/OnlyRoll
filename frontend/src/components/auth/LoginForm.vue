@@ -99,7 +99,9 @@
     </div>
 
     <div class="space-y-1">
-      <label for="email" class="block text-sm font-medium text-secondary-200"> {{ t('auth.login.emailLabel') }} </label>
+      <label for="email" class="block text-sm font-medium text-secondary-200">
+        {{ t('auth.login.emailLabel') }}
+      </label>
       <input
         id="email"
         name="email"

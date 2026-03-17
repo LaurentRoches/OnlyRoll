@@ -170,7 +170,9 @@ function addToFormula(text: string) {
     </div>
 
     <div class="mb-4">
-      <label class="block text-sm font-medium text-secondary-300 mb-3"> {{ t('game.dice.quickDice') }} </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-3">
+        {{ t('game.dice.quickDice') }}
+      </label>
       <div class="grid grid-cols-3 gap-2">
         <button
           v-for="dice in quickDice"
@@ -189,7 +191,9 @@ function addToFormula(text: string) {
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.dice.mode') }} </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-2">
+        {{ t('game.dice.mode') }}
+      </label>
       <div class="grid grid-cols-2 gap-2">
         <button
           v-for="mode in advantageModes"
@@ -274,7 +278,9 @@ function addToFormula(text: string) {
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-2"> {{ t('game.dice.modifier') }} </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-2">
+        {{ t('game.dice.modifier') }}
+      </label>
       <div class="flex items-center gap-2">
         <button
           @click="modifier--"
@@ -339,11 +345,17 @@ function addToFormula(text: string) {
       class="btn-primary w-full py-4 text-lg font-bold shadow-purple mb-6 flex items-center justify-center gap-2"
     >
       <span class="text-2xl">🎲</span>
-      <span>{{ fullFormula ? t('game.dice.rollButton', { formula: fullFormula }) : t('game.dice.rollButtonDefault') }}</span>
+      <span>{{
+        fullFormula
+          ? t('game.dice.rollButton', { formula: fullFormula })
+          : t('game.dice.rollButtonDefault')
+      }}</span>
     </button>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-secondary-300 mb-3"> {{ t('game.dice.commonRolls') }} </label>
+      <label class="block text-sm font-medium text-secondary-300 mb-3">
+        {{ t('game.dice.commonRolls') }}
+      </label>
       <div class="space-y-2">
         <button
           v-for="roll in commonRolls"

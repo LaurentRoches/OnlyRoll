@@ -92,8 +92,7 @@ export default {
 
   forgotPassword: {
     title: 'Forgot password',
-    subtitle:
-      'Enter your email address. If an account exists, you will receive a reset link.',
+    subtitle: 'Enter your email address. If an account exists, you will receive a reset link.',
     emailLabel: 'Email address',
     emailPlaceholder: "you{'@'}example.com",
     submitLoading: 'Sending...',

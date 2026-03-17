@@ -14,16 +14,19 @@ interface GenericWikiItem {
   [key: string]: unknown
 }
 
-const props = withDefaults(defineProps<{
-  item: GenericWikiItem
-  category: string
-  srdTable?: string
-  mode?: 'navigate' | 'select'
-  isSelected?: boolean
-}>(), {
-  mode: 'navigate',
-  isSelected: false,
-})
+const props = withDefaults(
+  defineProps<{
+    item: GenericWikiItem
+    category: string
+    srdTable?: string
+    mode?: 'navigate' | 'select'
+    isSelected?: boolean
+  }>(),
+  {
+    mode: 'navigate',
+    isSelected: false,
+  }
+)
 
 const emit = defineEmits<{
   select: [id: number]
@@ -61,9 +64,11 @@ function handleClick() {
 <template>
   <div
     class="rounded-lg p-4 cursor-pointer transition-all duration-150 flex items-start justify-between gap-2"
-    :class="isSelected
-      ? 'bg-secondary-800 border border-primary-500 bg-primary-900/10'
-      : 'bg-secondary-800 border border-secondary-700 hover:border-secondary-500 hover:bg-secondary-750'"
+    :class="
+      isSelected
+        ? 'bg-secondary-800 border border-primary-500 bg-primary-900/10'
+        : 'bg-secondary-800 border border-secondary-700 hover:border-secondary-500 hover:bg-secondary-750'
+    "
     @click="handleClick"
   >
     <div class="min-w-0">

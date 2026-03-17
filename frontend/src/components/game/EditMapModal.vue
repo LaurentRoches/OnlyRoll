@@ -200,9 +200,9 @@ function close() {
             <div class="space-y-2">
               <label class="block text-sm font-medium text-secondary-300">
                 {{ t('game.editMap.image.label') }}
-                <span class="text-secondary-500 text-xs ml-2"
-                  >{{ t('game.editMap.image.optional') }}</span
-                >
+                <span class="text-secondary-500 text-xs ml-2">{{
+                  t('game.editMap.image.optional')
+                }}</span>
               </label>
 
               <div
@@ -378,7 +378,9 @@ function close() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                {{ isUploading ? t('game.editMap.submit.updating') : t('game.editMap.submit.update') }}
+                {{
+                  isUploading ? t('game.editMap.submit.updating') : t('game.editMap.submit.update')
+                }}
               </button>
             </div>
           </form>

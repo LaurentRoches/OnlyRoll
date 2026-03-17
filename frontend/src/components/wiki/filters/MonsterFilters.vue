@@ -17,7 +17,10 @@ function update(key: string, value: string) {
   emit('update:modelValue', { ...props.modelValue, [key]: value || undefined, page: 1 })
 }
 
-const crOptions = MONSTER_CR_VALUES.map((cr) => ({ value: cr, label: t('wiki.monsterFilters.crLabel', { cr }) }))
+const crOptions = MONSTER_CR_VALUES.map((cr) => ({
+  value: cr,
+  label: t('wiki.monsterFilters.crLabel', { cr }),
+}))
 </script>
 
 <template>

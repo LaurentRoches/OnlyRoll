@@ -16,11 +16,14 @@ export const useWikiNavigationStore = defineStore('wikiNavigation', () => {
     }
   }
 
-  watch(() => i18n.global.locale.value, () => {
-    if (categories.value.length > 0) {
-      fetchCategories()
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      if (categories.value.length > 0) {
+        fetchCategories()
+      }
     }
-  })
+  )
 
   return { categories, currentCategory, fetchCategories }
 })

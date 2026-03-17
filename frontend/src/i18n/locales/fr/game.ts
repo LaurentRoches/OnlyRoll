@@ -67,7 +67,8 @@ export default {
       show: 'Afficher le panel (chat, joueurs, d\u00e9s)',
       label: 'Panel',
     },
-    leaveConfirm: '\u00cates-vous s\u00fbr de vouloir quitter cette partie ?\n\nVous serez retir\u00e9 en tant que membre et ne pourrez plus y acc\u00e9der.',
+    leaveConfirm:
+      '\u00cates-vous s\u00fbr de vouloir quitter cette partie ?\n\nVous serez retir\u00e9 en tant que membre et ne pourrez plus y acc\u00e9der.',
     mapLoadError: 'Impossible de charger les donn\u00e9es de la carte',
   },
 
@@ -86,7 +87,8 @@ export default {
     joinButton: 'Rejoindre',
     fullButton: 'Compl\u00e8te',
     deleteTitle: 'Supprimer la partie',
-    deleteConfirm: '\u00cates-vous s\u00fbr de vouloir supprimer "{name}" ?\n\nCette action est d\u00e9finitive : tous les joueurs, messages et cartes associ\u00e9s seront effac\u00e9s.',
+    deleteConfirm:
+      '\u00cates-vous s\u00fbr de vouloir supprimer "{name}" ?\n\nCette action est d\u00e9finitive : tous les joueurs, messages et cartes associ\u00e9s seront effac\u00e9s.',
     deleteError: 'Impossible de supprimer cette partie',
     viewLabel: 'Voir la partie {name}',
     joinHint: 'Cliquez sur "Rejoindre" pour acc\u00e9der \u00e0 cette partie',
@@ -132,7 +134,7 @@ export default {
         players: {
           title: '\ud83d\udc65 Gestion des joueurs',
           description:
-            "Depuis le panneau Joueurs, vous pouvez inviter de nouveaux joueurs par pseudo, voir leur statut de connexion et exclure un joueur si n\u00e9cessaire. Les invitations appara\u00eetront dans les notifications du joueur.",
+            'Depuis le panneau Joueurs, vous pouvez inviter de nouveaux joueurs par pseudo, voir leur statut de connexion et exclure un joueur si n\u00e9cessaire. Les invitations appara\u00eetront dans les notifications du joueur.',
         },
         chat: {
           title: '\ud83d\udcac Tchat et messages syst\u00e8me',
@@ -150,7 +152,7 @@ export default {
         chat: {
           title: '\ud83d\udcac Tchat',
           description:
-            "Envoyez des messages dans le tchat en tapant dans la zone de texte et en appuyant sur Entr\u00e9e. Utilisez Shift+Entr\u00e9e pour un retour \u00e0 la ligne. Basculez entre le mode \u00ab In Character \u00bb (parler en tant que personnage) et \u00ab Out of Character \u00bb (hors personnage) avec le bouton IC/OOC.",
+            'Envoyez des messages dans le tchat en tapant dans la zone de texte et en appuyant sur Entr\u00e9e. Utilisez Shift+Entr\u00e9e pour un retour \u00e0 la ligne. Basculez entre le mode \u00ab In Character \u00bb (parler en tant que personnage) et \u00ab Out of Character \u00bb (hors personnage) avec le bouton IC/OOC.',
         },
         dice: {
           title: '\ud83c\udfb2 Lanceur de d\u00e9s',
@@ -160,12 +162,12 @@ export default {
         map: {
           title: '\ud83d\uddfa\ufe0f Carte et tokens',
           description:
-            "Visualisez la carte partag\u00e9e par le MJ. Utilisez la molette pour zoomer, et cliquez-glissez pour naviguer. Vos tokens sont visibles sur la carte si le MJ en a plac\u00e9 pour vous.",
+            'Visualisez la carte partag\u00e9e par le MJ. Utilisez la molette pour zoomer, et cliquez-glissez pour naviguer. Vos tokens sont visibles sur la carte si le MJ en a plac\u00e9 pour vous.',
         },
         leave: {
           title: '\ud83d\udeaa Quitter la partie',
           description:
-            "Le bouton \u00ab Quitter la partie \u00bb dans la barre sup\u00e9rieure vous retire d\u00e9finitivement de la partie. Cette action est irr\u00e9versible. Le bouton \u00ab Retour \u00bb vous ram\u00e8ne \u00e0 la liste des parties sans quitter.",
+            'Le bouton \u00ab Quitter la partie \u00bb dans la barre sup\u00e9rieure vous retire d\u00e9finitivement de la partie. Cette action est irr\u00e9versible. Le bouton \u00ab Retour \u00bb vous ram\u00e8ne \u00e0 la liste des parties sans quitter.',
         },
       },
       close: 'Fermer',
@@ -188,28 +190,33 @@ export default {
         roll: {
           name: '/roll (/r)',
           syntax: '1d20, 2d6+3, 3d8...',
-          description: 'Lance des d\u00e9s en utilisant la notation standard. Le r\u00e9sultat est visible par tous les joueurs.',
+          description:
+            'Lance des d\u00e9s en utilisant la notation standard. Le r\u00e9sultat est visible par tous les joueurs.',
         },
         whisper: {
           name: '/whisper (/w)',
           syntax: '/w pseudo message',
-          description: 'Envoie un message priv\u00e9 \u00e0 un joueur sp\u00e9cifique. Seuls vous et le destinataire pouvez le voir.',
+          description:
+            'Envoie un message priv\u00e9 \u00e0 un joueur sp\u00e9cifique. Seuls vous et le destinataire pouvez le voir.',
         },
         whisperRoll: {
           name: '/w pseudo /r',
           syntax: '/w pseudo /r 1d20+5',
-          description: 'Lance des d\u00e9s en priv\u00e9. Seuls vous et le destinataire voyez le r\u00e9sultat.',
+          description:
+            'Lance des d\u00e9s en priv\u00e9. Seuls vous et le destinataire voyez le r\u00e9sultat.',
         },
         emote: {
           name: '/me',
           syntax: '/me action',
-          description: "Effectue une action narrative. Ex : « /me d\u00e9gaine son \u00e9p\u00e9e » affiche votre pseudo suivi de l'action.",
+          description:
+            "Effectue une action narrative. Ex : « /me d\u00e9gaine son \u00e9p\u00e9e » affiche votre pseudo suivi de l'action.",
         },
       },
       dice: {
         title: 'D\u00e9s pr\u00e9construits',
         quickDice: 'D\u00e9s rapides : d4, d6, d8, d10, d12, d20 \u2014 un clic pour lancer.',
-        commonRolls: 'Lancers courants : Initiative, Attaque, D\u00e9g\u00e2ts (\u00e9p\u00e9e/arc), Jet de sauvegarde, Soin.',
+        commonRolls:
+          'Lancers courants : Initiative, Attaque, D\u00e9g\u00e2ts (\u00e9p\u00e9e/arc), Jet de sauvegarde, Soin.',
         commonRollsHint: 'Disponibles dans le panneau D\u00e9s \u00e0 droite du tchat.',
       },
       advantage: {
@@ -222,9 +229,11 @@ export default {
       modes: {
         title: 'Modes de discussion',
         inCharacter: 'In Character (IC)',
-        inCharacterDesc: 'Vos messages apparaissent comme paroles de votre personnage. Id\u00e9al pour le roleplay.',
+        inCharacterDesc:
+          'Vos messages apparaissent comme paroles de votre personnage. Id\u00e9al pour le roleplay.',
         outOfCharacter: 'Out of Character (OOC)',
-        outOfCharacterDesc: 'Vos messages apparaissent comme vous-m\u00eame, le joueur. Pour les discussions hors-jeu.',
+        outOfCharacterDesc:
+          'Vos messages apparaissent comme vous-m\u00eame, le joueur. Pour les discussions hors-jeu.',
       },
       close: 'Fermer',
     },
@@ -235,7 +244,8 @@ export default {
       title: 'Suggestions (\u2191\u2193 pour naviguer, Tab/Enter pour s\u00e9lectionner)',
     },
     errors: {
-      invalidWhisperFormat: 'Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>',
+      invalidWhisperFormat:
+        'Format invalide. Utilisez : /w <pseudo> <message> ou /w <pseudo> /r <formule>',
       emptyMessage: 'Le message ne peut pas \u00eatre vide.',
       playerNotFound: 'Joueur "{pseudo}" introuvable dans cette partie.',
       emptyDiceFormula: 'La formule de d\u00e9s ne peut pas \u00eatre vide.',
@@ -331,7 +341,8 @@ export default {
       placeholder: 'Entrez le mot de passe de la partie',
       error: 'Le mot de passe est requis',
     },
-    publicHint: 'Cette partie est publique, vous pouvez la rejoindre directement sans mot de passe.',
+    publicHint:
+      'Cette partie est publique, vous pouvez la rejoindre directement sans mot de passe.',
     joinError: 'Impossible de rejoindre la partie',
     cancel: 'Annuler',
     submit: {
@@ -469,7 +480,7 @@ export default {
     subtitle: 'Modifiez les informations de votre carte',
     image: {
       label: 'Image de la carte',
-      optional: '(Optionnel - Laissez vide pour conserver l\'image actuelle)',
+      optional: "(Optionnel - Laissez vide pour conserver l'image actuelle)",
       selectPrompt: 'Cliquez pour s\u00e9lectionner une nouvelle image',
       formats: 'JPEG, PNG, WebP ou GIF (max 10 Mo)',
       newImage: 'Nouvelle image : {name}',
@@ -535,7 +546,7 @@ export default {
       selectPrompt: 'Cliquez pour s\u00e9lectionner une image',
       formats: 'JPEG, PNG, WebP ou GIF (max 5 Mo)',
       deleteTitle: "Supprimer l'image",
-      noImageHint: 'Si aucune image n\'est fournie, les initiales du nom seront utilis\u00e9es',
+      noImageHint: "Si aucune image n'est fournie, les initiales du nom seront utilis\u00e9es",
     },
     errors: {
       invalidType: 'Veuillez s\u00e9lectionner une image (JPEG, PNG, WebP, GIF)',
@@ -593,8 +604,10 @@ export default {
 
   emptyMap: {
     title: 'Aucune carte active',
-    gmMessage: "Cette partie n'a pas encore de carte. Uploadez une carte pour commencer \u00e0 jouer et placer des tokens.",
-    playerMessage: "Le ma\u00eetre du jeu n'a pas encore cr\u00e9\u00e9 de carte pour cette session. Patientez pendant qu'il pr\u00e9pare le terrain de jeu.",
+    gmMessage:
+      "Cette partie n'a pas encore de carte. Uploadez une carte pour commencer \u00e0 jouer et placer des tokens.",
+    playerMessage:
+      "Le ma\u00eetre du jeu n'a pas encore cr\u00e9\u00e9 de carte pour cette session. Patientez pendant qu'il pr\u00e9pare le terrain de jeu.",
     createButton: 'Cr\u00e9er une carte',
     tips: {
       title: 'Conseil',
@@ -664,7 +677,8 @@ export default {
     permissions: {
       title: 'Permissions de contr\u00f4le',
       close: 'Fermer',
-      description: 'S\u00e9lectionnez les joueurs qui peuvent contr\u00f4ler ce token avec les fl\u00e8ches directionnelles',
+      description:
+        'S\u00e9lectionnez les joueurs qui peuvent contr\u00f4ler ce token avec les fl\u00e8ches directionnelles',
       noPlayers: 'Aucun joueur disponible',
       closeButton: 'Fermer',
     },

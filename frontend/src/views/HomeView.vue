@@ -219,7 +219,9 @@
           </div>
 
           <div>
-            <h3 class="text-secondary-200 font-semibold mb-4">{{ t('landing.home.footer.socialLinks') }}</h3>
+            <h3 class="text-secondary-200 font-semibold mb-4">
+              {{ t('landing.home.footer.socialLinks') }}
+            </h3>
             <ul class="space-y-2 text-sm text-secondary-400">
               <li><a href="#" class="hover:text-secondary-300 transition-colors">GitHub</a></li>
               <li><a href="#" class="hover:text-secondary-300 transition-colors">Discord</a></li>
@@ -227,7 +229,9 @@
           </div>
 
           <div>
-            <h3 class="text-secondary-200 font-semibold mb-4">{{ t('landing.home.footer.support') }}</h3>
+            <h3 class="text-secondary-200 font-semibold mb-4">
+              {{ t('landing.home.footer.support') }}
+            </h3>
             <ul class="space-y-2 text-sm text-secondary-400">
               <li><a href="#" class="hover:text-secondary-300 transition-colors">FAQ</a></li>
               <li><a href="#" class="hover:text-secondary-300 transition-colors">Contact</a></li>

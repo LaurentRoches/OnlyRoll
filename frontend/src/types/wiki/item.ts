@@ -23,7 +23,13 @@ export interface ItemDetail extends ItemListItem {
   weaponProperties: string[]
   weaponDamages: Array<{ dice: string; damageType: string; versatile: string | null }>
   weapon: { category: string; rangeNormal: number | null; rangeLong: number | null } | null
-  armor: { type: string; ac: number; maxDex: number | null; strReq: number | null; stealthDisadv: boolean } | null
+  armor: {
+    type: string
+    ac: number
+    maxDex: number | null
+    strReq: number | null
+    stealthDisadv: boolean
+  } | null
 }
 
 export interface ItemFilters extends WikiFilters {

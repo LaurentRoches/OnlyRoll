@@ -65,7 +65,8 @@ export default {
     },
     hero: {
       subtitle: 'One site to Roll them all',
-      description: 'Your next adventure starts here.\nRoll the dice, explore the dungeons,\nall from your browser.',
+      description:
+        'Your next adventure starts here.\nRoll the dice, explore the dungeons,\nall from your browser.',
       myDashboard: 'My Dashboard',
       viewGames: 'View games',
       register: 'Sign up',

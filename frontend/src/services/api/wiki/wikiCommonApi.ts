@@ -1,6 +1,11 @@
 import { get, post, delete as del } from '../apiClient'
 import { wikiLocaleParam } from '@/utils/wikiQueryBuilder'
-import type { WikiCategory, WikiFavoritesGrouped, WikiSearchResult, FavoriteItem } from '@/types/wiki'
+import type {
+  WikiCategory,
+  WikiFavoritesGrouped,
+  WikiSearchResult,
+  FavoriteItem,
+} from '@/types/wiki'
 import i18n from '@/i18n'
 
 export const wikiCommonApi = {

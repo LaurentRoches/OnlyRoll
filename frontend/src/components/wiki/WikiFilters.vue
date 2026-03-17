@@ -6,10 +6,10 @@ import { XMarkIcon } from '@heroicons/vue/24/outline'
 const { t } = useI18n()
 
 const FILTER_COMPONENTS: Record<string, Component> = {
-  spells:   defineAsyncComponent(() => import('./filters/SpellFilters.vue')),
-  races:    defineAsyncComponent(() => import('./filters/RaceFilters.vue')),
+  spells: defineAsyncComponent(() => import('./filters/SpellFilters.vue')),
+  races: defineAsyncComponent(() => import('./filters/RaceFilters.vue')),
   monsters: defineAsyncComponent(() => import('./filters/MonsterFilters.vue')),
-  items:    defineAsyncComponent(() => import('./filters/ItemFilters.vue')),
+  items: defineAsyncComponent(() => import('./filters/ItemFilters.vue')),
 }
 
 const props = defineProps<{
@@ -35,7 +35,9 @@ function clearFilter(key: string) {
 }
 
 const activeFilters = computed(() =>
-  Object.entries(props.modelValue).filter(([k, v]) => v !== undefined && v !== '' && k !== 'page' && k !== 'limit')
+  Object.entries(props.modelValue).filter(
+    ([k, v]) => v !== undefined && v !== '' && k !== 'page' && k !== 'limit'
+  )
 )
 </script>
 

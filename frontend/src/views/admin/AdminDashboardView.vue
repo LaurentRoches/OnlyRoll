@@ -37,62 +37,84 @@
               {{ stats.users.total }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.users.total') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.users.totalSrOnly', { count: stats.users.total }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.users.totalSrOnly', { count: stats.users.total })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-green-500" aria-hidden="true">
               {{ stats.users.active }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.users.active') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.users.activeSrOnly', { count: stats.users.active }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.users.activeSrOnly', { count: stats.users.active })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-yellow-500" aria-hidden="true">
               {{ stats.users.newThisWeek }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.users.thisWeek') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.users.thisWeekSrOnly', { count: stats.users.newThisWeek }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.users.thisWeekSrOnly', { count: stats.users.newThisWeek })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-blue-500" aria-hidden="true">
               {{ stats.users.admins }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.users.admins') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.users.adminsSrOnly', { count: stats.users.admins }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.users.adminsSrOnly', { count: stats.users.admins })
+            }}</span>
           </article>
         </div>
       </section>
 
       <section aria-labelledby="audit-stats-heading">
-        <h3 id="audit-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">{{ t('admin.dashboard.audit.heading') }}</h3>
+        <h3 id="audit-stats-heading" class="text-lg font-semibold text-secondary-50 mb-4">
+          {{ t('admin.dashboard.audit.heading') }}
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <article class="stats-card">
             <div class="text-3xl font-bold text-primary-500" aria-hidden="true">
               {{ stats.audit.total }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.audit.total') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.audit.totalSrOnly', { count: stats.audit.total }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.audit.totalSrOnly', { count: stats.audit.total })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-blue-500" aria-hidden="true">
               {{ stats.audit.today }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.audit.today') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.audit.todaySrOnly', { count: stats.audit.today }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.audit.todaySrOnly', { count: stats.audit.today })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-yellow-500" aria-hidden="true">
               {{ stats.audit.warningsToday }}
             </div>
             <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.audit.warnings') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.audit.warningsSrOnly', { count: stats.audit.warningsToday }) }}</span>
+            <span class="sr-only">{{
+              t('admin.dashboard.audit.warningsSrOnly', { count: stats.audit.warningsToday })
+            }}</span>
           </article>
           <article class="stats-card">
             <div class="text-3xl font-bold text-red-500" aria-hidden="true">
               {{ stats.audit.failedLoginsToday }}
             </div>
-            <div class="text-secondary-400 text-sm">{{ t('admin.dashboard.audit.failedLogins') }}</div>
-            <span class="sr-only">{{ t('admin.dashboard.audit.failedLoginsSrOnly', { count: stats.audit.failedLoginsToday }) }}</span>
+            <div class="text-secondary-400 text-sm">
+              {{ t('admin.dashboard.audit.failedLogins') }}
+            </div>
+            <span class="sr-only">{{
+              t('admin.dashboard.audit.failedLoginsSrOnly', {
+                count: stats.audit.failedLoginsToday,
+              })
+            }}</span>
           </article>
         </div>
       </section>
@@ -117,7 +139,10 @@
             </span>
           </template>
           <template #cell-performer="{ row }">
-            {{ (row.performer as { pseudo?: string })?.pseudo || t('admin.dashboard.recentActivity.systemUser') }}
+            {{
+              (row.performer as { pseudo?: string })?.pseudo ||
+              t('admin.dashboard.recentActivity.systemUser')
+            }}
           </template>
           <template #cell-createdAt="{ value }">
             {{ formatDate(String(value)) }}

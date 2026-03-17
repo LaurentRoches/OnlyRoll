@@ -32,7 +32,13 @@ export interface MonsterDetail extends MonsterListItem {
   xp: number | null
   page: number | null
   traits: Array<{ name: string; description: string | null }>
-  actions: Array<{ name: string; description: string | null; isLegendary: boolean; isReaction: boolean; isBonus: boolean }>
+  actions: Array<{
+    name: string
+    description: string | null
+    isLegendary: boolean
+    isReaction: boolean
+    isBonus: boolean
+  }>
   savingThrows: Array<{ ability: string; bonus: number }>
   skills: Array<{ skill: string; bonus: number }>
   senses: Array<{ type: string; range: number }>

@@ -1,7 +1,9 @@
 <template>
   <div class="space-y-6">
     <div class="text-center">
-      <h2 class="text-xl font-semibold text-secondary-50 mb-2">{{ t('auth.forgotPassword.title') }}</h2>
+      <h2 class="text-xl font-semibold text-secondary-50 mb-2">
+        {{ t('auth.forgotPassword.title') }}
+      </h2>
       <p class="text-secondary-400 text-sm">
         {{ t('auth.forgotPassword.subtitle') }}
       </p>
@@ -32,9 +34,9 @@
 
     <form v-else @submit.prevent="submit" class="space-y-4">
       <div>
-        <label for="email" class="block text-sm font-medium text-secondary-300 mb-1"
-          >{{ t('auth.forgotPassword.emailLabel') }}</label
-        >
+        <label for="email" class="block text-sm font-medium text-secondary-300 mb-1">{{
+          t('auth.forgotPassword.emailLabel')
+        }}</label>
         <input
           id="email"
           v-model="email"

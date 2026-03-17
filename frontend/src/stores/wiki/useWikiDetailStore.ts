@@ -29,22 +29,33 @@ export const useWikiDetailStore = defineStore('wikiDetail', () => {
 
   async function _fetchOne(category: WikiCategorySlug, id: number) {
     switch (category) {
-      case 'spells':     return wikiApi.getSpell(id)
-      case 'races':      return wikiApi.getRace(id)
-      case 'classes':    return wikiApi.getClass(id)
-      case 'items':      return wikiApi.getItem(id)
-      case 'monsters':   return wikiApi.getMonster(id)
-      case 'backgrounds':return wikiApi.getBackground(id)
-      case 'feats':      return wikiApi.getFeat(id)
-      default:           throw new Error(`Unknown category: ${category}`)
+      case 'spells':
+        return wikiApi.getSpell(id)
+      case 'races':
+        return wikiApi.getRace(id)
+      case 'classes':
+        return wikiApi.getClass(id)
+      case 'items':
+        return wikiApi.getItem(id)
+      case 'monsters':
+        return wikiApi.getMonster(id)
+      case 'backgrounds':
+        return wikiApi.getBackground(id)
+      case 'feats':
+        return wikiApi.getFeat(id)
+      default:
+        throw new Error(`Unknown category: ${category}`)
     }
   }
 
-  watch(() => i18n.global.locale.value, () => {
-    if (currentCategory.value && currentId.value) {
-      fetchItem(currentCategory.value, currentId.value)
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      if (currentCategory.value && currentId.value) {
+        fetchItem(currentCategory.value, currentId.value)
+      }
     }
-  })
+  )
 
   function $reset() {
     currentItem.value = null
