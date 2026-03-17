@@ -1,8 +1,13 @@
 name: Deploy to Production
 
 on:
-  push:
+  # Deploy after CI passes on main
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
     branches: [main]
+    types: [completed]
+  # Tag-based deploys (wiki imports, releases)
+  push:
     tags: ['v*.*.*', '*-importWiki']
   workflow_dispatch:
 
@@ -15,10 +20,16 @@ jobs:
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       
       - name: Setup SSH
         run: |
