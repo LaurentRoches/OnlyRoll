@@ -38,7 +38,6 @@ final class WikiFavoritesService
             $grouped[$fav->getSrdTable()][] = $fav->getSrdId();
         }
 
-        /** @var list<array<string, mixed>> $items */
         $items = [];
 
         foreach ($this->spellRepo->findBy(['id' => $grouped['spell'] ?? []]) as $s) {
@@ -63,7 +62,8 @@ final class WikiFavoritesService
             $items[] = ['id' => $f->getId(), 'name' => $f->getName(), 'srdTable' => 'feat', 'source' => $f->getSources()->first()?->getCode() ?? '', 'prerequisite' => $f->getPrerequisiteText()];
         }
 
-        usort($items, fn(array $a, array $b) => strcmp((string) $a['name'], (string) $b['name']));
+        $names = array_column($items, 'name');
+        array_multisort($names, SORT_STRING, $items);
 
         return $items;
     }
