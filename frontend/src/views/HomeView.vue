@@ -49,13 +49,17 @@
                   class="absolute right-0 mt-1 w-36 bg-secondary-700 rounded-lg shadow-xl border border-secondary-600 overflow-hidden z-50"
                 >
                   <button
-                    v-for="lang in (['fr', 'en'] as const)"
+                    v-for="lang in ['fr', 'en'] as const"
                     :key="lang"
                     @click="switchLanguage(lang)"
                     class="flex items-center gap-2 w-full px-3 py-2 text-sm text-secondary-200 hover:bg-secondary-600 transition-colors"
                     :class="{ 'bg-secondary-600': locale === lang }"
                   >
-                    <img :src="`/images/flag/${lang}.png`" :alt="lang" class="w-5 h-3.5 object-cover rounded-sm" />
+                    <img
+                      :src="`/images/flag/${lang}.png`"
+                      :alt="lang"
+                      class="w-5 h-3.5 object-cover rounded-sm"
+                    />
                     {{ t(`common.nav.language.${lang}`) }}
                   </button>
                 </div>
@@ -296,7 +300,9 @@ const showLangDropdown = ref(false)
 const langDropdownRef = ref<HTMLElement | null>(null)
 const currentFlag = computed(() => `/images/flag/${locale.value}.png`)
 
-onClickOutside(langDropdownRef, () => { showLangDropdown.value = false })
+onClickOutside(langDropdownRef, () => {
+  showLangDropdown.value = false
+})
 
 function switchLanguage(lang: 'fr' | 'en') {
   locale.value = lang
