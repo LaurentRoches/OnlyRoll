@@ -89,6 +89,7 @@ final class AuthController extends AbstractController
         $user->setPseudo($dto->pseudo);
         $user->setRoles(['ROLE_USER']);
         $user->setIsVerified(false);
+        $user->setLanguage($request->getPreferredLanguage(['fr', 'en']) ?? 'en');
 
         $hashedPassword = $passwordHasher->hashPassword($user, $dto->password);
         $user->setPassword($hashedPassword);

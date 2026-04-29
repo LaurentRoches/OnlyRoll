@@ -154,6 +154,7 @@ const playerSections = ['chat', 'dice', 'map', 'leave'] as const
           </button>
 
           <button
+            v-if="isGameMaster"
             @click="emit('openSettings')"
             class="p-2 hover:bg-secondary-700 rounded-lg transition-colors"
             :title="t('game.header.settingsTitle')"
