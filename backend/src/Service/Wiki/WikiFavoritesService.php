@@ -62,7 +62,8 @@ final class WikiFavoritesService
             $items[] = ['id' => $f->getId(), 'name' => $f->getName(), 'srdTable' => 'feat', 'source' => $f->getSources()->first()?->getCode() ?? '', 'prerequisite' => $f->getPrerequisiteText()];
         }
 
-        usort($items, fn($a, $b) => strcmp($a['name'], $b['name']));
+        $names = array_column($items, 'name');
+        array_multisort($names, SORT_STRING, $items);
 
         return $items;
     }

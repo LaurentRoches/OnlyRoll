@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Import;
 
-use App\Entity\Srd\SrdChildTranslation;
-use App\Entity\Srd\SrdTranslation;
-use App\Repository\Srd\SrdChildTranslationRepository;
-use App\Repository\Srd\SrdTranslationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -33,8 +29,6 @@ final class SrdTranslationImportService
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly SrdTranslationRepository $translationRepo,
-        private readonly SrdChildTranslationRepository $childTranslationRepo,
         private readonly EntryParser $entryParser,
         private readonly SpellEntryParser $spellParser,
     ) {}

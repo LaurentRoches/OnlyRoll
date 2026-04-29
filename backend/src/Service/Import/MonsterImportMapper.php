@@ -282,7 +282,7 @@ class MonsterImportMapper
                     continue;
                 }
                 foreach ($dmgNames as $dmgName) {
-                    $dmgSlug = self::DAMAGE_TYPE_MAP[$dmgName] ?? strtolower($dmgName ?? '');
+                    $dmgSlug = self::DAMAGE_TYPE_MAP[$dmgName] ?? strtolower($dmgName);
                     $damageType = $this->em->getRepository(DamageType::class)->findOneBy(['slug' => $dmgSlug]);
                     if (!$damageType) continue;
                     $dr = new MonsterDamageResistance();

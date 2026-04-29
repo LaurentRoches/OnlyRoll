@@ -1,8 +1,13 @@
 name: Deploy to Production
 
 on:
-  push:
+  # Deploy after CI passes on main
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
     branches: [main]
+    types: [completed]
+  # Tag-based deploys (wiki imports, releases)
+  push:
     tags: ['v*.*.*', '*-importWiki']
   workflow_dispatch:
 
@@ -15,15 +20,22 @@ jobs:
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       
       - name: Setup SSH
         run: |
+          set -e
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts
       
@@ -379,16 +391,16 @@ jobs:
 
             echo "Loading reference data (alignments, damage types, etc.)..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm \
-              php bin/console doctrine:fixtures:load --group=reference --append --no-interaction
+              php bin/console app:seed:references --no-interaction
+
+            echo "Loading wiki categories..."
+            docker compose -f $COMPOSE_FILE exec -T php-fpm \
+              php bin/console app:seed:wiki-categories --no-interaction
 
             if [ "$RUN_IMPORTS" = "true" ]; then
               echo "Importing SRD data (spells, monsters, races, classes...) - may take several minutes..."
               docker compose -f $COMPOSE_FILE exec -T php-fpm \
                 php -d memory_limit=2G bin/console app:import:all
-
-              echo "Loading wiki categories..."
-              docker compose -f $COMPOSE_FILE exec -T php-fpm \
-                php bin/console doctrine:fixtures:load --group=wiki --append --no-interaction
 
               echo "SRD data import complete."
             else

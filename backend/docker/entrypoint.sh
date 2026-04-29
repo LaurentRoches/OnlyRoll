@@ -132,7 +132,32 @@ php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migratio
 }
 
 # ===========================================
-# 9. Display startup information
+# 9. Load reference data and import SRD if needed
+# ===========================================
+echo "Checking reference data..."
+php bin/console app:seed:references --no-interaction || {
+    echo "Reference seeding failed, continuing..."
+}
+
+echo "Checking wiki categories..."
+php bin/console app:seed:wiki-categories --no-interaction || {
+    echo "Wiki categories seeding failed, continuing..."
+}
+
+SPELL_COUNT=$(php bin/console dbal:run-sql "SELECT COUNT(*) AS c FROM srd_spell" --no-interaction 2>/dev/null | grep -o '[0-9]*' | tail -1)
+SPELL_COUNT=${SPELL_COUNT:-0}
+
+if [ "$SPELL_COUNT" = "0" ]; then
+    echo "SRD tables are empty, importing data..."
+    php bin/console app:import:all --no-interaction || {
+        echo "SRD import failed, continuing..."
+    }
+else
+    echo "SRD data already present ($SPELL_COUNT spells), skipping import"
+fi
+
+# ===========================================
+# 10. Display startup information
 # ===========================================
 echo "========================================"
 echo "Environment: $APP_ENV"

@@ -146,7 +146,7 @@ class ItemImportMapper
 
         if (isset($data['range'])) {
             $parts = explode('/', $data['range']);
-            $weapon->setRangeNormal((int)($parts[0] ?? 0));
+            $weapon->setRangeNormal((int) $parts[0]);
             $weapon->setRangeLong(isset($parts[1]) ? (int)$parts[1] : null);
         }
 

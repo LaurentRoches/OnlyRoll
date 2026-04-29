@@ -140,7 +140,7 @@ class EntryParser
         // {@item Name|source|display} → display (or Name if no display text)
         $text = preg_replace_callback('/\{@item\s+([^}]+)\}/', function ($m) {
             $parts = explode('|', $m[1]);
-            return isset($parts[2]) && $parts[2] !== '' ? $parts[2] : $parts[0];
+            return !empty($parts[2]) ? $parts[2] : $parts[0];
         }, $text);
         // {@condition Name} → Name
         $text = preg_replace('/\{@condition\s+([^|}]+)[^}]*\}/', '$1', $text);

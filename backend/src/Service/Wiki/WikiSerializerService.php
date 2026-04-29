@@ -137,6 +137,7 @@ final class WikiSerializerService
 
     public function serializeClassDetail(object $class, ?SrdTranslation $translation = null): array
     {
+        /** @var array<int, array{id: int|null, name: string|null, level: int|null, description: string|null}> $features */
         $features = array_map(fn($f) => [
             'id'          => $f->getId(),
             'name'        => $f->getName(),
@@ -144,7 +145,7 @@ final class WikiSerializerService
             'description' => $f->getDescription(),
         ], $class->getFeatures()->toArray());
 
-        usort($features, fn($a, $b) => $a['level'] <=> $b['level']);
+        usort($features, fn(array $a, array $b) => $a['level'] <=> $b['level']);
 
         $subclasses = array_map(fn($sc) => [
             'id'        => $sc->getId(),

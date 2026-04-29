@@ -8,10 +8,9 @@ parameters:
         - tests/
 
     ignoreErrors:
-        # Doctrine génère automatiquement les IDs
-        - '#Property App\\Entity\\User::\$id \(int\|null\) is never assigned int#'
-        - '#Property App\\Entity\\Game::\$id \(int\|null\) is never assigned int#'
-        - '#Property App\\Entity\\GamePlayer::\$id \(int\|null\) is never assigned int#'
-        - '#Property App\\Entity\\GameMap::\$id \(int\|null\) is never assigned int#'
-        - '#Property App\\Entity\\GameMessage::\$id \(int\|null\) is never assigned int#'
-        - '#Property App\\Entity\\GameToken::\$id \(int\|null\) is never assigned int#'
+        # Doctrine gère les $id via reflection (auto-increment)
+        - '#Property App\\Entity\\.+::\$id is never written, only read#'
+        - '#Property App\\Entity\\.+::\$id \(int\|null\) is never assigned int#'
+
+        # Doctrine gère les relations OneToOne/ManyToOne via reflection
+        - '#Property App\\Entity\\.+::\$\w+ \(.+\|null\) is never assigned .+ so it can be removed from the property type#'
