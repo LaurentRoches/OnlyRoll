@@ -35,6 +35,33 @@
           </div>
 
           <div class="flex items-center space-x-2 sm:space-x-4">
+            <div class="relative" ref="langDropdownRef">
+              <button
+                @click="showLangDropdown = !showLangDropdown"
+                class="p-1.5 rounded-lg hover:bg-secondary-700 transition-colors"
+                :title="t('common.nav.language.switchLanguage')"
+              >
+                <img :src="currentFlag" :alt="locale" class="w-6 h-4 object-cover rounded-sm" />
+              </button>
+              <Transition name="fade-down">
+                <div
+                  v-if="showLangDropdown"
+                  class="absolute right-0 mt-1 w-36 bg-secondary-700 rounded-lg shadow-xl border border-secondary-600 overflow-hidden z-50"
+                >
+                  <button
+                    v-for="lang in (['fr', 'en'] as const)"
+                    :key="lang"
+                    @click="switchLanguage(lang)"
+                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-secondary-200 hover:bg-secondary-600 transition-colors"
+                    :class="{ 'bg-secondary-600': locale === lang }"
+                  >
+                    <img :src="`/images/flag/${lang}.png`" :alt="lang" class="w-5 h-3.5 object-cover rounded-sm" />
+                    {{ t(`common.nav.language.${lang}`) }}
+                  </button>
+                </div>
+              </Transition>
+            </div>
+
             <template v-if="isAuthenticated">
               <UserProfileBadge class="hidden sm:flex" />
               <RouterLink
@@ -250,8 +277,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { onClickOutside } from '@vueuse/core'
 import { useAuth } from '@/composables/useAuth'
 import UserProfileBadge from '@/components/common/UserProfileBadge.vue'
 import HeroParticles from '@/components/landing/HeroParticles.vue'
@@ -261,8 +289,20 @@ import GamePreview from '@/components/landing/GamePreview.vue'
 import HowItWorks from '@/components/landing/HowItWorks.vue'
 import FinalCTA from '@/components/landing/FinalCTA.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { isAuthenticated } = useAuth()
+
+const showLangDropdown = ref(false)
+const langDropdownRef = ref<HTMLElement | null>(null)
+const currentFlag = computed(() => `/images/flag/${locale.value}.png`)
+
+onClickOutside(langDropdownRef, () => { showLangDropdown.value = false })
+
+function switchLanguage(lang: 'fr' | 'en') {
+  locale.value = lang
+  localStorage.setItem('locale', lang)
+  showLangDropdown.value = false
+}
 
 const heroReady = ref(false)
 onMounted(() => {
@@ -271,3 +311,18 @@ onMounted(() => {
   }, 50)
 })
 </script>
+
+<style scoped>
+.fade-down-enter-active,
+.fade-down-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.fade-down-enter-from,
+.fade-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

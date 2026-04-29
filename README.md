@@ -25,7 +25,7 @@ Projet de table de jeu virtuelle (VTT) spécialisée pour Donjons & Dragons 5e, 
 ## Architecture Technique
 
 ### Stack Backend
-- **PHP 8.3** / **Symfony 7.3**
+- **PHP 8.3** / **Symfony 7.4**
 - **MySQL 8.0** + **Redis** (cache)
 - **API Platform** (REST API)
 - **Mercure** (WebSocket temps réel)
@@ -53,7 +53,7 @@ Projet de table de jeu virtuelle (VTT) spécialisée pour Donjons & Dragons 5e, 
 ### Environnements
 
 - **Dev local** : stack Docker Compose complète (frontend Vite sur port 5173, API Symfony sur port 80/nginx)
-- **CI/CD** : GitHub Actions – jobs parallèles, rapport de couverture et rapport Playwright uploadés comme artefacts
+- **CI/CD** : GitHub Actions avec jobs parallèles, rapport de couverture et rapport Playwright uploadés comme artefacts
 
 ### Scénarios E2E couverts
 
@@ -66,7 +66,7 @@ Projet de table de jeu virtuelle (VTT) spécialisée pour Donjons & Dragons 5e, 
 
 ### Prérequis
 - Docker & Docker Compose
-- Node.js 20+
+- Node.js 26+
 - PHP 8.3+
 
 ### Démarrage rapide
@@ -135,6 +135,7 @@ Les tests E2E s'exécutent automatiquement dans la pipeline GitHub Actions (job 
 
 ## Documentation
 
+- [**Guide du développeur** : Grimoire d'installation et de contribution](docs/Mode_emploi.md)
 - [Architecture Backend](docs/documentation_architecture/backend_architecture_doc.md)
 - [Architecture Frontend](docs/documentation_architecture/frontend_architecture_doc.md)
 - [Docker Infrastructure](docs/documentation_architecture/docker_architecture_doc.md)
