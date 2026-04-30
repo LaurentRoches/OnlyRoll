@@ -29,6 +29,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/api/wiki', name: 'api_wiki_')]
 final class WikiController extends AbstractController
@@ -49,6 +51,7 @@ final class WikiController extends AbstractController
         private readonly RateLimiterFactory $wikiSearchLimiter,
         private readonly WikiSerializerService $serializer,
         private readonly WikiFavoritesService $favoritesService,
+        private readonly CacheInterface $cache,
     ) {}
 
     private function getAuthenticatedUser(): ?User
@@ -76,21 +79,26 @@ final class WikiController extends AbstractController
         return $this->translationRepo->findTranslationsForIds($srdTable, $ids, $locale);
     }
 
+    private function wikiCacheKey(string $prefix, string $locale, ?int $userId, array $params): string
+    {
+        return sprintf('%s_%s_%s_%s', $prefix, $locale, $userId ?? 'anon', md5(serialize($params)));
+    }
+
     #[Route('/categories', name: 'categories', methods: ['GET'])]
     public function categories(Request $request): JsonResponse
     {
         $locale = $this->resolveLocale($request);
-        $categories = $this->categoryRepo->findBy([], ['sortOrder' => 'ASC']);
 
-        $data = array_map(function ($cat) use ($locale) {
-            $translation = $cat->getTranslationForLocale($locale);
-            return [
-                'slug'  => $cat->getSlug(),
-                'icon'  => $cat->getIcon(),
-                'name'  => $translation?->getName() ?? $cat->getSlug(),
+        $data = $this->cache->get('wiki_categories_' . $locale, function (ItemInterface $item) use ($locale): array {
+            $item->expiresAfter(3600);
+            $categories = $this->categoryRepo->findBy([], ['sortOrder' => 'ASC']);
+            return array_map(fn($cat) => [
+                'slug'      => $cat->getSlug(),
+                'icon'      => $cat->getIcon(),
+                'name'      => $cat->getTranslationForLocale($locale)?->getName() ?? $cat->getSlug(),
                 'sortOrder' => $cat->getSortOrder(),
-            ];
-        }, $categories);
+            ], $categories);
+        });
 
         return $this->json($data);
     }
@@ -100,18 +108,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'level', 'school', 'source', 'class', 'damage_type', 'components']);
-        $result = $this->spellRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'spell') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($s) => $s->getId(), $result['data']);
-        $translations = $this->loadTranslations('spell', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_spells', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->spellRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'spell') : [];
+                $ids = array_map(fn($s) => $s->getId(), $result['data']);
+                $translations = $this->loadTranslations('spell', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($s) => $this->serializer->serializeSpellList($s, $favoritedIds, $translations[$s->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($s) => $this->serializer->serializeSpellList($s, $favoritedIds, $translations[$s->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/spells/{id}', name: 'spell_detail', methods: ['GET'])]
@@ -144,18 +160,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'source', 'size', 'speed_type', 'vision']);
-        $result = $this->raceRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'race') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($r) => $r->getId(), $result['data']);
-        $translations = $this->loadTranslations('race', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_races', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->raceRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'race') : [];
+                $ids = array_map(fn($r) => $r->getId(), $result['data']);
+                $translations = $this->loadTranslations('race', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($r) => $this->serializer->serializeRaceList($r, $favoritedIds, $translations[$r->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($r) => $this->serializer->serializeRaceList($r, $favoritedIds, $translations[$r->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/races/subraces/{id}', name: 'subrace_detail', methods: ['GET'])]
@@ -196,18 +220,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'source']);
-        $result = $this->classRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'class') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($c) => $c->getId(), $result['data']);
-        $translations = $this->loadTranslations('class', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_classes', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->classRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'class') : [];
+                $ids = array_map(fn($c) => $c->getId(), $result['data']);
+                $translations = $this->loadTranslations('class', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($c) => $this->serializer->serializeClassList($c, $favoritedIds, $translations[$c->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($c) => $this->serializer->serializeClassList($c, $favoritedIds, $translations[$c->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/classes/subclasses/{id}', name: 'subclass_detail', methods: ['GET'])]
@@ -248,18 +280,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'category', 'rarity', 'source']);
-        $result = $this->itemRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'item') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($i) => $i->getId(), $result['data']);
-        $translations = $this->loadTranslations('item', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_items', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->itemRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'item') : [];
+                $ids = array_map(fn($i) => $i->getId(), $result['data']);
+                $translations = $this->loadTranslations('item', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($i) => $this->serializer->serializeItemList($i, $favoritedIds, $translations[$i->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($i) => $this->serializer->serializeItemList($i, $favoritedIds, $translations[$i->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/items/{id}', name: 'item_detail', methods: ['GET'])]
@@ -286,18 +326,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'type', 'size', 'cr', 'source']);
-        $result = $this->monsterRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'monster') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($m) => $m->getId(), $result['data']);
-        $translations = $this->loadTranslations('monster', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_monsters', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->monsterRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'monster') : [];
+                $ids = array_map(fn($m) => $m->getId(), $result['data']);
+                $translations = $this->loadTranslations('monster', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($m) => $this->serializer->serializeMonsterList($m, $favoritedIds, $translations[$m->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($m) => $this->serializer->serializeMonsterList($m, $favoritedIds, $translations[$m->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/monsters/{id}', name: 'monster_detail', methods: ['GET'])]
@@ -324,18 +372,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'source']);
-        $result = $this->bgRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'background') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($b) => $b->getId(), $result['data']);
-        $translations = $this->loadTranslations('background', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_backgrounds', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->bgRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'background') : [];
+                $ids = array_map(fn($b) => $b->getId(), $result['data']);
+                $translations = $this->loadTranslations('background', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($b) => $this->serializer->serializeBackgroundList($b, $favoritedIds, $translations[$b->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($b) => $this->serializer->serializeBackgroundList($b, $favoritedIds, $translations[$b->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/backgrounds/{id}', name: 'background_detail', methods: ['GET'])]
@@ -359,18 +415,26 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
         $filters = $this->extractFilters($request, ['search', 'source']);
-        $result = $this->featRepo->findWithFilters($filters);
-
         $user = $this->getAuthenticatedUser();
-        $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'feat') : [];
+        $userId = $user?->getId();
+        $ttl = $userId ? 300 : 3600;
 
-        $ids = array_map(fn($f) => $f->getId(), $result['data']);
-        $translations = $this->loadTranslations('feat', $ids, $locale);
+        $data = $this->cache->get(
+            $this->wikiCacheKey('wiki_feats', $locale, $userId, $filters),
+            function (ItemInterface $item) use ($locale, $filters, $user, $ttl) {
+                $item->expiresAfter($ttl);
+                $result = $this->featRepo->findWithFilters($filters);
+                $favoritedIds = $user ? $this->favoriteRepo->getFavoritedIds($user, 'feat') : [];
+                $ids = array_map(fn($f) => $f->getId(), $result['data']);
+                $translations = $this->loadTranslations('feat', $ids, $locale);
+                return [
+                    ...$result,
+                    'data' => array_map(fn($f) => $this->serializer->serializeFeatList($f, $favoritedIds, $translations[$f->getId()] ?? null), $result['data']),
+                ];
+            }
+        );
 
-        return $this->json([
-            ...$result,
-            'data' => array_map(fn($f) => $this->serializer->serializeFeatList($f, $favoritedIds, $translations[$f->getId()] ?? null), $result['data']),
-        ]);
+        return $this->json($data);
     }
 
     #[Route('/feats/{id}', name: 'feat_detail', methods: ['GET'])]
@@ -406,38 +470,46 @@ final class WikiController extends AbstractController
             return $this->json(['results' => []]);
         }
 
-        $filters = ['search' => $q, 'limit' => 10, 'page' => 1];
-        $results = [];
+        $cacheKey = $this->wikiCacheKey('wiki_search', $locale, null, ['q' => $q, 'category' => $category]);
 
-        $searchMap = [
-            'spell'      => [$this->spellRepo, 'spell',      fn($s) => ['id' => $s->getId(), 'name' => $s->getName(), 'category' => 'spell',      'meta' => 'Level ' . $s->getLevel()]],
-            'race'       => [$this->raceRepo,  'race',       fn($r) => ['id' => $r->getId(), 'name' => $r->getName(), 'category' => 'race',       'meta' => $r->getSources()->first()?->getCode() ?? '']],
-            'class'      => [$this->classRepo, 'class',      fn($c) => ['id' => $c->getId(), 'name' => $c->getName(), 'category' => 'class',      'meta' => 'd' . $c->getHitDie()]],
-            'background' => [$this->bgRepo,    'background', fn($b) => ['id' => $b->getId(), 'name' => $b->getName(), 'category' => 'background', 'meta' => $b->getSources()->first()?->getCode() ?? '']],
-            'feat'       => [$this->featRepo,  'feat',       fn($f) => ['id' => $f->getId(), 'name' => $f->getName(), 'category' => 'feat',       'meta' => $f->getSources()->first()?->getCode() ?? '']],
-            'item'       => [$this->itemRepo,  'item',       fn($i) => ['id' => $i->getId(), 'name' => $i->getName(), 'category' => 'item',       'meta' => $i->getRarity()?->getLabel()]],
-            'monster'    => [$this->monsterRepo, 'monster',  fn($m) => ['id' => $m->getId(), 'name' => $m->getName(), 'category' => 'monster',    'meta' => 'CR ' . $m->getCr()]],
-        ];
+        $data = $this->cache->get($cacheKey, function (ItemInterface $item) use ($locale, $q, $category) {
+            $item->expiresAfter(1800);
 
-        foreach ($searchMap as $cat => [$repo, $srdTable, $serialize]) {
-            if ($category && $category !== $cat) {
-                continue;
-            }
-            $res = $repo->findWithFilters($filters);
+            $filters = ['search' => $q, 'limit' => 10, 'page' => 1];
+            $results = [];
 
-            $ids = array_map(fn($e) => $e->getId(), $res['data']);
-            $translations = $this->loadTranslations($srdTable, $ids, $locale);
+            $searchMap = [
+                'spell'      => [$this->spellRepo, 'spell',      fn($s) => ['id' => $s->getId(), 'name' => $s->getName(), 'category' => 'spell',      'meta' => 'Level ' . $s->getLevel()]],
+                'race'       => [$this->raceRepo,  'race',       fn($r) => ['id' => $r->getId(), 'name' => $r->getName(), 'category' => 'race',       'meta' => $r->getSources()->first()?->getCode() ?? '']],
+                'class'      => [$this->classRepo, 'class',      fn($c) => ['id' => $c->getId(), 'name' => $c->getName(), 'category' => 'class',      'meta' => 'd' . $c->getHitDie()]],
+                'background' => [$this->bgRepo,    'background', fn($b) => ['id' => $b->getId(), 'name' => $b->getName(), 'category' => 'background', 'meta' => $b->getSources()->first()?->getCode() ?? '']],
+                'feat'       => [$this->featRepo,  'feat',       fn($f) => ['id' => $f->getId(), 'name' => $f->getName(), 'category' => 'feat',       'meta' => $f->getSources()->first()?->getCode() ?? '']],
+                'item'       => [$this->itemRepo,  'item',       fn($i) => ['id' => $i->getId(), 'name' => $i->getName(), 'category' => 'item',       'meta' => $i->getRarity()?->getLabel()]],
+                'monster'    => [$this->monsterRepo, 'monster',  fn($m) => ['id' => $m->getId(), 'name' => $m->getName(), 'category' => 'monster',    'meta' => 'CR ' . $m->getCr()]],
+            ];
 
-            foreach ($res['data'] as $entity) {
-                $item = $serialize($entity);
-                if ($translations && isset($translations[$entity->getId()])) {
-                    $item['name'] = $translations[$entity->getId()]->getField('name') ?? $item['name'];
+            foreach ($searchMap as $cat => [$repo, $srdTable, $serialize]) {
+                if ($category && $category !== $cat) {
+                    continue;
                 }
-                $results[] = $item;
-            }
-        }
+                $res = $repo->findWithFilters($filters);
 
-        return $this->json(['results' => $results]);
+                $ids = array_map(fn($e) => $e->getId(), $res['data']);
+                $translations = $this->loadTranslations($srdTable, $ids, $locale);
+
+                foreach ($res['data'] as $entity) {
+                    $result = $serialize($entity);
+                    if ($translations && isset($translations[$entity->getId()])) {
+                        $result['name'] = $translations[$entity->getId()]->getField('name') ?? $result['name'];
+                    }
+                    $results[] = $result;
+                }
+            }
+
+            return ['results' => $results];
+        });
+
+        return $this->json($data);
     }
 
     #[Route('/favorites/items', name: 'favorites_items', methods: ['GET'])]
@@ -526,5 +598,4 @@ final class WikiController extends AbstractController
         $filters['limit'] = (int)$request->query->get('limit', 20);
         return $filters;
     }
-
 }

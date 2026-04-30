@@ -57,6 +57,22 @@ services:
       - onlyroll-network
 
   # ===========================================
+  # REDIS COMMANDER (Web UI Redis - dev only)
+  # ===========================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: onlyroll-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - onlyroll-network
+
+  # ===========================================
   # BACKEND PHP-FPM
   # ===========================================
   php-fpm:
