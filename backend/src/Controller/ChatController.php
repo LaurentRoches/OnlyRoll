@@ -525,7 +525,7 @@ final class ChatController extends AbstractController
 
         $since = $request->query->get('since');
 
-        if (!$since || !\is_string($since)) {
+        if (!$since) {
             return $this->json(
                 ['error' => 'Le paramètre "since" est obligatoire'],
                 Response::HTTP_BAD_REQUEST,

@@ -89,18 +89,15 @@ final class WikiController extends AbstractController
     {
         $locale = $this->resolveLocale($request);
 
-        $data = $this->cache->get('wiki_categories_' . $locale, function (ItemInterface $item) use ($locale) {
+        $data = $this->cache->get('wiki_categories_' . $locale, function (ItemInterface $item) use ($locale): array {
             $item->expiresAfter(3600);
             $categories = $this->categoryRepo->findBy([], ['sortOrder' => 'ASC']);
-            return array_map(function ($cat) use ($locale) {
-                $translation = $cat->getTranslationForLocale($locale);
-                return [
-                    'slug'      => $cat->getSlug(),
-                    'icon'      => $cat->getIcon(),
-                    'name'      => $translation?->getName() ?? $cat->getSlug(),
-                    'sortOrder' => $cat->getSortOrder(),
-                ];
-            }, $categories);
+            return array_map(fn($cat) => [
+                'slug'      => $cat->getSlug(),
+                'icon'      => $cat->getIcon(),
+                'name'      => $cat->getTranslationForLocale($locale)?->getName() ?? $cat->getSlug(),
+                'sortOrder' => $cat->getSortOrder(),
+            ], $categories);
         });
 
         return $this->json($data);
