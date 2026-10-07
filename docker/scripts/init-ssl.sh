@@ -15,7 +15,8 @@ fi
 echo "📝 Generating SSL certificate with Certbot..."
 
 # Run certbot to obtain certificate
-docker compose -f docker-compose.prod.yml run --rm certbot certonly \
+# --entrypoint certbot : l'entrypoint du service est la boucle de renouvellement, qui ignorerait ces arguments
+docker compose -f docker-compose.prod.yml run --rm --entrypoint certbot certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email "$EMAIL" \

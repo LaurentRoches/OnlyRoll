@@ -83,7 +83,7 @@ function goBack() {
 }
 
 function isSpell(item: unknown): item is SpellListItem {
-  return props.category === 'spells'
+  return props.category === 'spells' && typeof item === 'object' && item !== null
 }
 
 function selectItem(id: number) {
