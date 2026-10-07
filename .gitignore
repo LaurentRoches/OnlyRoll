@@ -34,3 +34,5 @@ docker/nginx/.htpasswd
 
 # Résultats des testes de charge
 tests/load/results/
+# Claude Code - permissions locales (personnelles, peuvent contenir des secrets)
+.claude/settings.local.json
