@@ -1,0 +1,20 @@
+name: SSL Certificates Check
+
+# Alerte (échec du workflow = email GitHub) si un certificat n'a pas été renouvelé à temps.
+# certbot renouvelle à 30 jours de l'expiration : à 21 jours, le renouvellement a forcément échoué.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ssl-check:
+    name: Check certificates expiry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check onlyroll.cloud and laurentroches.fr
+        run: bash scripts/ssl-expiry-check.sh 21 onlyroll.cloud www.onlyroll.cloud laurentroches.fr www.laurentroches.fr

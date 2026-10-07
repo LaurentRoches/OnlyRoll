@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Script to manually obtain or renew SSL certificates for onlyroll.cloud
+# Script to manually obtain or renew SSL certificates (onlyroll.cloud by default)
 # Usage: ./scripts/certbot-obtain.sh [--force-renewal]
+#        DOMAIN=laurentroches.fr ./scripts/certbot-obtain.sh
 
 set -e
 
 COMPOSE_FILE="docker-compose.prod.yml"
-DOMAIN="onlyroll.cloud"
-WWW_DOMAIN="www.onlyroll.cloud"
+DOMAIN="${DOMAIN:-onlyroll.cloud}"
+WWW_DOMAIN="www.$DOMAIN"
 EMAIL="support@onlyroll.cloud"
 
 # Colors for output
@@ -83,7 +84,8 @@ echo -e "\n${YELLOW}[4/5]${NC} Obtaining SSL certificate from Let's Encrypt..."
 echo "   This may take a minute..."
 echo ""
 
-docker compose -f $COMPOSE_FILE run --rm certbot certonly \
+# --entrypoint certbot: the service entrypoint is the renewal loop, which would ignore these arguments
+docker compose -f $COMPOSE_FILE run --rm --entrypoint certbot certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email $EMAIL \
