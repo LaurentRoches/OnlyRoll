@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/Kagelestis/Desktop/OnlyRoll/frontend/src -name *locale* -o -name *lang* -o -name *i18n*)",
+      "Bash(grep -r \"en\\\\|fr\" /c/Users/Kagelestis/Desktop/OnlyRoll/frontend/src/components/common --include=*.vue -l)",
+      "Bash(wc -l /c/Users/Kagelestis/Desktop/OnlyRoll/frontend/src/i18n/locales/*/common.ts)",
+      "Bash(find /c/Users/Kagelestis/Desktop/OnlyRoll/frontend/src -type d -name *wiki* -o -type d -name *spell*)",
+      "Bash(xxd \"c:/Users/Kagelestis/Desktop/OnlyRoll/frontend/src/i18n/locales/fr/profile.ts\")",
+      "Bash(find /c/Users/Kagelestis/Desktop/OnlyRoll -maxdepth 2 -name docker-compose* -type f)",
+      "Bash(git config:*)",
+      "Bash(git log:*)",
+      "Bash(grep -r \"CacheInterface\\\\|#\\\\[Cache\\\\]\\\\|use Symfony\\\\\\\\Contracts\\\\\\\\Cache\" /c/Users/Kagelestis/Desktop/OnlyRoll/backend/src --include=\"*.php\" -n)",
+      "Bash(xargs cat *)",
+      "Bash(xargs wc *)",
+      "Bash(grep -E \"\\\\.\\(vue|ts|js\\)$\")",
+      "Bash(php --version)",
+      "Bash(composer --version)",
+      "Bash(composer update *)",
+      "Bash(npm audit *)"
+    ]
+  }
+}

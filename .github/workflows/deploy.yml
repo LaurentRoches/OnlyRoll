@@ -271,7 +271,7 @@ jobs:
             echo "Removing any existing OnlyRoll containers..."
             docker rm -f onlyroll-php-prod onlyroll-nginx-prod onlyroll-frontend-prod \
                         onlyroll-mysql-prod onlyroll-redis-prod onlyroll-mercure-prod \
-                        onlyroll-phpmyadmin-prod 2>/dev/null || echo "No individual containers to remove"
+                        onlyroll-phpmyadmin-prod onlyroll-certbot-prod 2>/dev/null || echo "No individual containers to remove"
             
             # Supprimer le réseau s'il existe
             echo "Removing old network..."
@@ -291,35 +291,39 @@ jobs:
             echo "Building Docker images with --no-cache (this may take a while)..."
             docker compose -f $COMPOSE_FILE build --no-cache php-fpm frontend
 
-            # Initialize SSL certificates - Always ensure they exist
-            echo "Initializing SSL certificates..."
+            # SSL - nginx sert onlyroll.cloud ET laurentroches.fr (portfolio) :
+            # il refuse de démarrer si l'un des deux certificats est absent.
+            SSL_DOMAINS="onlyroll.cloud laurentroches.fr"
+            SSL_EMAIL="support@onlyroll.cloud"
 
-            # Create certbot volumes first
-            docker volume create production_certbot-certs 2>/dev/null || true
-            docker volume create production_certbot-webroot 2>/dev/null || true
-            docker volume create production_certbot-var 2>/dev/null || true
+            in_certs_volume() {
+              docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c "$1"
+            }
 
-            # Check if certificates exist using docker run
-            CERT_EXISTS=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
-              "test -f /etc/letsencrypt/live/onlyroll.cloud/privkey.pem && echo 'yes' || echo 'no'")
-
-            if [ "$CERT_EXISTS" = "no" ]; then
-              echo "SSL certificates not found. Creating dummy certificates for initial nginx start..."
-
-              docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c "
-                mkdir -p /etc/letsencrypt/live/onlyroll.cloud && \
-                cd /etc/letsencrypt/live/onlyroll.cloud && \
+            # Certificat auto-signé valable 1 jour, uniquement pour permettre à nginx de démarrer
+            # (openssl n'est pas inclus dans l'image alpine de base)
+            create_temporary_cert() {
+              in_certs_volume "apk add --no-cache openssl > /dev/null && \
+                mkdir -p /etc/letsencrypt/live/$1 && \
                 openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
-                  -keyout privkey.pem \
-                  -out fullchain.pem \
-                  -subj '/CN=onlyroll.cloud' 2>/dev/null
-              " && echo "Dummy certificates created" || {
-                echo "Failed to create dummy certificates"
-                exit 1
-              }
-            else
-              echo "SSL certificates already exist"
-            fi
+                  -keyout /etc/letsencrypt/live/$1/privkey.pem \
+                  -out /etc/letsencrypt/live/$1/fullchain.pem \
+                  -subj '/CN=$1' 2> /dev/null"
+            }
+
+            echo "Checking SSL certificates..."
+            docker volume create production_certbot-certs > /dev/null
+            docker volume create production_certbot-webroot > /dev/null
+            docker volume create production_certbot-var > /dev/null
+
+            for DOMAIN in $SSL_DOMAINS; do
+              if in_certs_volume "test -f /etc/letsencrypt/live/$DOMAIN/privkey.pem"; then
+                echo "$DOMAIN: certificate present"
+              else
+                echo "$DOMAIN: no certificate, creating a temporary self-signed one for nginx start..."
+                create_temporary_cert "$DOMAIN"
+              fi
+            done
 
             echo "Starting all services..."
             docker compose -f $COMPOSE_FILE up -d
@@ -348,40 +352,36 @@ jobs:
               docker compose -f $COMPOSE_FILE logs redis
             fi
             
-            # Obtain real SSL certificate if needed
-            echo "Checking if real SSL certificate is needed..."
+            # Obtenir / renouveler les certificats Let's Encrypt (challenge HTTP sur le webroot servi par nginx).
+            # --entrypoint certbot : sinon l'entrypoint du service (boucle de renouvellement) ignore la commande.
+            # < /dev/null : empêche docker compose de consommer la suite de ce script (stdin du heredoc SSH).
+            CERTBOT="docker compose -f $COMPOSE_FILE run --rm -T --entrypoint certbot certbot"
 
-            # Check if certificate is valid for more than 30 days (dummy certs are only valid for 1 day)
-            CERT_IS_DUMMY=$(docker run --rm -v production_certbot-certs:/etc/letsencrypt alpine sh -c \
-              "openssl x509 -in /etc/letsencrypt/live/onlyroll.cloud/fullchain.pem -noout -checkend 2592000 2>/dev/null && echo 'no' || echo 'yes'")
+            for DOMAIN in $SSL_DOMAINS; do
+              if in_certs_volume "test -f /etc/letsencrypt/renewal/$DOMAIN.conf"; then
+                continue
+              fi
 
-            if [ "$CERT_IS_DUMMY" = "yes" ]; then
-              echo "Certificate needs renewal or is dummy. Obtaining certificate from Let's Encrypt..."
+              # Pas encore géré par certbot (certificat temporaire) : on le remplace par un vrai
+              echo "$DOMAIN: requesting a Let's Encrypt certificate..."
+              in_certs_volume "rm -rf /etc/letsencrypt/live/$DOMAIN /etc/letsencrypt/archive/$DOMAIN"
+              if $CERTBOT certonly --webroot -w /var/www/certbot \
+                  --email "$SSL_EMAIL" --agree-tos --no-eff-email --non-interactive \
+                  -d "$DOMAIN" -d "www.$DOMAIN" < /dev/null; then
+                echo "$DOMAIN: certificate obtained"
+              else
+                echo "WARNING: could not obtain a certificate for $DOMAIN (check DNS and port 80)"
+                create_temporary_cert "$DOMAIN"
+              fi
+            done
 
-              # Wait a bit for nginx to be fully ready
-              sleep 5
+            echo "Renewing certificates expiring within 30 days..."
+            $CERTBOT renew --webroot -w /var/www/certbot --no-random-sleep-on-renew < /dev/null \
+              || echo "WARNING: certbot renew reported errors (see output above)"
 
-              docker compose -f $COMPOSE_FILE run --rm certbot certonly \
-                --webroot \
-                --webroot-path=/var/www/certbot \
-                --email support@onlyroll.cloud \
-                --agree-tos \
-                --no-eff-email \
-                --force-renewal \
-                -d onlyroll.cloud \
-                -d www.onlyroll.cloud && {
-                  echo "Real SSL certificate obtained!"
-                  echo "Reloading Nginx..."
-                  docker compose -f $COMPOSE_FILE exec -T nginx nginx -s reload || docker compose -f $COMPOSE_FILE restart nginx
-                  sleep 5
-                } || {
-                  echo "Failed to obtain real certificate. Using dummy certificate for now."
-                  echo "The site will work but with a self-signed certificate warning."
-                  echo "Please verify DNS is propagated and try running the deployment again later."
-                }
-            else
-              echo "Real SSL certificate already in place"
-            fi
+            echo "Reloading nginx to serve the current certificates..."
+            docker compose -f $COMPOSE_FILE exec -T nginx nginx -s reload < /dev/null \
+              || docker compose -f $COMPOSE_FILE restart nginx
 
             echo "Running database migrations..."
             docker compose -f $COMPOSE_FILE exec -T php-fpm php bin/console doctrine:migrations:migrate --no-interaction || {
@@ -462,7 +462,12 @@ jobs:
           ENDSSH
           
           exit 1
-      
+
+      # Le health check utilise curl -k et ne voit pas un certificat expiré : on le vérifie ici.
+      # Pas de rollback si cette étape échoue (le code déployé n'est pas en cause).
+      - name: Verify SSL certificates
+        run: bash scripts/ssl-expiry-check.sh 14 onlyroll.cloud www.onlyroll.cloud laurentroches.fr www.laurentroches.fr
+
       - name: Show deployment info
         if: always()
         run: |
